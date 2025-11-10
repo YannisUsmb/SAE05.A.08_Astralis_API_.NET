@@ -21,6 +21,20 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+# Publie l'artifact généré
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(build.artifactStagingDirectory)'
+    ArtifactName: 'drop'
+
+# Déploie dans Azure App Service
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'AzureConnection'
+    appType: 'webApp'
+    appName: '<nom-de-ton-app-service>'
+    package: '$(build.artifactStagingDirectory)/**/*.zip'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
