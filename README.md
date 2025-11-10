@@ -47,7 +47,7 @@ Le projet utilise PostreSQL pour stocker les données.
 
 ## Liens utiles
 - **Dépôt GitHub** : ([Lien vers le dépôt GitHub](https://github.com/YannisUsmb/SAE05.A.08_Astralis))
-- **Azure DevOps** : ([Lien vers Azure DevOps](https://portal.azure.com/#@univ-smb.fr/resource/subscriptions/9a151e6e-641a-4722-a32f-a55c41e2c28b/resourcegroups/SAE_5.01_Astralis/overview))
+- **Azure DevOps** : ([Lien vers Azure DevOps](https://dev.azure.com/SAE501Astralis/))
 
 ## Aide
 Pour toute question ou assistance, n'hésitez pas à contacter l'un des contributeurs ci-dessus.
