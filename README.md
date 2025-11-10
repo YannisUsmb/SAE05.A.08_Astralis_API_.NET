@@ -1,4 +1,4 @@
-# SAÉ S5.A.01 - Développement avancé | Astralis. test
+# SAÉ S5.A.01 - Développement avancé | Astralis.
 
 ## Contributeurs
 - **BARRIER Florian** : Product Owner ([GitHub](https://github.com/barriefl))
