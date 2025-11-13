@@ -1,0 +1,20 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace Astralis_API.Models.EntityFramework
+{
+    [Table("t_e_phoneprefix_php")]
+    public class PhonePrefix
+    {
+        [Key]
+        [Column("php_id")]
+        public int Id { get; set; }
+
+        [Column("php_label")]
+        [Required(ErrorMessage = "The phone prefix label is required.")]
+        [StringLength(7, ErrorMessage = "The phone prefix label length must not be over 7 characters.")]
+        public String Label { get; set; }
+
+        [InverseProperty(nameof(Country.PhonePrefix))]
+        public virtual ICollection<Country> Countries { get; set; } = null!;
+    }
+}
