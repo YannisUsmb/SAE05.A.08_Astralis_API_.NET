@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Astralis_API.Models.EntityFramework;
 
 namespace Astralis_API.Models.EntityFramework
 {
