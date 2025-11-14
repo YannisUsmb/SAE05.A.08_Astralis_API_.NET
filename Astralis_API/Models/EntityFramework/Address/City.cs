@@ -24,10 +24,10 @@ namespace Astralis_API.Models.EntityFramework
         public string PostCode { get; set; } = null!;
         
         [Column("cit_latitude", TypeName ="NUMERIC(10,7)")]
-        public double Latitude { get; set; }
+        public decimal Latitude { get; set; }
 
         [Column("cit_longitude", TypeName ="NUMERIC(10,7)")]
-        public double Longitude { get; set; }
+        public decimal Longitude { get; set; }
 
         [ForeignKey(nameof(CountryId))]
         [InverseProperty(nameof(Country.Cities))]

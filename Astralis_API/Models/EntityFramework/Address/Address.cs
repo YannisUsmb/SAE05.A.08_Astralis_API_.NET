@@ -29,10 +29,10 @@ namespace Astralis_API.Models.EntityFramework
 
 
         [InverseProperty(nameof(User.InvoicingAddressNavigation))]
-        public virtual ICollection<User> InvoicingAddress { get; set; } = new List<User>();
+        public virtual ICollection<User> InvoicingAddressUsers { get; set; } = new List<User>();
 
         [InverseProperty(nameof(User.DeliveryAddressNavigation))]
-        public virtual ICollection<User> DeliveryAddress { get; set; } = new List<User>();
+        public virtual ICollection<User> DeliveryAddressUsers { get; set; } = new List<User>();
 
     }
 }
