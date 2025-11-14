@@ -8,21 +8,21 @@ namespace Astralis_API.Models.EntityFramework
         [Key]
         [Column("cou_id")]
         public int Id { get; set; }
-        
-        [Required(ErrorMessage = "The phone prefix ID is required.")]
+
         [Column("php_id")]
+        [Required(ErrorMessage = "The phone prefix ID is required.")]
         public int PhonePrefixId { get; set; }
 
         [Column("cou_name")]
         [Required(ErrorMessage = "The country name is required.")]
         [StringLength(80, ErrorMessage = "The country name cannot be longer than 80 characters.")]
-        public String Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Countries))]
         public virtual PhonePrefix? PhonePrefix { get; set; }
         
         [InverseProperty(nameof(City.Country))]
-        public virtual ICollection<Country> Cities { get; set; } = null!;
+        public virtual ICollection<City> Cities { get; set; } = new List<City>();
     }
 }

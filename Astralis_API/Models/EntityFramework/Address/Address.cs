@@ -16,16 +16,23 @@ namespace Astralis_API.Models.EntityFramework
         [Column("add_streetnumber")]
         [Required(ErrorMessage = "The street number is required.")]
         [StringLength(15, ErrorMessage = "The street number cannot be longer than 15 characters.")]
-        public String StreetNumber { get; set; } = null!;
+        public string StreetNumber { get; set; } = null!;
 
         [Column("add_streetaddress")]
         [Required(ErrorMessage = "The street address is required.")]
         [StringLength(200, ErrorMessage = "The street address cannot be longer than 200 characters.")]
-        public String StreetAddress { get; set; } = null!;
+        public string StreetAddress { get; set; } = null!;
 
         [ForeignKey(nameof(CityId))]
         [InverseProperty(nameof(City.Addresses))]
-        public virtual City? City { get; set; }
+        public virtual City City { get; set; } = null!;
+
+
+        [InverseProperty(nameof(User.InvoicingAddress))]
+        public virtual ICollection<User> InvoicingAddress { get; set; } = new List<User>();
+
+        [InverseProperty(nameof(User.DeliveryAddress))]
+        public virtual ICollection<User> DeliveryAddress { get; set; } = new List<User>();
 
     }
 }
