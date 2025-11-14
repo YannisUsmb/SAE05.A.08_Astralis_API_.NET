@@ -12,7 +12,6 @@ Astralis est une application regroupant plusieurs bases de données dédiées au
 ## Technologies utilisées
 - Back-end : C# .NET
 - Base de données : PostgreSQL
-- Front-end : Blazor (HTML, CSS et C#)
 
 ## Structure du projet
 Le projet est structuré comme suit :
@@ -29,16 +28,14 @@ Le projet est structuré comme suit :
             - `/Repository`
             - `appsettings.json`
             - `Program.cs`
-    - `/Astralis_BlazorApp`
   
 ## Dépendances du projet (Packages NuGet)
-1. API
+- API
    - AutoMapper.Extensions.Microsoft.DependencyInjection (12.0.1)
    - Microsoft.EntityFrameworkCore.Design (8.0.11)
    - Microsoft.EntityFrameworkCore.Tools (8.0.11)
    - Npgsql.EntityFrameworkCore.PostgreSQL (8.0.11)
    - Swashbuckle.AspNetCore (6.6.2)
-2. Blazor
 
 ## Base de données
 Le projet utilise PostreSQL pour stocker les données.
