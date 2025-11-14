@@ -20,7 +20,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Countries))]
-        public virtual PhonePrefix? PhonePrefix { get; set; }
+        public virtual PhonePrefix? PhonePrefixNavigation { get; set; }
         
         [InverseProperty(nameof(City.Country))]
         public virtual ICollection<City> Cities { get; set; } = new List<City>();

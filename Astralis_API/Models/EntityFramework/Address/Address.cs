@@ -25,7 +25,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(CityId))]
         [InverseProperty(nameof(City.Addresses))]
-        public virtual City City { get; set; } = null!;
+        public virtual City CityNavigation { get; set; } = null!;
 
 
         [InverseProperty(nameof(User.InvoicingAddress))]
