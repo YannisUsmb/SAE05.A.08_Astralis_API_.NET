@@ -33,7 +33,7 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(Country.Cities))]
         public virtual Country CountryNavigation { get; set; } = null!;
 
-        [InverseProperty(nameof(Address.City))]
+        [InverseProperty(nameof(Address.CityNavigation))]
         public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 
     }

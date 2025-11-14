@@ -28,10 +28,10 @@ namespace Astralis_API.Models.EntityFramework
         public virtual City CityNavigation { get; set; } = null!;
 
 
-        [InverseProperty(nameof(User.InvoicingAddress))]
+        [InverseProperty(nameof(User.InvoicingAddressNavigation))]
         public virtual ICollection<User> InvoicingAddress { get; set; } = new List<User>();
 
-        [InverseProperty(nameof(User.DeliveryAddress))]
+        [InverseProperty(nameof(User.DeliveryAddressNavigation))]
         public virtual ICollection<User> DeliveryAddress { get; set; } = new List<User>();
 
     }
