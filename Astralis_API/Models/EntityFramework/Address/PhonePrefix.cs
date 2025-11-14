@@ -11,7 +11,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("php_label")]
         [Required(ErrorMessage = "The phone prefix label is required.")]
-        [StringLength(7, ErrorMessage = "The phone prefix label length must not be over 7 characters.")]
+        [StringLength(7, ErrorMessage = "The phone prefix label cannot be longer than 7 characters.")]
         public String Label { get; set; }
 
         [InverseProperty(nameof(Country.PhonePrefix))]
