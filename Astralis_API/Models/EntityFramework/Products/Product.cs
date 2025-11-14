@@ -35,11 +35,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(ProductCategoryId))]
         [InverseProperty(nameof(ProductCategory.Products))]
-        public virtual ProductCategory ProductCategory { get; set; } = null!;
+        public virtual ProductCategory ProductCategoryNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Products))]
-        public virtual User User { get; set; } = null!;
+        public virtual User UserNavigation { get; set; } = null!;
 
         [InverseProperty(nameof(Cart.Product))]
         public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();

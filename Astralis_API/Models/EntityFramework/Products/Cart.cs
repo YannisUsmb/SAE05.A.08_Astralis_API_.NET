@@ -16,9 +16,9 @@ namespace Astralis_API.Models.EntityFramework
         public int ProductId { get; set; }
 
         [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; } = null!;
+        public virtual User UserNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(ProductId))]
-        public virtual Product Product { get; set; } = null!;
+        public virtual Product ProductNavigation { get; set; } = null!;
     }
 }
