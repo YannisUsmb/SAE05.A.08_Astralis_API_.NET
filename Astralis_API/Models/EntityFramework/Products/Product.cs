@@ -41,8 +41,8 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(User.Products))]
         public virtual User UserNavigation { get; set; } = null!;
 
-        [InverseProperty(nameof(Cart.ProductNavigation))]
-        public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+        [InverseProperty(nameof(CartItem.ProductNavigation))]
+        public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
         [InverseProperty(nameof(OrderDetail.ProductNavigation))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
