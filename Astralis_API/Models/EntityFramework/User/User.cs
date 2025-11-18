@@ -1,4 +1,5 @@
 ﻿using Astralis_API.Models.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,7 +22,8 @@ namespace Astralis_API.Models.EntityFramework
         public int? InvoicingId { get; set; }
 
         [Column("uro_id")]
-        public int? UserRoleId { get; set; }
+        [Required(ErrorMessage = "The user role is required.")]
+        public int UserRoleId { get; set; }
 
         [Column("usr_lastname")]
         [Required(ErrorMessage = "The user lastname is required.")]
@@ -35,11 +37,13 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_email")]
         [Required(ErrorMessage = "The user email is required.")]
-        [StringLength(250, ErrorMessage = "The user  cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The user email cannot be longer than 250 caracters.")]
+        [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; } = null!;
 
         [Column("usr_phone")]
         [StringLength(20, ErrorMessage = "The user phone cannot be longer than 20 caracters.")]
+        [Phone(ErrorMessage = "Invalid phone number format.")]
         public string? Phone { get; set; }
 
         [Column("usr_pseudo")]
@@ -52,7 +56,8 @@ namespace Astralis_API.Models.EntityFramework
         public string Password { get; set; } = null!;
 
         [Column("usr_inscriptiondate")]
-        public DateTime? InscriptionDate { get; set; } = DateTime.UtcNow;
+        [Required(ErrorMessage = "The user Inscription date is required.")]
+        public DateTime InscriptionDate { get; set; } = DateTime.UtcNow;
 
         [Column("usr_gender")]
         public char? Gender { get; set; }
@@ -61,8 +66,9 @@ namespace Astralis_API.Models.EntityFramework
         [Column("usr_ispremium")]
         public bool IsPremium { get; set; }
 
+        [Required(ErrorMessage = "The user multi-factor authentication status is required.")]
         [Column("usr_multifactorauthentification")]
-        public bool? MultiFactorAuthentification { get; set; }
+        public bool MultiFactorAuthentification { get; set; }
 
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Users))]
