@@ -30,11 +30,13 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("cmd_pdfname")]
         [Required(ErrorMessage = "The name of the PDF is required.")]
-        public string FileName { get; set; } = null!;
+        [StringLength(255, ErrorMessage = "The name of the PDF cannot be longer than 255 characters.")]
+        public string PdfName { get; set; } = null!;
 
         [Column("cmd_pdfpath")]
         [Required(ErrorMessage = "The path of the PDF is required.")]
-        public string FilePath { get; set; } = null!;
+        [StringLength(255, ErrorMessage = "The path of the PDF cannot be longer than 255 characters.")]
+        public string PdfPath { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Commands))]
