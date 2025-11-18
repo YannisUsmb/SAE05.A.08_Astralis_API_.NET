@@ -40,7 +40,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_phone")]
         [StringLength(20, ErrorMessage = "The user phone cannot be longer than 20 caracters.")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [Column("usr_pseudo")]
         [Required(ErrorMessage = "The user pseudo is required.")]
@@ -52,16 +52,17 @@ namespace Astralis_API.Models.EntityFramework
         public string Password { get; set; } = null!;
 
         [Column("usr_inscriptiondate")]
-        public DateTime InscriptionDate { get; set; } = DateTime.UtcNow;
+        public DateTime? InscriptionDate { get; set; } = DateTime.UtcNow;
 
         [Column("usr_gender")]
-        public char Gender { get; set; }
-
+        public char? Gender { get; set; }
+        
+        [Required(ErrorMessage = "The user premium status is required.")]
         [Column("usr_ispremium")]
         public bool IsPremium { get; set; }
 
         [Column("usr_multifactorauthentification")]
-        public bool MultiFactorAuthentification { get; set; }
+        public bool? MultiFactorAuthentification { get; set; }
 
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Users))]
