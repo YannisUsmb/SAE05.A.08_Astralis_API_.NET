@@ -12,9 +12,11 @@ namespace Astralis_API.Models.EntityFramework
         public int UserId { get; set; }
 
         [ForeignKey(nameof(EventId))]
-        public virtual Event Event { get; set; } = null!;
+        [InverseProperty(nameof(Event.EventInterests))]
+        public virtual Event EventNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; } = null!;
+        [InverseProperty(nameof(User.EventInterests))]
+        public virtual User UserNavigation { get; set; } = null!;
     }
 }

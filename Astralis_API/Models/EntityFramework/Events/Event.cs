@@ -45,13 +45,13 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(EventTypeId))]
         [InverseProperty(nameof(EventType.Events))]
-        public virtual EventType EventType { get; set; } = null!;
+        public virtual EventType EventTypeNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
-        [InverseProperty(nameof(User.CreatedEvents))]
-        public virtual User User { get; set; } = null!;
+        [InverseProperty(nameof(User.Events))]
+        public virtual User UserNavigation { get; set; } = null!;
 
-        [InverseProperty(nameof(EventInterest.Event))]
+        [InverseProperty(nameof(EventInterest.EventNavigation))]
         public virtual ICollection<EventInterest> EventInterests { get; set; } = new List<EventInterest>();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

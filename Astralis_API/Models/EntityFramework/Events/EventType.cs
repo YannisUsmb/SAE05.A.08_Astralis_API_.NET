@@ -19,7 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
 
-        [InverseProperty(nameof(Event.EventType))]
+        [InverseProperty(nameof(Event.EventTypeNavigation))]
         public virtual ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }
