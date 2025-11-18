@@ -18,6 +18,7 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(200, ErrorMessage = "The label cannot be longer than 200 characters.")]
         public string? Description { get; set; } = null;
 
+
         [InverseProperty(nameof(Asteroid.OrbitalClassNavigation))]
         public virtual ICollection<Asteroid> Asteroids { get; set; } = new List<Asteroid>();
     }

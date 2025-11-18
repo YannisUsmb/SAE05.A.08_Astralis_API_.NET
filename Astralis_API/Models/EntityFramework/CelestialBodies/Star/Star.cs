@@ -45,6 +45,11 @@ namespace Astralis_API.Models.EntityFramework
         [Column("sta_temperature", TypeName = "NUMERIC(20,15)")]
         public decimal? Temperature { get; set; }
 
+
+        [ForeignKey(nameof(CelestialBodyId))]
+        [InverseProperty(nameof(CelestialBody.StarNavigation))]
+        public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
+
         [ForeignKey(nameof(SpectralClassId))]
         [InverseProperty(nameof(SpectralClassNavigation.Stars))]
         public virtual SpectralClass SpectralClassNavigation { get; set; } = null!;

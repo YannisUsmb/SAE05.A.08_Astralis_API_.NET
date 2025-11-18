@@ -52,6 +52,7 @@ namespace Astralis_API.Models.EntityFramework
         [Column("ast_inclination", TypeName = "NUMERIC(15,12)")]
         public decimal? Inclination { get; set; }
 
+
         [ForeignKey(nameof(OrbitalClassId))]
         [InverseProperty(nameof(OrbitalClassNavigation.Asteroids))]
         public virtual OrbitalClass OrbitalClassNavigation { get; set; } = null!;

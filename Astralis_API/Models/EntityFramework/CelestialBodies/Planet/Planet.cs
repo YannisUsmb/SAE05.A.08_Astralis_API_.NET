@@ -10,35 +10,35 @@ namespace Astralis_API.Models.EntityFramework
         [Column("pla_id")]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "The planet type id is required")]
-        [Column("plt_id")]
-        public int PlanetTypeId { get; set; }
-
-        [Required(ErrorMessage = "The detection method id is required")]
-        [Column("dem_id")]
-        public int DetectionMethodId { get; set; }
-
-        [Required(ErrorMessage = "The celestial body id is required")]
         [Column("ceb_id")]
+        [Required(ErrorMessage = "The celestial body id is required")]
         public int CelestialBodyId { get; set; }
 
+        [Column("plt_id")]
+        [Required(ErrorMessage = "The planet type id is required")]
+        public int PlanetTypeId { get; set; }
+
+        [Column("dem_id")]
+        [Required(ErrorMessage = "The detection method id is required")]
+        public int DetectionMethodId { get; set; }
+
         [Column("pla_distance")]
-        [StringLength(10)]
+        [StringLength(10, ErrorMessage = "The distance cannot be longer than 10 characters.")]
         public string? Distance { get; set; }
 
         [Column("pla_discoveryyear")]
         public DateTime? DiscoveryYear { get; set; }
 
         [Column("pla_mass")]
-        [StringLength(20)]
+        [StringLength(20, ErrorMessage = "The mass cannot be longer than 20 characters.")]
         public string? Mass { get; set; }
 
         [Column("pla_radius")]
-        [StringLength(10)]
+        [StringLength(10, ErrorMessage = "The radius cannot be longer than 10 characters.")]
         public string? Radius { get; set; }
 
         [Column("pla_temperature")]
-        [StringLength(15)]
+        [StringLength(15, ErrorMessage = "The temperature cannot be longer than 15 characters.")]
         public string? Temperature { get; set; }
 
         [Column("pla_orbitalperiod", TypeName = "NUMERIC(14,12)")]
@@ -51,17 +51,20 @@ namespace Astralis_API.Models.EntityFramework
         public decimal? StellarMagnitude { get; set; }
 
         [Column("pla_hoststartemperature")]
-        [StringLength(15)]
+        [StringLength(15, ErrorMessage = "The host star temperature cannot be longer than 15 characters.")]
         public string? HostStarTemperature { get; set; }
 
         [Column("pla_hoststarmass")]
-        [StringLength(15)]
+        [StringLength(15, ErrorMessage = "The host stat mass cannot be longer than 15 characters.")]
         public string? HostStarMass { get; set; }
 
         [Column("pla_remark")]
-        [StringLength(250)]
+        [StringLength(250, ErrorMessage = "The remark cannot be longer than 250 characters.")]
         public string? Remark { get; set; }
 
+        [ForeignKey(nameof(CelestialBodyId))]
+        [InverseProperty(nameof(CelestialBody.PlanetNavigation))]
+        public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(PlanetTypeId))]
         [InverseProperty(nameof(PlanetType.Planets))]
@@ -70,5 +73,8 @@ namespace Astralis_API.Models.EntityFramework
         [ForeignKey(nameof(DetectionMethodId))]
         [InverseProperty(nameof(DetectionMethod.Planets))]
         public virtual DetectionMethod? DetectionMethodNavigation { get; set; }
+
+        [InverseProperty(nameof(Satellite.PlanetNavigation))]
+        public virtual ICollection<Satellite> Satellites { get; set; } = new List<Satellite>();
     }
 }
