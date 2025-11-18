@@ -41,10 +41,10 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(User.Products))]
         public virtual User UserNavigation { get; set; } = null!;
 
-        [InverseProperty(nameof(Cart.Product))]
+        [InverseProperty(nameof(Cart.ProductNavigation))]
         public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
-        [InverseProperty(nameof(OrderDetail.Product))]
+        [InverseProperty(nameof(OrderDetail.ProductNavigation))]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

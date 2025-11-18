@@ -19,7 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(300, ErrorMessage = "The product category description length must not be over 300 characters.")]
         public string? Description { get; set; }
 
-        [InverseProperty(nameof(Product.ProductCategory))]
+        [InverseProperty(nameof(Product.ProductCategoryNavigation))]
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

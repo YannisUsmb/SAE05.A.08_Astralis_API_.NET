@@ -16,6 +16,6 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [InverseProperty(nameof(Command.CommandStatusNavigation))]
-        public virtual ICollection<Command> CommandsNavigation { get; set; } = new List<Command>();
+        public virtual ICollection<Command> Commands { get; set; } = new List<Command>();
     }
 }
