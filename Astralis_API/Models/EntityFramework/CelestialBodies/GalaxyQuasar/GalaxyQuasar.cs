@@ -37,7 +37,6 @@ namespace Astralis_API.Models.EntityFramework
         [Column("gaq_mjdobs")]
         public int? ModifiedJulianDateObservation { get; set; }
 
-
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.GalaxyQuasarNavigation))]
         public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
