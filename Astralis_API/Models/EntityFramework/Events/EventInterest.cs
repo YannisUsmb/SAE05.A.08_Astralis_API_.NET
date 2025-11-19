@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_eventinterest_evi")]
+    [PrimaryKey(nameof(EventId), nameof(UserId))]
     public class EventInterest
     {
         [Column("eve_id")]
@@ -12,9 +14,11 @@ namespace Astralis_API.Models.EntityFramework
         public int UserId { get; set; }
 
         [ForeignKey(nameof(EventId))]
-        public virtual Event Event { get; set; } = null!;
+        [InverseProperty(nameof(Event.EventInterests))]
+        public virtual Event EventNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; } = null!;
+        [InverseProperty(nameof(User.EventInterests))]
+        public virtual User UserNavigation { get; set; } = null!;
     }
 }
