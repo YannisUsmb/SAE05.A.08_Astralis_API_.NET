@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_e_city_cit")]
@@ -22,11 +23,11 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The postcode is required.")]
         [StringLength(20, ErrorMessage = "The postcode cannot be longer than 20 characters.")]
         public string PostCode { get; set; } = null!;
-        
-        [Column("cit_latitude", TypeName ="NUMERIC(10,7)")]
+
+        [Column("cit_latitude", TypeName = "NUMERIC(10,7)")]
         public decimal Latitude { get; set; }
 
-        [Column("cit_longitude", TypeName ="NUMERIC(10,7)")]
+        [Column("cit_longitude", TypeName = "NUMERIC(10,7)")]
         public decimal Longitude { get; set; }
 
         [ForeignKey(nameof(CountryId))]

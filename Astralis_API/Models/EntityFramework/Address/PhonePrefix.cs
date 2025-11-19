@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_e_phoneprefix_php")]
@@ -16,7 +17,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(Country.PhonePrefixNavigation))]
         public virtual ICollection<Country> Countries { get; set; } = new List<Country>();
-        
+
         [InverseProperty(nameof(User.PhonePrefixNavigation))]
         public virtual ICollection<User> Users { get; set; } = new List<User>();
     }
