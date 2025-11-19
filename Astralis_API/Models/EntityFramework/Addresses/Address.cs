@@ -9,7 +9,7 @@ namespace Astralis_API.Models.EntityFramework
         [Key]
         [Column("add_id")]
         public int Id { get; set; }
-                
+
         [Column("cit_id")]
         [Required(ErrorMessage = "The city ID is required.")]
         public int CityId { get; set; }
