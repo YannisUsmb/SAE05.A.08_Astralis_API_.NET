@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_e_address_add")]
@@ -33,6 +34,5 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(User.DeliveryAddressNavigation))]
         public virtual ICollection<User> DeliveryAddressUsers { get; set; } = new List<User>();
-
     }
 }
