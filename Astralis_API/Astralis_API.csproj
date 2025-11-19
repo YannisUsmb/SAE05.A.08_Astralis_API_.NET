@@ -25,7 +25,6 @@
     <Folder Include="Models\DTO\" />
     <Folder Include="Models\DataManager\" />
     <Folder Include="Models\Mapper\" />
-    <Folder Include="Models\Repository\" />
   </ItemGroup>
 
 </Project>
