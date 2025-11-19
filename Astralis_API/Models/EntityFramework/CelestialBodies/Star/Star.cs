@@ -19,7 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         public int SpectralClassId { get; set; }
 
         [Column("sta_designation")]
-        [StringLength(10, ErrorMessage = "The designation cannot be longer than 10 characters.")]
+        [StringLength(10, ErrorMessage = "The designation cannot be longer than 10 caracters.")]
         public string? Designation { get; set; }
 
         [Column("sta_approvaldate")]

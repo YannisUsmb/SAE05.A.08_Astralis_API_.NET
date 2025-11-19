@@ -12,7 +12,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("plt_label")]
         [Required(ErrorMessage = "The label is required")]
-        [StringLength(30, ErrorMessage = "The label cannot be longer than 30 characters.")]
+        [StringLength(30, ErrorMessage = "The label cannot be longer than 30 caracters.")]
         public string Label { get; set; } = null!;
 
 

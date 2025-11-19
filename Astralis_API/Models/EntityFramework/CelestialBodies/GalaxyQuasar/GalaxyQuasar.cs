@@ -11,15 +11,15 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body id is required")]
+        [Required(ErrorMessage = "The celestial body ID is required")]
         public int CelestialBodyId { get; set; }
 
         [Column("gqc_id")]
-        [Required(ErrorMessage = "The galaxy/quasar class id is required")]
+        [Required(ErrorMessage = "The galaxy/quasar class ID is required")]
         public int GalaxyQuasarClassId { get; set; }
 
         [Column("gaq_reference")]
-        [StringLength(100, ErrorMessage = "The reference cannot be longer than 100 characters.")]
+        [StringLength(100, ErrorMessage = "The reference cannot be longer than 100 caracters.")]
         public string? Reference { get; set; }
 
         [Column("gaq_rightascension", TypeName = "NUMERIC(10,6)")]
@@ -39,10 +39,11 @@ namespace Astralis_API.Models.EntityFramework
 
 
         [ForeignKey(nameof(CelestialBodyId))]
+        [InverseProperty(nameof(CelestialBody.GalaxyQuasarNavigation))]
         public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(GalaxyQuasarClassId))]
-        [InverseProperty(GalaxyQuasarClass.GalaxiesQuasars)]
-        public virtual GalaxyQuasarClass? GalaxyQuasarClassNavigation { get; set; }
+        [InverseProperty(nameof(GalaxyQuasarClass.GalaxiesQuasars))]
+        public virtual GalaxyQuasarClass GalaxyQuasarClassNavigation { get; set; } = null!;
     }
 }

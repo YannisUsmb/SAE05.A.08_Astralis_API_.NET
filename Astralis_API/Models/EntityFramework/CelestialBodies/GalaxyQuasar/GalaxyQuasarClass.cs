@@ -12,7 +12,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("gqc_label")]
         [Required(ErrorMessage = "The label is required")]
-        [StringLength(20, ErrorMessage = "The label cannot be longer than 20 characters.")]
+        [StringLength(20, ErrorMessage = "The label cannot be longer than 20 caracters.")]
         public string Label { get; set; } = null!;
 
 

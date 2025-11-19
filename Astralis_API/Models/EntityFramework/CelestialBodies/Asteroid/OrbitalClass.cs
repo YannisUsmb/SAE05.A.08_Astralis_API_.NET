@@ -15,7 +15,7 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [Column("oct_description")]
-        [StringLength(200, ErrorMessage = "The label cannot be longer than 200 characters.")]
+        [StringLength(200, ErrorMessage = "The label cannot be longer than 200 caracters.")]
         public string? Description { get; set; } = null;
 
 

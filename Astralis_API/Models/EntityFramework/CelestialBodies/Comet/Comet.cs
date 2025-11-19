@@ -11,7 +11,7 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body id is required")]
+        [Required(ErrorMessage = "The celestial body ID is required")]
         public int CelestialBodyId { get; set; }
 
         [Column("cmt_orbitaleccentricity", TypeName = "NUMERIC(6,5)")]
@@ -36,12 +36,12 @@ namespace Astralis_API.Models.EntityFramework
         public decimal? MinimumOrbitIntersectionDistanceAU { get; set; }
 
         [Column("cmt_ref")]
-        [StringLength(250, ErrorMessage = "The reference cannot be longer than 250 characters.")]
+        [StringLength(250, ErrorMessage = "The reference cannot be longer than 250 caracters.")]
         public string? Reference { get; set; }
 
 
         [ForeignKey(nameof(CelestialBodyId))]
-        [InverseProperty(nameof(CelestialBody.Comet))]
-        public virtual CelestialBody CelestialBodyNavigation { get; set; }
+        [InverseProperty(nameof(CelestialBody.CometNavigation))]
+        public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
     }
 }
