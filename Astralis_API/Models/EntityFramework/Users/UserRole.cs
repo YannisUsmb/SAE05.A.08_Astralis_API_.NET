@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("uro_label")]
-        [Required(ErrorMessage = "The user role label is required.")]
-        [StringLength(50, ErrorMessage = "The user role label cannot be longer than 50 caracters.")]
+        [Required(ErrorMessage = "The is required.")]
+        [StringLength(50, ErrorMessage = "The label cannot be longer than 50 caracters.")]
         public string Label { get; set; } = null!;
 
         [InverseProperty(nameof(User.UserRoleNavigation))]
-        public virtual ICollection<User> Users { get; set; } = null!;
+        public virtual ICollection<User> Users { get; set; } = new List<User>();
     }
 }

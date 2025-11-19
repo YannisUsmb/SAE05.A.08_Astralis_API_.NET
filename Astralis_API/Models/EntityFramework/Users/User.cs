@@ -26,49 +26,49 @@ namespace Astralis_API.Models.EntityFramework
         public int UserRoleId { get; set; }
 
         [Column("usr_lastname")]
-        [Required(ErrorMessage = "The user lastname is required.")]
-        [StringLength(100, ErrorMessage = "The user lastname cannot be longer than 100 caracters.")]
+        [Required(ErrorMessage = "The lastname is required.")]
+        [StringLength(100, ErrorMessage = "The lastname cannot be longer than 100 caracters.")]
         public string LastName { get; set; } = null!;
 
         [Column("usr_firstname")]
-        [Required(ErrorMessage = "The user firstname is required.")]
-        [StringLength(100, ErrorMessage = "The user firstname cannot be longer than 100 caracters.")]
+        [Required(ErrorMessage = "The firstname is required.")]
+        [StringLength(100, ErrorMessage = "The firstname cannot be longer than 100 caracters.")]
         public string FirstName { get; set; } = null!;
 
         [Column("usr_email")]
-        [Required(ErrorMessage = "The user email is required.")]
+        [Required(ErrorMessage = "The email is required.")]
         [StringLength(250, ErrorMessage = "The user email cannot be longer than 250 caracters.")]
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; } = null!;
 
         [Column("usr_phone")]
-        [StringLength(20, ErrorMessage = "The user phone cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The phone number cannot be longer than 20 caracters.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
         public string? Phone { get; set; }
 
         [Column("usr_pseudo")]
-        [Required(ErrorMessage = "The user pseudonym is required.")]
-        [StringLength(50, ErrorMessage = "The user pseudonym cannot be longer than 50 caracters.")]
+        [Required(ErrorMessage = "The pseudonym is required.")]
+        [StringLength(50, ErrorMessage = "The pseudonym cannot be longer than 50 caracters.")]
         public string Pseudo { get; set; } = null!;
 
         [Column("usr_password", TypeName = "CHAR(256)")]
-        [Required(ErrorMessage = "The user password is required.")]
+        [Required(ErrorMessage = "The password is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
 
         [Column("usr_inscriptiondate")]
-        [Required(ErrorMessage = "The user inscription date is required.")]
+        [Required(ErrorMessage = "The inscription date is required.")]
         public DateOnly InscriptionDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         [Column("usr_gender")]
         public char? Gender { get; set; }
         
         [Column("usr_ispremium")]
-        [Required(ErrorMessage = "The user premium status is required.")]
+        [Required(ErrorMessage = "The premium status is required.")]
         public bool IsPremium { get; set; }
         
         [Column("usr_multifactorauthentification")]
-        [Required(ErrorMessage = "The user multi-factor authentication status is required.")]
+        [Required(ErrorMessage = "The multi-factor authentication status is required.")]
         public bool MultiFactorAuthentification { get; set; }
 
         [ForeignKey(nameof(PhonePrefixId))]

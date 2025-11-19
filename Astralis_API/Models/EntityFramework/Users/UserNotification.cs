@@ -17,7 +17,7 @@ namespace Astralis_API.Models.EntityFramework
         public int NotificationId { get; set; }
 
         [Column("uno_bymail")]
-        [Required(ErrorMessage = "The mail user notification status is required.")]
+        [Required(ErrorMessage = "The mail notification status is required.")]
         public bool ByMail { get; set; }
 
         [ForeignKey(nameof(UserId))]
