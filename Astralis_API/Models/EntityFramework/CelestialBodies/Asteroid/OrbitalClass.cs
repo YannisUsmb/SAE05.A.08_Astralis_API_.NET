@@ -11,13 +11,12 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("oct_label", TypeName = "CHAR(3)")]
-        [Required(ErrorMessage = "The label is required")]
+        [Required(ErrorMessage = "The label is required.")]
         public string Label { get; set; } = null!;
 
         [Column("oct_description")]
         [StringLength(200, ErrorMessage = "The label cannot be longer than 200 caracters.")]
         public string? Description { get; set; } = null;
-
 
         [InverseProperty(nameof(Asteroid.OrbitalClassNavigation))]
         public virtual ICollection<Asteroid> Asteroids { get; set; } = new List<Asteroid>();

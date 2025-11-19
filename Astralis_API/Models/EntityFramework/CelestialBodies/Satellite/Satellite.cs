@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body ID is required")]
+        [Required(ErrorMessage = "The celestial body ID is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("pla_id")]
-        [Required(ErrorMessage = "The planet ID is required")]
+        [Required(ErrorMessage = "The planet ID is required.")]
         public int PlanetId { get; set; }
 
         [Column("sat_gravity", TypeName = "NUMERIC(10,5)")]
@@ -26,7 +26,6 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("sat_density", TypeName = "NUMERIC(6,5)")]
         public decimal? Density { get; set; }
-
 
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.SatelliteNavigation))]

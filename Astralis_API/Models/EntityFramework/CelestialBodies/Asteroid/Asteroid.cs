@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body ID is required")]
+        [Required(ErrorMessage = "The celestial body ID is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("oct_id")]
-        [Required(ErrorMessage = "The orbital class ID is required")]
+        [Required(ErrorMessage = "The orbital class ID is required.")]
         public int OrbitalClassId { get; set; }
 
         [Column("ast_reference")]
@@ -51,7 +51,6 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("ast_inclination", TypeName = "NUMERIC(15,12)")]
         public decimal? Inclination { get; set; }
-
 
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.AsteroidNavigation))]

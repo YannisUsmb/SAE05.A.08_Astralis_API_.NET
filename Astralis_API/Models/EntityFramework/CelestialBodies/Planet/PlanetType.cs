@@ -11,10 +11,9 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("plt_label")]
-        [Required(ErrorMessage = "The label is required")]
+        [Required(ErrorMessage = "The label is required.")]
         [StringLength(30, ErrorMessage = "The label cannot be longer than 30 caracters.")]
         public string Label { get; set; } = null!;
-
 
         [InverseProperty(nameof(Planet.PlanetTypeNavigation))]
         public virtual ICollection<Planet> Planets { get; set; } = new List<Planet>();

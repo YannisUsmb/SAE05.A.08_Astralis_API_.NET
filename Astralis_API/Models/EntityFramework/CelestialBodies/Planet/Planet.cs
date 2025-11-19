@@ -11,15 +11,15 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body ID is required")]
+        [Required(ErrorMessage = "The celestial body ID is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("plt_id")]
-        [Required(ErrorMessage = "The planet type ID is required")]
+        [Required(ErrorMessage = "The planet type ID is required.")]
         public int PlanetTypeId { get; set; }
 
         [Column("dem_id")]
-        [Required(ErrorMessage = "The detection method ID is required")]
+        [Required(ErrorMessage = "The detection method ID is required.")]
         public int DetectionMethodId { get; set; }
 
         [Column("pla_distance")]

@@ -11,7 +11,7 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("cbt_id")]
-        [Required(ErrorMessage = "The celestial body type ID is required")]
+        [Required(ErrorMessage = "The celestial body type ID is required.")]
         public int CelestialBodyTypeId { get; set; }
 
         [Column("ceb_name")]
@@ -22,7 +22,6 @@ namespace Astralis_API.Models.EntityFramework
         [Column("ceb_alias")]
         [StringLength(100, ErrorMessage = "The alias cannot be longer than 100 caracters.")]
         public string? Alias { get; set; }
-
 
         [ForeignKey(nameof(CelestialBodyTypeId))]
         [InverseProperty(nameof(CelestialBodyType.CelestialBodies))]

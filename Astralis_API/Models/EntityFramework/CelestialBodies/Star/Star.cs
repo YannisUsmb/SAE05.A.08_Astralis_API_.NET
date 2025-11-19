@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body id is required")]
+        [Required(ErrorMessage = "The celestial body id is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("spc_id")]
-        [Required(ErrorMessage = "The spectral class id is required")]
+        [Required(ErrorMessage = "The spectral class id is required.")]
         public int SpectralClassId { get; set; }
 
         [Column("sta_designation")]
@@ -44,7 +44,6 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("sta_temperature", TypeName = "NUMERIC(20,15)")]
         public decimal? Temperature { get; set; }
-
 
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.StarNavigation))]

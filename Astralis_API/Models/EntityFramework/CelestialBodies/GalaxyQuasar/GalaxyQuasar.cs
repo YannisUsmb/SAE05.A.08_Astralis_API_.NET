@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body ID is required")]
+        [Required(ErrorMessage = "The celestial body ID is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("gqc_id")]
-        [Required(ErrorMessage = "The galaxy/quasar class ID is required")]
+        [Required(ErrorMessage = "The galaxy/quasar class ID is required.")]
         public int GalaxyQuasarClassId { get; set; }
 
         [Column("gaq_reference")]
@@ -36,7 +36,6 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("gaq_observationdate")]
         public int? ObservationYear { get; set; }
-
 
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.GalaxyQuasarNavigation))]
