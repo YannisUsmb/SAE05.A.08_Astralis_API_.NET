@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.Design;
 
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_eventinterest_evi")]
+    [PrimaryKey(nameof(EventId), nameof(UserId))]
     public class EventInterest
     {
         [Column("eve_id")]
