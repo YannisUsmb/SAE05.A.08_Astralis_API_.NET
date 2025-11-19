@@ -11,7 +11,7 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("uro_label")]
-        [Required(ErrorMessage = "The is required.")]
+        [Required(ErrorMessage = "The label is required.")]
         [StringLength(50, ErrorMessage = "The label cannot be longer than 50 caracters.")]
         public string Label { get; set; } = null!;
 
