@@ -39,7 +39,6 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(250, ErrorMessage = "The reference cannot be longer than 250 caracters.")]
         public string? Reference { get; set; }
 
-
         [ForeignKey(nameof(CelestialBodyId))]
         [InverseProperty(nameof(CelestialBody.CometNavigation))]
         public virtual CelestialBody CelestialBodyNavigation { get; set; } = null!;
