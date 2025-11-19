@@ -20,7 +20,7 @@ namespace Astralis_API.Models.EntityFramework
         public int? InvoicingId { get; set; }
 
         [Column("uro_id")]
-        [Required(ErrorMessage = "The user role is required.")]
+        [Required(ErrorMessage = "The user role ID is required.")]
         public int UserRoleId { get; set; }
 
         [Column("usr_lastname")]
