@@ -1,8 +1,6 @@
-﻿using Astralis_API.Models.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_e_user_usr")]
@@ -37,7 +35,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_email")]
         [Required(ErrorMessage = "The email is required.")]
-        [StringLength(250, ErrorMessage = "The user email cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The email cannot be longer than 250 caracters.")]
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; } = null!;
 
@@ -62,11 +60,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_gender")]
         public char? Gender { get; set; }
-        
+
         [Column("usr_ispremium")]
         [Required(ErrorMessage = "The premium status is required.")]
         public bool IsPremium { get; set; }
-        
+
         [Column("usr_multifactorauthentification")]
         [Required(ErrorMessage = "The multi-factor authentication status is required.")]
         public bool MultiFactorAuthentification { get; set; }
@@ -86,7 +84,6 @@ namespace Astralis_API.Models.EntityFramework
         [ForeignKey(nameof(UserRoleId))]
         [InverseProperty(nameof(UserRole.Users))]
         public virtual UserRole UserRoleNavigation { get; set; } = null!;
-
 
         [InverseProperty(nameof(CreditCard.UserNavigation))]
         public virtual ICollection<CreditCard> CreditCards { get; set; } = new List<CreditCard>();
@@ -129,6 +126,5 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(UserNotification.UserNavigation))]
         public virtual ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
-
     }
 }
