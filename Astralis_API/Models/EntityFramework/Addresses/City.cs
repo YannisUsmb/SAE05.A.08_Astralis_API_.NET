@@ -16,12 +16,12 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("cit_name")]
         [Required(ErrorMessage = "The name is required.")]
-        [StringLength(100, ErrorMessage = "The name cannot be longer than 100 characters.")]
+        [StringLength(100, ErrorMessage = "The name cannot be longer than 100 caracters.")]
         public string Name { get; set; } = null!;
 
         [Column("cit_postcode")]
         [Required(ErrorMessage = "The postcode is required.")]
-        [StringLength(20, ErrorMessage = "The postcode cannot be longer than 20 characters.")]
+        [StringLength(20, ErrorMessage = "The postcode cannot be longer than 20 caracters.")]
         public string PostCode { get; set; } = null!;
 
         [Column("cit_latitude", TypeName = "NUMERIC(10,7)")]
