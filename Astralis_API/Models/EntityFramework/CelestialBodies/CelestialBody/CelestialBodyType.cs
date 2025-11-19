@@ -17,7 +17,8 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("cbt_description")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "The description is required.")]
+        public string Description { get; set; } = null!;
 
         [InverseProperty(nameof(CelestialBody.CelestialBodyTypeNavigation))]
         public virtual ICollection<CelestialBody> CelestialBodies { get; set; } = new List<CelestialBody>();
