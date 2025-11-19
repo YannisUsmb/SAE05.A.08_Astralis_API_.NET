@@ -28,7 +28,6 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(City.Addresses))]
         public virtual City CityNavigation { get; set; } = null!;
 
-
         [InverseProperty(nameof(User.InvoicingAddressNavigation))]
         public virtual ICollection<User> InvoicingAddressUsers { get; set; } = new List<User>();
 
