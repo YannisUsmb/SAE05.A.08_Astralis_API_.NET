@@ -12,7 +12,6 @@ namespace Astralis_API.Models.EntityFramework
         [Column("usr_id")]
         public int UserId { get; set; }
 
-        [Key]
         [Column("not_id")]
         public int NotificationId { get; set; }
 
