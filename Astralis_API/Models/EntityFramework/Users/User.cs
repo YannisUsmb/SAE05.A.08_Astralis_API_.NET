@@ -47,8 +47,8 @@ namespace Astralis_API.Models.EntityFramework
         public string? Phone { get; set; }
 
         [Column("usr_pseudo")]
-        [Required(ErrorMessage = "The user pseudo is required.")]
-        [StringLength(50, ErrorMessage = "The user pseudo cannot be longer than 50 caracters.")]
+        [Required(ErrorMessage = "The user pseudonym is required.")]
+        [StringLength(50, ErrorMessage = "The user pseudonym cannot be longer than 50 caracters.")]
         public string Pseudo { get; set; } = null!;
 
         [Column("usr_password", TypeName = "CHAR(256)")]
@@ -57,17 +57,17 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_inscriptiondate")]
         [Required(ErrorMessage = "The user Inscription date is required.")]
-        public DateTime InscriptionDate { get; set; } = DateTime.UtcNow;
+        public DateOnly InscriptionDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         [Column("usr_gender")]
         public char? Gender { get; set; }
         
-        [Required(ErrorMessage = "The user premium status is required.")]
         [Column("usr_ispremium")]
+        [Required(ErrorMessage = "The user premium status is required.")]
         public bool IsPremium { get; set; }
-
-        [Required(ErrorMessage = "The user multi-factor authentication status is required.")]
+        
         [Column("usr_multifactorauthentification")]
+        [Required(ErrorMessage = "The user multi-factor authentication status is required.")]
         public bool MultiFactorAuthentification { get; set; }
 
         [ForeignKey(nameof(PhonePrefixId))]
@@ -84,7 +84,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(UserRoleId))]
         [InverseProperty(nameof(UserRole.Users))]
-        public virtual UserRole? UserRoleNavigation { get; set; }
+        public virtual UserRole UserRoleNavigation { get; set; } = null!;
 
 
         [InverseProperty(nameof(CreditCard.UserNavigation))]
