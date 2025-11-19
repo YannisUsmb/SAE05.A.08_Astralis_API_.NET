@@ -53,10 +53,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_password", TypeName = "CHAR(256)")]
         [Required(ErrorMessage = "The user password is required.")]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
 
         [Column("usr_inscriptiondate")]
-        [Required(ErrorMessage = "The user Inscription date is required.")]
+        [Required(ErrorMessage = "The user inscription date is required.")]
         public DateOnly InscriptionDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         [Column("usr_gender")]
