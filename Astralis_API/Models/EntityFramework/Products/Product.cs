@@ -27,7 +27,7 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
 
-        [Column("pro_price")]
+        [Column("pro_price", TypeName = "NUMERIC(6,2)")]
         [Required(ErrorMessage = "The price is required.")]
         [Range(0.01, 9999.99, ErrorMessage = "Price must be positive.")]
         [DataType(DataType.Currency)]

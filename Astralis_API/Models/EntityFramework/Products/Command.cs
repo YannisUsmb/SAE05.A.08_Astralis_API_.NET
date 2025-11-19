@@ -22,7 +22,7 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The date is required.")]
         public DateTime Date { get; set; }
 
-        [Column("cmd_total")]
+        [Column("cmd_total", TypeName = "NUMERIC(8,2)")]
         [Required(ErrorMessage = "The total amount is required.")]
         [DataType(DataType.Currency)]
         [Range(0, 999999.99, ErrorMessage = "Total must be positive.")]
