@@ -1,17 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.Design;
 
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_cartitem_cai")]
+    [PrimaryKey(nameof(UserId), nameof(ProductId))]
     public class CartItem
     {
         [Column("usr_id")]
-        [Required(ErrorMessage = "The user ID is required.")]
         public int UserId { get; set; }
 
         [Column("pro_id")]
-        [Required(ErrorMessage = "The product ID is required.")]
         public int ProductId { get; set; }
 
         [Column("cai_quantity")]

@@ -1,17 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_orderdetail_ord")]
+    [PrimaryKey(nameof(CommandId), nameof(ProductId))]
     public class OrderDetail
     {
         [Column("cmd_id")]
-        [Required(ErrorMessage = "The command ID is required.")]
         public int CommandId { get; set; }
 
         [Column("pro_id")]
-        [Required(ErrorMessage = "The product ID is required.")]
         public int ProductId { get; set; }
 
         [Column("ord_quantity")]
