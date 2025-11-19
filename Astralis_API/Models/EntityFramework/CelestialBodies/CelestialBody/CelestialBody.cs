@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("cbt_id")]
-        [Required(ErrorMessage = "The celestial body type ID is required")]
+        [Required(ErrorMessage = "The celestial body type ID is required.")]
         public int CelestialBodyTypeId { get; set; }
 
         [Column("ceb_name")]
-        [Required(ErrorMessage = "The name is required")]
+        [Required(ErrorMessage = "The name is required.")]
         [StringLength(100, ErrorMessage = "The name cannot be longer than 100 caracters.")]
         public string Name { get; set; } = null!;
 

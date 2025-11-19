@@ -34,8 +34,8 @@ namespace Astralis_API.Models.EntityFramework
         [Column("gaq_rmagnitude", TypeName = "NUMERIC(8,3)")]
         public decimal? RMagnitude { get; set; }
 
-        [Column("gaq_observationdate")]
-        public int? ObservationYear { get; set; }
+        [Column("gaq_mjdobs")]
+        public int? ModifiedJulianDateObservation { get; set; }
 
 
         [ForeignKey(nameof(CelestialBodyId))]

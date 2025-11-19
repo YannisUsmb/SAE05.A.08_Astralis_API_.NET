@@ -11,13 +11,14 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("cbt_label")]
-        [Required(ErrorMessage = "The label is required")]
+        [Required(ErrorMessage = "The label is required.")]
         [StringLength(50, ErrorMessage = "The label cannot be longer than 50 caracters.")]
         public string Label { get; set; } = null!;
 
         [Column("cbt_description")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "The description is required.")]
+        public string Description { get; set; } = null!;
 
 
         [InverseProperty(nameof(CelestialBody.CelestialBodyTypeNavigation))]
