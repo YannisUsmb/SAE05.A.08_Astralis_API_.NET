@@ -115,6 +115,9 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(Report.UserNavigation))]
         public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
 
+        [InverseProperty(nameof(Report.AdminNavigation))]
+        public virtual ICollection<Report> TreatedReports { get; set; } = new List<Report>();
+
         [InverseProperty(nameof(Discovery.UserNavigation))]
         public virtual ICollection<Discovery> Discoveries { get; set; } = new List<Discovery>();
 
