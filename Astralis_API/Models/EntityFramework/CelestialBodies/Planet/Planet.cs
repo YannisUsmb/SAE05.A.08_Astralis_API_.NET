@@ -23,22 +23,22 @@ namespace Astralis_API.Models.EntityFramework
         public int DetectionMethodId { get; set; }
 
         [Column("pla_distance")]
-        [StringLength(10, ErrorMessage = "The distance cannot be longer than 10 caracters.")]
+        [StringLength(10, ErrorMessage = "The distance cannot be longer than 10 characters.")]
         public string? Distance { get; set; }
 
         [Column("pla_discoveryyear")]
         public int? DiscoveryYear { get; set; }
 
         [Column("pla_mass")]
-        [StringLength(20, ErrorMessage = "The mass cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The mass cannot be longer than 20 characters.")]
         public string? Mass { get; set; }
 
         [Column("pla_radius")]
-        [StringLength(10, ErrorMessage = "The radius cannot be longer than 10 caracters.")]
+        [StringLength(10, ErrorMessage = "The radius cannot be longer than 10 characters.")]
         public string? Radius { get; set; }
 
         [Column("pla_temperature")]
-        [StringLength(15, ErrorMessage = "The temperature cannot be longer than 15 caracters.")]
+        [StringLength(15, ErrorMessage = "The temperature cannot be longer than 15 characters.")]
         public string? Temperature { get; set; }
 
         [Column("pla_orbitalperiod", TypeName = "NUMERIC(14,12)")]
@@ -51,15 +51,15 @@ namespace Astralis_API.Models.EntityFramework
         public decimal? StellarMagnitude { get; set; }
 
         [Column("pla_hoststartemperature")]
-        [StringLength(15, ErrorMessage = "The host star temperature cannot be longer than 15 caracters.")]
+        [StringLength(15, ErrorMessage = "The host star temperature cannot be longer than 15 characters.")]
         public string? HostStarTemperature { get; set; }
 
         [Column("pla_hoststarmass")]
-        [StringLength(15, ErrorMessage = "The host star mass cannot be longer than 15 caracters.")]
+        [StringLength(15, ErrorMessage = "The host star mass cannot be longer than 15 characters.")]
         public string? HostStarMass { get; set; }
 
         [Column("pla_remark")]
-        [StringLength(250, ErrorMessage = "The remark cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The remark cannot be longer than 250 characters.")]
         public string? Remark { get; set; }
 
         [ForeignKey(nameof(CelestialBodyId))]

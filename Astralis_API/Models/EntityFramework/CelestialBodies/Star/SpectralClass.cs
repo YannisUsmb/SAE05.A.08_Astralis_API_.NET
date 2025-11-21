@@ -12,12 +12,12 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("spc_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(10, ErrorMessage = "The label cannot be longer than 10 caracters.")]
+        [StringLength(10, ErrorMessage = "The label cannot be longer than 10 characters.")]
         public string Label { get; set; } = null!;
 
         [Column("spc_description")]
         [Required(ErrorMessage = "The description is required.")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
 
         [InverseProperty(nameof(Star.SpectralClassNavigation))]

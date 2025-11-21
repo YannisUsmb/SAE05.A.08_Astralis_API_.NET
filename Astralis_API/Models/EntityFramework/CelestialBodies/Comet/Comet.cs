@@ -36,7 +36,7 @@ namespace Astralis_API.Models.EntityFramework
         public decimal? MinimumOrbitIntersectionDistanceAU { get; set; }
 
         [Column("cmt_ref")]
-        [StringLength(250, ErrorMessage = "The reference cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The reference cannot be longer than 250 characters.")]
         public string? Reference { get; set; }
 
         [ForeignKey(nameof(CelestialBodyId))]

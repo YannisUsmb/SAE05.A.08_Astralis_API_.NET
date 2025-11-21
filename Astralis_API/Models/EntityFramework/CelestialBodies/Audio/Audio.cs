@@ -15,17 +15,17 @@ namespace Astralis_API.Models.EntityFramework
         public int CelestialBodyTypeId { get; set; }
 
         [Column("aud_title")]
-        [StringLength(50, ErrorMessage = "The title cannot be longer than 50 caracters.")]
+        [StringLength(50, ErrorMessage = "The title cannot be longer than 50 characters.")]
         [Required(ErrorMessage = "The title is required.")]
         public string Title { get; set; } = null!;
 
         [Column("aud_decription")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         [Required(ErrorMessage = "The description is required.")]
         public string Description { get; set; } = null!;
 
         [Column("aud_filepath")]
-        [StringLength(500, ErrorMessage = "The file path cannot be longer than 500 caracters.")]
+        [StringLength(500, ErrorMessage = "The file path cannot be longer than 500 characters.")]
         [Required(ErrorMessage = "The file path is required.")] 
         public string FilePath { get; set; } = null!;
 

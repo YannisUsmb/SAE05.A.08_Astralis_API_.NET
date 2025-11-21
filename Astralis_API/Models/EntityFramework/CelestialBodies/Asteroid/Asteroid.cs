@@ -19,7 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         public int OrbitalClassId { get; set; }
 
         [Column("ast_reference")]
-        [StringLength(20, ErrorMessage = "The reference cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The reference cannot be longer than 20 characters.")]
         public string? Reference { get; set; }
 
         [Column("ast_absolutemagnitude", TypeName = "NUMERIC(4,2)")]

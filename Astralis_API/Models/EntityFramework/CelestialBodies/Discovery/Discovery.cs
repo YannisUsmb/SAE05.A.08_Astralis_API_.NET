@@ -33,7 +33,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("dis_title")]
         [Required(ErrorMessage = "The title is required.")]
-        [StringLength(100, ErrorMessage = "The title cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The title cannot be longer than 100 characters.")]
         public string Title { get; set; } = null!;
 
         [ForeignKey(nameof(CelestialBodyId))]

@@ -12,11 +12,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("cbt_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(50, ErrorMessage = "The label cannot be longer than 50 caracters.")]
+        [StringLength(50, ErrorMessage = "The label cannot be longer than 50 characters.")]
         public string Label { get; set; } = null!;
 
         [Column("cbt_description")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         [Required(ErrorMessage = "The description is required.")]
         public string Description { get; set; } = null!;
 

@@ -16,11 +16,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("ceb_name")]
         [Required(ErrorMessage = "The name is required.")]
-        [StringLength(100, ErrorMessage = "The name cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The name cannot be longer than 100 characters.")]
         public string Name { get; set; } = null!;
 
         [Column("ceb_alias")]
-        [StringLength(100, ErrorMessage = "The alias cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The alias cannot be longer than 100 characters.")]
         public string? Alias { get; set; }
 
         [ForeignKey(nameof(CelestialBodyTypeId))]

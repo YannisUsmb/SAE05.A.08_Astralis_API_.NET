@@ -19,7 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         public int GalaxyQuasarClassId { get; set; }
 
         [Column("gaq_reference")]
-        [StringLength(100, ErrorMessage = "The reference cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The reference cannot be longer than 100 characters.")]
         public string? Reference { get; set; }
 
         [Column("gaq_rightascension", TypeName = "NUMERIC(10,6)")]

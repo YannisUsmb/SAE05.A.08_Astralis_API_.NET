@@ -12,12 +12,12 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("gqc_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(20, ErrorMessage = "The label cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The label cannot be longer than 20 characters.")]
         public string Label { get; set; } = null!;
 
         [Column("gqc_description")]
         [Required(ErrorMessage = "The description is required.")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string Description { get; set; } = null!;
 
         [InverseProperty(nameof(GalaxyQuasar.GalaxyQuasarClassNavigation))]

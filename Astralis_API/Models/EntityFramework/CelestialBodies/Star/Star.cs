@@ -18,18 +18,18 @@ namespace Astralis_API.Models.EntityFramework
         public int? SpectralClassId { get; set; }
 
         [Column("sta_designation")]
-        [StringLength(10, ErrorMessage = "The designation cannot be longer than 10 caracters.")]
+        [StringLength(10, ErrorMessage = "The designation cannot be longer than 10 characters.")]
         public string? Designation { get; set; }
 
         [Column("sta_approvaldate")]
         public DateOnly? ApprovalDate { get; set; }
 
         [Column("sta_constellation")]
-        [StringLength(25, ErrorMessage = "The constellation cannot be longer than 25 caracters.")]
+        [StringLength(25, ErrorMessage = "The constellation cannot be longer than 25 characters.")]
         public string? Constellation { get; set; }
 
         [Column("sta_bayerdesignation")]
-        [StringLength(30, ErrorMessage = "The bayer designation cannot be longer than 30 caracters.")]
+        [StringLength(30, ErrorMessage = "The bayer designation cannot be longer than 30 characters.")]
         public string? BayerDesignation { get; set; }
 
         [Column("sta_distance", TypeName = "NUMERIC(20,15)")]
