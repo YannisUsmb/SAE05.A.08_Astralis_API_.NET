@@ -52,7 +52,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_password", TypeName = "CHAR(256)")]
         [Required(ErrorMessage = "The password is required.")]
-        [DataType(DataType.Password)]
+        [StringLength(64)]
         public string Password { get; set; } = null!;
 
         [Column("usr_inscriptiondate")]
