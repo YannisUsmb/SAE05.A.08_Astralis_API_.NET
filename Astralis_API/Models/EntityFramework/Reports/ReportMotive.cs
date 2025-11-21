@@ -15,7 +15,7 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [Column("rem_description")]
-        [StringLength(300, ErrorMessage = "The descriptoin cannot be longer than 100 characters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 100 characters.")]
         public string? Description { get; set; }
 
         [InverseProperty(nameof(Report.ReportMotiveNavigation))]

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_articleinterest_ain")]
-    [PrimaryKey(nameof(UserId), nameof(ArticleId))]
+    [PrimaryKey(nameof(ArticleId), nameof(UserId))]
     public class ArticleInterest
     {
         [Column("art_id")]

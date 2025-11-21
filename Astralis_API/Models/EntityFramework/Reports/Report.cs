@@ -9,13 +9,13 @@ namespace Astralis_API.Models.EntityFramework
         [Column("rep_id")]
         public int Id { get; set; }
 
-        [Column("rem_id")]
-        [Required(ErrorMessage = "The report motive ID is required.")]
-        public int ReportMotiveId { get; set; }
-
         [Column("rst_id")]
         [Required(ErrorMessage = "The report status ID is required.")]
         public int ReportStatusId { get; set; }
+
+        [Column("rem_id")]
+        [Required(ErrorMessage = "The report motive ID is required.")]
+        public int ReportMotiveId { get; set; }
 
         [Column("com_id")]
         [Required(ErrorMessage = "The comment ID is required.")]
@@ -26,8 +26,7 @@ namespace Astralis_API.Models.EntityFramework
         public int UserId { get; set; }
 
         [Column("usr_adminid")]
-        [Required(ErrorMessage = "The admin user ID is required.")]
-        public int AdminId { get; set; }
+        public int? AdminId { get; set; }
 
         [Column("rep_description")]
         [Required(ErrorMessage = "The description is required.")]

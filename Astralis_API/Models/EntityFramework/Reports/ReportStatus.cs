@@ -16,6 +16,5 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(Report.ReportStatusNavigation))]
         public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
-
     }
 }

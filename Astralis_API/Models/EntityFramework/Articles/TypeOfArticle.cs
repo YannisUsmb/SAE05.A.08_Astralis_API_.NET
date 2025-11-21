@@ -7,11 +7,11 @@ namespace Astralis_API.Models.EntityFramework
     [PrimaryKey(nameof(ArticleTypeId), nameof(ArticleId))]
     public class TypeOfArticle
     {
-        [Column("art_id")]
-        public int ArticleId { get; set; }
-
         [Column("aty_id")]
         public int ArticleTypeId { get; set; }
+
+        [Column("art_id")]
+        public int ArticleId { get; set; }
 
         [ForeignKey(nameof(ArticleId))]
         [InverseProperty(nameof(Article.TypeOfArticles))]

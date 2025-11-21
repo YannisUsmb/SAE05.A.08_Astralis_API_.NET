@@ -9,16 +9,16 @@ namespace Astralis_API.Models.EntityFramework
         [Column("com_id")]
         public int Id { get; set; }
 
-        [Column("art_id")]
-        [Required(ErrorMessage = "The article ID is required.")]
-        public int ArticleId { get; set; }
-
         [Column("usr_id")]
         [Required(ErrorMessage = "The user ID is required.")]
         public int UserId { get; set; }
 
+        [Column("art_id")]
+        [Required(ErrorMessage = "The article ID is required.")]
+        public int ArticleId { get; set; }
+
         [Column("com_idreply")]
-        public int RepliesToId { get; set; }
+        public int? RepliesToId { get; set; }
 
         [Column("com_text")]
         [Required(ErrorMessage = "The text is required.")]
