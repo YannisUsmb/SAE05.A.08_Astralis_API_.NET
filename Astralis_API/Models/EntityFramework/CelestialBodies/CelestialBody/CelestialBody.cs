@@ -44,5 +44,8 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(GalaxyQuasar.CelestialBodyNavigation))]
         public virtual GalaxyQuasar? GalaxyQuasarNavigation { get; set; }
+
+        [InverseProperty(nameof(Discovery.CelestialBodyNavigation))]
+        public virtual Discovery? DiscoveryNavigation { get; set; }
     }
 }

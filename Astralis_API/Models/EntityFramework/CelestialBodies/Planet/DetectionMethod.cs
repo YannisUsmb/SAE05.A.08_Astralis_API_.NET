@@ -16,8 +16,9 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [Column("dem_description")]
+        [Required(ErrorMessage = "The description is required.")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
-        public string? Description { get; set; }
+        public string Description { get; set; } = null!;
 
         [InverseProperty(nameof(Planet.DetectionMethodNavigation))]
         public virtual ICollection<Planet> Planets { get; set; } = new List<Planet>();

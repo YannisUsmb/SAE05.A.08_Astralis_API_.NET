@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
-    [Table("t_e_stars_sta")]
+    [Table("t_e_star_sta")]
     public class Star
     {
         [Key]
@@ -11,11 +11,11 @@ namespace Astralis_API.Models.EntityFramework
         public int Id { get; set; }
 
         [Column("ceb_id")]
-        [Required(ErrorMessage = "The celestial body id is required.")]
+        [Required(ErrorMessage = "The celestial body ID is required.")]
         public int CelestialBodyId { get; set; }
 
         [Column("spc_id")]
-        [Required(ErrorMessage = "The spectral class id is required.")]
+        [Required(ErrorMessage = "The spectral class ID is required.")]
         public int SpectralClassId { get; set; }
 
         [Column("sta_designation")]
@@ -23,14 +23,14 @@ namespace Astralis_API.Models.EntityFramework
         public string? Designation { get; set; }
 
         [Column("sta_approvaldate")]
-        public DateTime? ApprovalDate { get; set; }
+        public DateOnly? ApprovalDate { get; set; }
 
         [Column("sta_constellation")]
-        [StringLength(25)]
+        [StringLength(25, ErrorMessage = "The constellation cannot be longer than 25 caracters.")]
         public string? Constellation { get; set; }
 
         [Column("sta_bayerdesignation")]
-        [StringLength(30)]
+        [StringLength(30, ErrorMessage = "The bayer designation cannot be longer than 30 caracters.")]
         public string? BayerDesignation { get; set; }
 
         [Column("sta_distance", TypeName = "NUMERIC(20,15)")]

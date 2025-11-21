@@ -15,7 +15,8 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [Column("oct_description")]
-        [StringLength(200, ErrorMessage = "The label cannot be longer than 200 caracters.")]
+        [Required(ErrorMessage = "The description is required.")]
+        [StringLength(200, ErrorMessage = "The description cannot be longer than 200 caracters.")]
         public string? Description { get; set; } = null;
 
         [InverseProperty(nameof(Asteroid.OrbitalClassNavigation))]

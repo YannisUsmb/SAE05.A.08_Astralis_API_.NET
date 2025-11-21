@@ -22,5 +22,8 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(CelestialBody.CelestialBodyTypeNavigation))]
         public virtual ICollection<CelestialBody> CelestialBodies { get; set; } = new List<CelestialBody>();
+
+        [InverseProperty(nameof(Audio.CelestialBodyTypeNavigation))]
+        public virtual ICollection<Audio> Audios { get; set; } = new List<Audio>();
     }
 }

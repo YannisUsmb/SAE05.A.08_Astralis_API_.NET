@@ -27,7 +27,7 @@ namespace Astralis_API.Models.EntityFramework
         public string? Distance { get; set; }
 
         [Column("pla_discoveryyear")]
-        public DateTime? DiscoveryYear { get; set; }
+        public int? DiscoveryYear { get; set; }
 
         [Column("pla_mass")]
         [StringLength(20, ErrorMessage = "The mass cannot be longer than 20 caracters.")]
@@ -55,7 +55,7 @@ namespace Astralis_API.Models.EntityFramework
         public string? HostStarTemperature { get; set; }
 
         [Column("pla_hoststarmass")]
-        [StringLength(15, ErrorMessage = "The host stat mass cannot be longer than 15 caracters.")]
+        [StringLength(15, ErrorMessage = "The host star mass cannot be longer than 15 caracters.")]
         public string? HostStarMass { get; set; }
 
         [Column("pla_remark")]

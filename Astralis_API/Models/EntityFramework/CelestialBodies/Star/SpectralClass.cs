@@ -16,6 +16,7 @@ namespace Astralis_API.Models.EntityFramework
         public string Label { get; set; } = null!;
 
         [Column("spc_description")]
+        [Required(ErrorMessage = "The description is required.")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
         public string? Description { get; set; }
 
