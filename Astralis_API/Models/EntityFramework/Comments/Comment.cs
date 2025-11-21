@@ -49,6 +49,6 @@ namespace Astralis_API.Models.EntityFramework
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
         [InverseProperty(nameof(Report.CommentNavigation))]
-        public virtual ICollection<Report> Reports { get; set; } = new List<Report>();        
+        public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
     }
 }
