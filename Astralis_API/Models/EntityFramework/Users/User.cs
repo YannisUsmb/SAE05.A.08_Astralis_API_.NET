@@ -25,28 +25,28 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_lastname")]
         [Required(ErrorMessage = "The lastname is required.")]
-        [StringLength(100, ErrorMessage = "The lastname cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The lastname cannot be longer than 100 characters.")]
         public string LastName { get; set; } = null!;
 
         [Column("usr_firstname")]
         [Required(ErrorMessage = "The firstname is required.")]
-        [StringLength(100, ErrorMessage = "The firstname cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The firstname cannot be longer than 100 characters.")]
         public string FirstName { get; set; } = null!;
 
         [Column("usr_email")]
         [Required(ErrorMessage = "The email is required.")]
-        [StringLength(250, ErrorMessage = "The email cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The email cannot be longer than 250 characters.")]
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; } = null!;
 
         [Column("usr_phone")]
-        [StringLength(20, ErrorMessage = "The phone number cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The phone number cannot be longer than 20 characters.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
         public string? Phone { get; set; }
 
         [Column("usr_username")]
         [Required(ErrorMessage = "The username is required.")]
-        [StringLength(50, ErrorMessage = "The username cannot be longer than 50 caracters.")]
+        [StringLength(50, ErrorMessage = "The username cannot be longer than 50 characters.")]
         public string Username { get; set; } = null!;
 
         [Column("usr_password", TypeName = "CHAR(256)")]

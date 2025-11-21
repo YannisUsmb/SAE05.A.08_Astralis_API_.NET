@@ -12,7 +12,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("uro_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(50, ErrorMessage = "The label cannot be longer than 50 caracters.")]
+        [StringLength(50, ErrorMessage = "The label cannot be longer than 50 characters.")]
         public string Label { get; set; } = null!;
 
         [InverseProperty(nameof(User.UserRoleNavigation))]

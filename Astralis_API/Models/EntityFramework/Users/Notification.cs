@@ -12,11 +12,11 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("not_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(100, ErrorMessage = "The label cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The label cannot be longer than 100 characters.")]
         public string Label { get; set; } = null!;
 
         [Column("not_description")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
 
         [InverseProperty(nameof(UserNotification.NotificationNavigation))]
