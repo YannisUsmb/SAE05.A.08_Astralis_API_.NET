@@ -17,7 +17,7 @@ namespace Astralis_API.Models.EntityFramework
         [Column("oct_description")]
         [Required(ErrorMessage = "The description is required.")]
         [StringLength(200, ErrorMessage = "The description cannot be longer than 200 caracters.")]
-        public string? Description { get; set; } = null;
+        public string Description { get; set; } = null!;
 
         [InverseProperty(nameof(Asteroid.OrbitalClassNavigation))]
         public virtual ICollection<Asteroid> Asteroids { get; set; } = new List<Asteroid>();
