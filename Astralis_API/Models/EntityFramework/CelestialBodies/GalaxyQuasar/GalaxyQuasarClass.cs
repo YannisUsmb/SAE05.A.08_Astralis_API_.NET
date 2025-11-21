@@ -18,7 +18,7 @@ namespace Astralis_API.Models.EntityFramework
         [Column("gqc_description")]
         [Required(ErrorMessage = "The description is required.")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 caracters.")]
-        public string? Description { get; set; } = null;
+        public string Description { get; set; } = null!;
 
         [InverseProperty(nameof(GalaxyQuasar.GalaxyQuasarClassNavigation))]
         public virtual ICollection<GalaxyQuasar> GalaxiesQuasars { get; set; } = new List<GalaxyQuasar>();

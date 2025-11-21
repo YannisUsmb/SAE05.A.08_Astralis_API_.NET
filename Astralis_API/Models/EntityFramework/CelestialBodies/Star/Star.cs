@@ -15,8 +15,7 @@ namespace Astralis_API.Models.EntityFramework
         public int CelestialBodyId { get; set; }
 
         [Column("spc_id")]
-        [Required(ErrorMessage = "The spectral class ID is required.")]
-        public int SpectralClassId { get; set; }
+        public int? SpectralClassId { get; set; }
 
         [Column("sta_designation")]
         [StringLength(10, ErrorMessage = "The designation cannot be longer than 10 caracters.")]
@@ -51,6 +50,6 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(SpectralClassId))]
         [InverseProperty(nameof(SpectralClassNavigation.Stars))]
-        public virtual SpectralClass SpectralClassNavigation { get; set; } = null!;
+        public virtual SpectralClass? SpectralClassNavigation { get; set; }
     }
 }

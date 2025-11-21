@@ -26,13 +26,11 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The user ID is required.")]
         public int UserId { get; set; }
 
-        [Column("usr_id")]
-        [Required(ErrorMessage = "The discovery approval user ID is required.")]
-        public int DiscoveryApprovalUserId { get; set; }
+        [Column("usr_iddiscapproval")]
+        public int? DiscoveryApprovalUserId { get; set; }
 
-        [Column("usr_id")]
-        [Required(ErrorMessage = "The alias approval user ID is required.")]
-        public int AliasApprovalUserId { get; set; }
+        [Column("usr_idaliasapproval")]
+        public int? AliasApprovalUserId { get; set; }
 
         [Column("dis_title")]
         [Required(ErrorMessage = "The title is required.")]
