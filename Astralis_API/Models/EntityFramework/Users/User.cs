@@ -44,10 +44,10 @@ namespace Astralis_API.Models.EntityFramework
         [Phone(ErrorMessage = "Invalid phone number format.")]
         public string? Phone { get; set; }
 
-        [Column("usr_pseudo")]
-        [Required(ErrorMessage = "The pseudonym is required.")]
-        [StringLength(50, ErrorMessage = "The pseudonym cannot be longer than 50 caracters.")]
-        public string Pseudo { get; set; } = null!;
+        [Column("usr_username")]
+        [Required(ErrorMessage = "The username is required.")]
+        [StringLength(50, ErrorMessage = "The username cannot be longer than 50 caracters.")]
+        public string Username { get; set; } = null!;
 
         [Column("usr_password", TypeName = "CHAR(256)")]
         [Required(ErrorMessage = "The password is required.")]
