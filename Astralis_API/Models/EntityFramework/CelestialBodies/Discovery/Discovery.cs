@@ -19,8 +19,7 @@ namespace Astralis_API.Models.EntityFramework
         public int DiscoveryStatusId { get; set; }
 
         [Column("als_id")]
-        [Required(ErrorMessage = "The alias status ID is required.")]
-        public int AliasStatusId { get; set; }
+        public int? AliasStatusId { get; set; }
 
         [Column("usr_id")]
         [Required(ErrorMessage = "The user ID is required.")]
@@ -47,7 +46,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [ForeignKey(nameof(AliasStatusId))]
         [InverseProperty(nameof(AliasStatus.Discoveries))]
-        public virtual AliasStatus AliasStatusNavigation { get; set; } = null!;
+        public virtual AliasStatus? AliasStatusNavigation { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Discoveries))]
