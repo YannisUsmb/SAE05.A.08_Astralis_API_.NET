@@ -41,7 +41,7 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(Article.Comments))]
         public virtual Article ArticleNavigation { get; set; } = null!;
 
-        [ForeignKey(nameof(ArticleId))]
+        [ForeignKey(nameof(RepliesToId))]
         [InverseProperty(nameof(Comments))]
         public virtual Comment? RepliesToNavigation { get; set; }
 
