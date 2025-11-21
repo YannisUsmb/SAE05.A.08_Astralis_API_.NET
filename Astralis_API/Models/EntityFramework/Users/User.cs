@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Astralis.Shared.Enums;
 
 namespace Astralis_API.Models.EntityFramework
 {
@@ -25,29 +26,29 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_lastname")]
         [Required(ErrorMessage = "The lastname is required.")]
-        [StringLength(100, ErrorMessage = "The lastname cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The lastname cannot be longer than 100 characters.")]
         public string LastName { get; set; } = null!;
 
         [Column("usr_firstname")]
         [Required(ErrorMessage = "The firstname is required.")]
-        [StringLength(100, ErrorMessage = "The firstname cannot be longer than 100 caracters.")]
+        [StringLength(100, ErrorMessage = "The firstname cannot be longer than 100 characters.")]
         public string FirstName { get; set; } = null!;
 
         [Column("usr_email")]
         [Required(ErrorMessage = "The email is required.")]
-        [StringLength(250, ErrorMessage = "The email cannot be longer than 250 caracters.")]
+        [StringLength(250, ErrorMessage = "The email cannot be longer than 250 characters.")]
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; } = null!;
 
         [Column("usr_phone")]
-        [StringLength(20, ErrorMessage = "The phone number cannot be longer than 20 caracters.")]
+        [StringLength(20, ErrorMessage = "The phone number cannot be longer than 20 characters.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
         public string? Phone { get; set; }
 
-        [Column("usr_pseudo")]
-        [Required(ErrorMessage = "The pseudonym is required.")]
-        [StringLength(50, ErrorMessage = "The pseudonym cannot be longer than 50 caracters.")]
-        public string Pseudo { get; set; } = null!;
+        [Column("usr_username")]
+        [Required(ErrorMessage = "The username is required.")]
+        [StringLength(50, ErrorMessage = "The username cannot be longer than 50 characters.")]
+        public string Username { get; set; } = null!;
 
         [Column("usr_password", TypeName = "CHAR(256)")]
         [Required(ErrorMessage = "The password is required.")]
@@ -58,8 +59,9 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The inscription date is required.")]
         public DateOnly InscriptionDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
-        [Column("usr_gender")]
-        public char? Gender { get; set; }
+        [Column("usr_gender",TypeName ="CHAR(1)")]
+        [Required(ErrorMessage = "The gender is required.")]
+        public GenderType Gender { get; set; } = GenderType.Unknown;
 
         [Column("usr_ispremium")]
         [Required(ErrorMessage = "The premium status is required.")]
@@ -114,6 +116,9 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(Report.UserNavigation))]
         public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
+
+        [InverseProperty(nameof(Report.AdminNavigation))]
+        public virtual ICollection<Report> TreatedReports { get; set; } = new List<Report>();
 
         [InverseProperty(nameof(Discovery.UserNavigation))]
         public virtual ICollection<Discovery> Discoveries { get; set; } = new List<Discovery>();

@@ -1,25 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Astralis_API.Models.EntityFramework
 {
-    [Table("t_e_notification_not")]
-    public class Notification
+    [Table("t_e_reportmotive_rem")]
+    public class ReportMotive
     {
         [Key]
-        [Column("not_id")]
+        [Column("rem_id")]
         public int Id { get; set; }
 
-        [Column("not_label")]
+        [Column("rem_label")]
         [Required(ErrorMessage = "The label is required.")]
         [StringLength(100, ErrorMessage = "The label cannot be longer than 100 characters.")]
         public string Label { get; set; } = null!;
 
-        [Column("not_description")]
-        [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
+        [Column("rem_description")]
+        [StringLength(300, ErrorMessage = "The description cannot be longer than 100 characters.")]
         public string? Description { get; set; }
 
-        [InverseProperty(nameof(UserNotification.NotificationNavigation))]
-        public virtual ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+        [InverseProperty(nameof(Report.ReportMotiveNavigation))]
+        public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
     }
 }
