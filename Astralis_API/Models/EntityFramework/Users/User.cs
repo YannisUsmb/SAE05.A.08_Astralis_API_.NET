@@ -50,7 +50,7 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(50, ErrorMessage = "The username cannot be longer than 50 characters.")]
         public string Username { get; set; } = null!;
 
-        [Column("usr_password", TypeName = "CHAR(256)")]
+        [Column("usr_password", TypeName = "VARCHAR(64)")]
         [Required(ErrorMessage = "The password is required.")]
         [StringLength(64)]
         public string Password { get; set; } = null!;
