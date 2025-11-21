@@ -14,11 +14,11 @@ namespace Astralis_API.Models.EntityFramework
         public int ArticleId { get; set; }
 
         [ForeignKey(nameof(ArticleId))]
-        [InverseProperty(nameof(Article.TypeOfArticles))]
+        [InverseProperty(nameof(Article.TypesOfArticle))]
         public virtual Article ArticleNavigation { get; set; } = null!;
 
         [ForeignKey(nameof(ArticleTypeId))]
-        [InverseProperty(nameof(ArticleType.TypeOfArticles))]
+        [InverseProperty(nameof(ArticleType.TypesOfArticle))]
         public virtual ArticleType ArticleTypeNavigation { get; set; } = null!;
     }
 }

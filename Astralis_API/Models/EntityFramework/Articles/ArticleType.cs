@@ -19,6 +19,6 @@ namespace Astralis_API.Models.EntityFramework
         public string? Description { get; set; }
 
         [InverseProperty(nameof(TypeOfArticle.ArticleTypeNavigation))]
-        public virtual ICollection<TypeOfArticle> TypeOfArticles { get; set; } = new List<TypeOfArticle>();
+        public virtual ICollection<TypeOfArticle> TypesOfArticle { get; set; } = new List<TypeOfArticle>();
     }
 }

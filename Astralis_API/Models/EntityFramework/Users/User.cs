@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Astralis.Shared.Enums;
 
 namespace Astralis_API.Models.EntityFramework
 {
@@ -58,8 +59,9 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The inscription date is required.")]
         public DateOnly InscriptionDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
-        [Column("usr_gender")]
-        public char? Gender { get; set; }
+        [Column("usr_gender",TypeName ="CHAR(1)")]
+        [Required(ErrorMessage = "The gender is required.")]
+        public GenderType Gender { get; set; } = GenderType.Unknown;
 
         [Column("usr_ispremium")]
         [Required(ErrorMessage = "The premium status is required.")]
