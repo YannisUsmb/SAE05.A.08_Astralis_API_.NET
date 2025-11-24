@@ -26,8 +26,8 @@ public partial class AstralisDbContext : DbContext
     public virtual DbSet<TypeOfArticle> TypesOfArticle { get; set; }
 
     // Celestial Bodies 
-    public virtual DbSet<OrbitalClass> OrbitalClasses { get; set; }
     public virtual DbSet<Asteroid> Asteroids { get; set; }
+    public virtual DbSet<OrbitalClass> OrbitalClasses { get; set; }
     public virtual DbSet<Audio> Audios { get; set; }
     public virtual DbSet<CelestialBody> CelestialBodies { get; set; }
     public virtual DbSet<CelestialBodyType> CelestialBodyTypes { get; set; }
@@ -189,6 +189,12 @@ public partial class AstralisDbContext : DbContext
                 .WithMany(u => u.ArticleInterests)
                 .OnDelete(DeleteBehavior.Cascade) // Si l'User est supprimé, ses intérêts disparaissent.
                 .HasConstraintName("FK_ArticleInterest_User");
+        });
+
+        // Celestial Bodies
+        modelBuilder.Entity<OrbitalClass>(entity =>
+        {
+            entity.HasKey(oc => oc.Id).HasName("orbitalclass_pkey");
         });
     }
 
