@@ -1,9 +1,10 @@
 ﻿using Astralis_API.Models.EntityFramework;
+using Astralis_API.Models.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ReadableManager<TEntity, TIdentifier, TKey> where TEntity : class
+    public class ReadableManager<TEntity, TIdentifier> : IReadableRepository<TEntity, TIdentifier> where TEntity : class
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<TEntity> _entities;
