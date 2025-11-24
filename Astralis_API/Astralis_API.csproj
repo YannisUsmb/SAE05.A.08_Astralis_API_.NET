@@ -22,10 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Models\DataManager\CelestialBodies\Asteroid\" />
-    <Folder Include="Models\DataManager\CelestialBodies\Audio\" />
-    <Folder Include="Models\DataManager\CelestialBodies\Comet\" />
-    <Folder Include="Models\DataManager\CelestialBodies\Discovery\" />
     <Folder Include="Models\DataManager\CelestialBodies\GalaxyQuasar\" />
     <Folder Include="Models\DataManager\CelestialBodies\Star\" />
     <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
