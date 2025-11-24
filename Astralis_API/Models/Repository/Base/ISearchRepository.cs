@@ -2,6 +2,6 @@
 {
     public interface ISearchRepository<TEntity, in TKey>
     {
-        Task<TEntity> GetByKeyAsync(TKey key);
+        Task<IEnumerable<TEntity?>> GetByKeyAsync(TKey key);
     }
 }
