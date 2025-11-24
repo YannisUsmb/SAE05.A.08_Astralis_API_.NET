@@ -46,6 +46,9 @@ public partial class AstralisDbContext : DbContext
 
     // Comments
     public virtual DbSet<Comment> Comments { get; set; }
+    public virtual DbSet<Report> Reports { get; set; }
+    public virtual DbSet<ReportMotive> ReportMotives { get; set; }
+    public virtual DbSet<ReportStatus> ReportStatuses { get; set; }
 
     // Events
     public virtual DbSet<Event> Events { get; set; }
@@ -59,11 +62,6 @@ public partial class AstralisDbContext : DbContext
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
     public virtual DbSet<Product> Products { get; set; }
     public virtual DbSet<ProductCategory> ProductCategories { get; set; }
-
-    // Reports
-    public virtual DbSet<Report> Reports { get; set; }
-    public virtual DbSet<ReportMotive> ReportMotives { get; set; }
-    public virtual DbSet<ReportStatus> ReportStatuses { get; set; }
 
     // Users
     public virtual DbSet<CreditCard> CreditCards { get; set; }
@@ -81,14 +79,116 @@ public partial class AstralisDbContext : DbContext
         OnModelCreatingPartial(modelBuilder);
         modelBuilder.HasDefaultSchema("public");
 
+        // Addresses
         modelBuilder.Entity<Address>(entity =>
         {
-            entity.HasKey(a => a.Id).HasName("adress_pkey");
+            entity.HasKey(a => a.Id).HasName("address_pkey");
 
             entity.HasOne(a => a.CityNavigation)
                 .WithMany(c => c.Addresses)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Address_City");
+
+            entity.HasMany(a => a.InvoicingAddressUsers)
+                .WithOne(u => u.InvoicingAddressNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_User_InvoicingAddress");
+
+            entity.HasMany(a => a.DeliveryAddressUsers)
+                .WithOne(u => u.DeliveryAddressNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_User_DeliveryAddress");
+        });
+
+        modelBuilder.Entity<City>(entity =>
+        {
+            entity.HasKey(c => c.Id).HasName("city_pkey");
+
+            entity.HasOne(c => c.CountryNavigation)
+                .WithMany(c => c.Cities)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_City_Country");
+
+            entity.HasMany(c => c.Addresses)
+                .WithOne(a => a.CityNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Address_City");
+        });
+
+        modelBuilder.Entity<Country>(entity =>
+        {
+            entity.HasKey(c => c.Id).HasName("country_pkey");
+
+            entity.HasOne(c => c.PhonePrefixNavigation)
+                .WithMany(p => p.Countries)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Country_PhonePrefix");
+
+            entity.HasMany(c => c.Cities)
+                .WithOne(c => c.CountryNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_City_Country");
+        });
+
+        modelBuilder.Entity<PhonePrefix>(entity =>
+        {
+            entity.HasKey(p => p.Id).HasName("phoneprefix_pkey");
+
+            entity.HasMany(p => p.Countries)
+                .WithOne(c => c.PhonePrefixNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Country_PhonePrefix");
+
+            entity.HasMany(p => p.Users)
+                .WithOne(u => u.PhonePrefixNavigation)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_User_PhonePrefix");
+        });
+
+        // Articles
+        modelBuilder.Entity<Article>(entity =>
+        {
+            entity.HasKey(a => a.Id).HasName("article_pkey");
+
+            entity.HasOne(a => a.UserNavigation)
+                .WithMany(u => u.Articles)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Article_User");
+
+            entity.HasMany(a => a.Comments)
+                .WithOne(c => c.ArticleNavigation)
+                .OnDelete(DeleteBehavior.Restrict); // Le nom de contrainte sera géré par la table Comment
+        });
+
+        modelBuilder.Entity<ArticleType>(entity =>
+        {
+            entity.HasKey(at => at.Id).HasName("articletype_pkey");
+        });
+
+        modelBuilder.Entity<TypeOfArticle>(entity =>
+        {
+            entity.HasOne(toa => toa.ArticleNavigation)
+                .WithMany(a => a.TypesOfArticle)
+                .OnDelete(DeleteBehavior.Cascade) // Si un Article est supprimé, la jointure doit l'être aussi.
+                .HasConstraintName("FK_TypeOfArticle_Article");
+
+            entity.HasOne(toa => toa.ArticleTypeNavigation)
+                .WithMany(at => at.TypesOfArticle)
+                .OnDelete(DeleteBehavior.Cascade) // Si un ArticleType est supprimé, la jointure doit l'être aussi.
+                .HasConstraintName("FK_TypeOfArticle_ArticleType");
+        });
+
+        modelBuilder.Entity<ArticleInterest>(entity =>
+        {
+            entity.HasOne(ai => ai.ArticleNavigation)
+                .WithMany(a => a.ArticleInterests)
+                .OnDelete(DeleteBehavior.Cascade) // Si l'Article est supprimé, l'intérêt disparaît.
+                .HasConstraintName("FK_ArticleInterest_Article");
+
+            entity.HasOne(ai => ai.UserNavigation)
+                .WithMany(u => u.ArticleInterests)
+                .OnDelete(DeleteBehavior.Cascade) // Si l'User est supprimé, ses intérêts disparaissent.
+                .HasConstraintName("FK_ArticleInterest_User");
         });
     }
 
