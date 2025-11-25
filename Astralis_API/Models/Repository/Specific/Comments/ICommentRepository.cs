@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface ICommentRepository : IReadableRepository<Comment, int>
+    public interface ICommentRepository : ICrudRepository<Comment, int>
     {
     }
 }

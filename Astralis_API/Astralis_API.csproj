@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\DTO\**" />
+    <Content Remove="Models\DTO\**" />
+    <EmbeddedResource Remove="Models\DTO\**" />
+    <None Remove="Models\DTO\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
       <PrivateAssets>all</PrivateAssets>
@@ -22,8 +29,10 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Models\DataManager\CelestialBodies\Star\" />
+    <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
     <Folder Include="Models\DataManager\Users\" />
-    <Folder Include="Models\DTO\" />
+    <Folder Include="Models\DataManager\CelestialBodies\Satellite\" />
     <Folder Include="Models\Mapper\" />
     <Folder Include="Models\Repository\Specific\Users\" />
   </ItemGroup>

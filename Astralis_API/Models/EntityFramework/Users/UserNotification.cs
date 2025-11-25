@@ -18,6 +18,14 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The mail notification status is required.")]
         public bool ByMail { get; set; }
 
+        [Column("uno_isread")]
+        [Required(ErrorMessage = "The readed status is required.")]
+        public bool IsRead { get; set; } = false;
+
+        [Column("uno_receivedat")]
+        [Required(ErrorMessage = "The received date is required.")]
+        public DateTime ReceivedAt { get; set; }
+
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.UserNotifications))]
         public virtual User UserNavigation { get; set; } = null!;
