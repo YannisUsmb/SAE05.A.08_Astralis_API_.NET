@@ -5,7 +5,7 @@ namespace Astralis_API.Models.DataManager
 {
     public class AddressManager : CrudManager<Address, int>, IAddressRepository
     {
-        public AddressManager(AstralisDbContext context)
+        public AddressManager(AstralisDbContext context) : base(context)
         {
         }
     }

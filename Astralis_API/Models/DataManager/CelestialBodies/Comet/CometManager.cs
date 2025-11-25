@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class CometManager : CrudManager<Comet, int, string>, ISearchRepository<Comet, string>
+    public class CometManager : DataManager<Comet, int, string>, ICometRepository
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Comet> _comet;
@@ -15,17 +15,17 @@ namespace Astralis_API.Models.DataManager
             _comet = _context.Set<Comet>();
         }
 
-        public async Task<IEnumerable<Comet>> GetByKeyAsync(string reference)
+        public async override Task<IEnumerable<Comet>> GetByKeyAsync(string reference)
         {
-            return await _comet.Where(cb => cb.Reference.ToLower().Contains(reference.ToLower()))
-                            .Include(cb => cb.CelestialBodyNavigation)
+            return await _comet.Where(c => c.Reference.ToLower().Contains(reference.ToLower()))
+                            .Include(c => c.CelestialBodyNavigation)
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Comet>> GetByCategoryIdAsync(int id)
         {
-            return await _comet.Where(cb => cb.Id == id)
-                            .Include(cb => cb.CelestialBodyNavigation)
+            return await _comet.Where(c => c.Id == id)
+                            .Include(c => c.CelestialBodyNavigation)
                             .ToListAsync();
         }
     }

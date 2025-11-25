@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Models\DataManager\CelestialBodies\GalaxyQuasar\" />
     <Folder Include="Models\DataManager\CelestialBodies\Star\" />
     <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
     <Folder Include="Models\DataManager\Comments\" />
@@ -31,10 +30,6 @@
     <Folder Include="Models\DataManager\CelestialBodies\Satellite\" />
     <Folder Include="Models\DTO\" />
     <Folder Include="Models\Mapper\" />
-    <Folder Include="Models\Repository\Specific\Articles\" />
-    <Folder Include="Models\Repository\Specific\CelestialBodies\Asteroid\" />
-    <Folder Include="Models\Repository\Specific\CelestialBodies\Discovery\" />
-    <Folder Include="Models\Repository\Specific\CelestialBodies\GalaxyQuasar\" />
     <Folder Include="Models\Repository\Specific\CelestialBodies\Planet\" />
     <Folder Include="Models\Repository\Specific\CelestialBodies\Star\" />
     <Folder Include="Models\Repository\Specific\Users\" />
