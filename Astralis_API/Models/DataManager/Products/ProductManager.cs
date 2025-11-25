@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ProductManager : CrudManager<Product, int, string>, IProductRepository
+    public class ProductManager : DataManager<Product, int, string>, IProductRepository
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Product> _products;
@@ -16,7 +16,7 @@ namespace Astralis_API.Models.DataManager
             _products = _context.Set<Product>();
         }
 
-        public async Task<IEnumerable<Product>> GetByKeyAsync(string name)
+        public async override Task<IEnumerable<Product>> GetByKeyAsync(string name)
         {
             return await _products.Where(p => p.Label.ToLower().Contains(name.ToLower()))
                             .Include(p => p.ProductCategoryNavigation)
@@ -26,7 +26,7 @@ namespace Astralis_API.Models.DataManager
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int id)
+        public async Task<IEnumerable<Product>> GetByProductCategoryIdAsync(int id)
         {
             return await _products.Where(p => p.ProductCategoryId == id)
                             .Include(p => p.ProductCategoryNavigation)

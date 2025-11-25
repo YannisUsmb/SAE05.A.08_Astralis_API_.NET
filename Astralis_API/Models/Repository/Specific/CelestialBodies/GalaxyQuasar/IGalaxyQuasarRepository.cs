@@ -4,6 +4,6 @@ namespace Astralis_API.Models.Repository
 {
     public interface IGalaxyQuasarRepository : IDataRepository<GalaxyQuasar, int, string>
     {
-        Task<IEnumerable<GalaxyQuasar>> GetByCategoryIdAsync(int id);
+        Task<IEnumerable<GalaxyQuasar>> GetByGalaxyQuasarClassIdAsync(int id);
     }
 }

@@ -4,6 +4,6 @@ namespace Astralis_API.Models.Repository
 {
     public interface IProductRepository : IDataRepository<Product, int, string>
     {
-        Task<IEnumerable<Product>> GetByCategoryIdAsync(int id);
+        Task<IEnumerable<Product>> GetByProductCategoryIdAsync(int id);
     }
 }

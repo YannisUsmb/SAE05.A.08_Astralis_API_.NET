@@ -4,28 +4,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class AsteroidManager : DataManager<Asteroid, int, string>
+    public class AsteroidManager : DataManager<Asteroid, int, string>, IAsteroidRepository
     {
         private readonly AstralisDbContext? _context;
-        private readonly DbSet<Asteroid> _asteroid;
+        private readonly DbSet<Asteroid> _asteroids;
 
         public AsteroidManager(AstralisDbContext context) : base(context)
         {
             _context = context;
-            _asteroid = _context.Set<Asteroid>();
+            _asteroids = _context.Set<Asteroid>();
         }
 
         public async override Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
         {
-            return await _asteroid.Where(cb => cb.Reference.ToLower().Contains(reference.ToLower()))
+            return await _asteroids.Where(cb => cb.Reference.ToLower().Contains(reference.ToLower()))
                             .Include(cb => cb.CelestialBodyNavigation)
                             .Include(cb => cb.OrbitalClassNavigation)
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Asteroid>> GetByCategoryIdAsync(int id)
+        public async Task<IEnumerable<Asteroid>> GetByOrbitalIClassIdAsync(int id)
         {
-            return await _asteroid.Where(cb => cb.OrbitalClassId == id)
+            return await _asteroids.Where(cb => cb.OrbitalClassId == id)
                             .Include(cb => cb.CelestialBodyNavigation)
                             .Include(cb => cb.OrbitalClassNavigation)
                             .ToListAsync();

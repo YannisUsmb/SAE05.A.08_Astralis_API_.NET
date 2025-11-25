@@ -5,10 +5,8 @@ namespace Astralis_API.Models.DataManager
 {
     public class CelestialBodyTypeManager : ReadableManager<CelestialBodyType, int>, ICelestialBodyTypeRepository
     {
-
         public CelestialBodyTypeManager(AstralisDbContext context) : base(context)
         {
-
         }
     }
 }

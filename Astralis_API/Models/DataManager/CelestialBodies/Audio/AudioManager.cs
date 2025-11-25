@@ -4,27 +4,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class AudioManager : DataManager<Audio, int, string>,IAudioRepository
+    public class AudioManager : DataManager<Audio, int, string>, IAudioRepository
     {
         private readonly AstralisDbContext? _context;
-        private readonly DbSet<Audio> _audio;
+        private readonly DbSet<Audio> _audios;
 
         public AudioManager(AstralisDbContext context) : base(context)
         {
             _context = context;
-            _audio = _context.Set<Audio>();
+            _audios = _context.Set<Audio>();
         }
 
         public async override Task<IEnumerable<Audio>> GetByKeyAsync(string title)
         {
-            return await _audio.Where(cb => cb.Title.ToLower().Contains(title.ToLower()))
+            return await _audios.Where(cb => cb.Title.ToLower().Contains(title.ToLower()))
                             .Include(cb => cb.CelestialBodyTypeNavigation)
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Audio>> GetByCategoryIdAsync(int id)
         {
-            return await _audio.Where(cb => cb.CelestialBodyTypeId == id)
+            return await _audios.Where(cb => cb.CelestialBodyTypeId == id)
                             .Include(cb => cb.CelestialBodyTypeNavigation)
                             .ToListAsync();
         }

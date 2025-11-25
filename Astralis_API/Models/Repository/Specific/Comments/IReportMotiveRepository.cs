@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface ICountryRepository : IReadableRepository<Country, int>
+    public interface IReportMotiveRepository : IReadableRepository<ReportMotive, int>
     {
     }
 }

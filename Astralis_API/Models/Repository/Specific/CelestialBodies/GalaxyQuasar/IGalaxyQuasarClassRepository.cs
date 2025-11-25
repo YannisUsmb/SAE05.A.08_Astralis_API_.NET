@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IGalaxyQuasarClassRepository : ICrudRepository<GalaxyQuasarClass, int>
+    public interface IGalaxyQuasarClassRepository : IReadableRepository<GalaxyQuasarClass, int>
     {
     }
 }

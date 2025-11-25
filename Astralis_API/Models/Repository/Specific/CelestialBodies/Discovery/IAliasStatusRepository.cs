@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IAliasStatusRepository : ICrudRepository<AliasStatus, int>
+    public interface IAliasStatusRepository : IReadableRepository<AliasStatus, int>
     {
     }
 }

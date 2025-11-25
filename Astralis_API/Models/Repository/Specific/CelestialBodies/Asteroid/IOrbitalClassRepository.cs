@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IOrbitalClassRepository : ICrudRepository<OrbitalClass, int>
+    public interface IOrbitalClassRepository : IReadableRepository<OrbitalClass, int>
     {
     }
 }

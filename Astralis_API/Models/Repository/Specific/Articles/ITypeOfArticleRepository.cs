@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface ITypeOfArticleRepository : ICrudRepository<TypeOfArticle, int>
+    public interface ITypeOfArticleRepository : IReadableRepository<TypeOfArticle, int>
     {
     }
 }

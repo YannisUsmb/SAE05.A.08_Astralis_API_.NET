@@ -7,27 +7,27 @@ namespace Astralis_API.Models.DataManager
     public class GalaxyQuasarManager : DataManager<GalaxyQuasar, int, string>, IGalaxyQuasarRepository
     {
         private readonly AstralisDbContext? _context;
-        private readonly DbSet<GalaxyQuasar> _GalaxyQuasar;
+        private readonly DbSet<GalaxyQuasar> _galaxyQuasars;
 
         public GalaxyQuasarManager(AstralisDbContext context) : base(context)
         {
             _context = context;
-            _GalaxyQuasar = _context.Set<GalaxyQuasar>();
+            _galaxyQuasars = _context.Set<GalaxyQuasar>();
         }
 
         public async override Task<IEnumerable<GalaxyQuasar>> GetByKeyAsync(string reference)
         {
-            return await _GalaxyQuasar.Where(d => d.Reference.ToLower().Contains(reference.ToLower()))
-                            .Include(d => d.CelestialBodyNavigation)
-                            .Include(d => d.GalaxyQuasarClassNavigation)
+            return await _galaxyQuasars.Where(gq => gq.Reference.ToLower().Contains(reference.ToLower()))
+                            .Include(gq => gq.CelestialBodyNavigation)
+                            .Include(gq => gq.GalaxyQuasarClassNavigation)
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<GalaxyQuasar>> GetByCategoryIdAsync(int id)
+        public async Task<IEnumerable<GalaxyQuasar>> GetByGalaxyQuasarClassIdAsync(int id)
         {
-            return await _GalaxyQuasar.Where(d => d.GalaxyQuasarClassId == id)
-                            .Include(d => d.CelestialBodyNavigation)
-                            .Include(d => d.GalaxyQuasarClassNavigation)
+            return await _galaxyQuasars.Where(gq => gq.GalaxyQuasarClassId == id)
+                            .Include(gq => gq.CelestialBodyNavigation)
+                            .Include(gq => gq.GalaxyQuasarClassNavigation)
                             .ToListAsync();
         }
     }
