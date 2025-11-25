@@ -70,15 +70,6 @@ public partial class AstralisDbContext : DbContext
     public virtual DbSet<CommandStatus> CommandStatuses { get; set; }
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseNpgsql("Server=localhost;port=5432;Database=AstralisDB;uid=postgres;password=postgres;");
-        }
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnModelCreatingPartial(modelBuilder);
