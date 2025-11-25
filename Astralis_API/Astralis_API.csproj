@@ -24,8 +24,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Models\DataManager\CelestialBodies\Star\" />
     <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
-    <Folder Include="Models\DataManager\Comments\" />
-    <Folder Include="Models\DataManager\Events\" />
     <Folder Include="Models\DataManager\Users\" />
     <Folder Include="Models\DataManager\CelestialBodies\Satellite\" />
     <Folder Include="Models\DTO\" />

@@ -2,7 +2,8 @@
 {
     public interface IDataRepository<TEntity, in TIdentifier, in TKey> : 
         IReadableRepository<TEntity, TIdentifier>, 
-        IWriteableRepository<TEntity>, ISearchRepository<TEntity, TKey>
+        IWriteableRepository<TEntity>, 
+        ISearchableRepository<TEntity, TKey>
     {
     }
 }
