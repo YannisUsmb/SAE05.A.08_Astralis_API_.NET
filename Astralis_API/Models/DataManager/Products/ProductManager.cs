@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ProductManager : DataManager<Product, int, string>, IProductRepository
+    public class ProductManager : CrudManager<Product, int, string>, IProductRepository
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Product> _products;

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ArticleManager : DataManager<Article, int, string>, ISearchRepository<Article, string>
+    public class ArticleManager : CrudManager<Article, int, string>, ISearchRepository<Article, string>
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Article> _articles;

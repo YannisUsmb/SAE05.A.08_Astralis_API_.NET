@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class AudioManager : DataManager<Audio, int, string>, ISearchRepository<Audio, string>
+    public class AudioManager : CrudManager<Audio, int, string>, ISearchRepository<Audio, string>
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Audio> _audio;

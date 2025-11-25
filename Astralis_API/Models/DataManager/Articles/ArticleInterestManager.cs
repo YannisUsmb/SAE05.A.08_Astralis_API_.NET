@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ArticleInterestInterestManager : DataManager<ArticleInterest, int, string>
+    public class ArticleInterestInterestManager : CrudManager<ArticleInterest, int, string>
     {
 
         public ArticleInterestInterestManager(AstralisDbContext context) : base(context)

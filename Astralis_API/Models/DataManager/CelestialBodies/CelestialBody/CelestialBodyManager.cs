@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class CelestialBodyManager : DataManager<CelestialBody, int, string>, ICelestialBodyRepository, ISearchRepository<CelestialBody, string>
+    public class CelestialBodyManager : CrudManager<CelestialBody, int, string>, ICelestialBodyRepository, ISearchRepository<CelestialBody, string>
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<CelestialBody> _celestialBodies;

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class CometManager : DataManager<Comet, int, string>, ISearchRepository<Comet, string>
+    public class CometManager : CrudManager<Comet, int, string>, ISearchRepository<Comet, string>
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Comet> _comet;
