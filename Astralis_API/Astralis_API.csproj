@@ -29,14 +29,14 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Models\DataManager\CelestialBodies\GalaxyQuasar\" />
     <Folder Include="Models\DataManager\CelestialBodies\Star\" />
     <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
-    <Folder Include="Models\DataManager\Comments\" />
-    <Folder Include="Models\DataManager\Events\" />
     <Folder Include="Models\DataManager\Users\" />
     <Folder Include="Models\DataManager\CelestialBodies\Satellite\" />
     <Folder Include="Models\Mapper\" />
+    <Folder Include="Models\Repository\Specific\CelestialBodies\Planet\" />
+    <Folder Include="Models\Repository\Specific\CelestialBodies\Star\" />
+    <Folder Include="Models\Repository\Specific\Users\" />
   </ItemGroup>
 
   <ItemGroup>

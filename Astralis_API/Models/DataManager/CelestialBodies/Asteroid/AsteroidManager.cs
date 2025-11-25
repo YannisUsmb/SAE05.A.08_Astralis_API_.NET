@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class AsteroidManager : DataManager<Asteroid, int, string>, ISearchRepository<Asteroid, string>
+    public class AsteroidManager : DataManager<Asteroid, int, string>
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Asteroid> _asteroid;
@@ -15,7 +15,7 @@ namespace Astralis_API.Models.DataManager
             _asteroid = _context.Set<Asteroid>();
         }
 
-        public async Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
+        public async override Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
         {
             return await _asteroid.Where(cb => cb.Reference.ToLower().Contains(reference.ToLower()))
                             .Include(cb => cb.CelestialBodyNavigation)

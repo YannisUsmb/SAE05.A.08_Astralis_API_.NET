@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ArticleManager : DataManager<Article, int, string>, ISearchRepository<Article, string>
+    public class ArticleManager : DataManager<Article, int, string>, IArticleRepository
     {
         private readonly AstralisDbContext? _context;
         private readonly DbSet<Article> _articles;
@@ -15,12 +15,12 @@ namespace Astralis_API.Models.DataManager
             _articles = _context.Set<Article>();
         }
 
-        public async Task<IEnumerable<Article>> GetByKeyAsync(string title)
+        public async override Task<IEnumerable<Article>> GetByKeyAsync(string title)
         {
             return await _articles.Where(a => a.Title.ToLower().Contains(title.ToLower()))
                             .Include(a => a.TypesOfArticle)
-                            .Include(a=> a.ArticleInterests)
-                            .Include(a=> a.UserNavigation)
+                            .Include(a => a.ArticleInterests)
+                            .Include(a => a.UserNavigation)
                             .ToListAsync();
         }
     }
