@@ -1,8 +1,8 @@
-﻿using Astralis_API.Models.EntityFramework;
+﻿    using Astralis_API.Models.EntityFramework;
 
 namespace Astralis_API.Models.Repository
 {
-    public interface ITypeOfArticleRepository : IReadableRepository<TypeOfArticle, int>
+    public interface ITypeOfArticleRepository : ICrudRepository<TypeOfArticle,int>
     {
     }
 }
