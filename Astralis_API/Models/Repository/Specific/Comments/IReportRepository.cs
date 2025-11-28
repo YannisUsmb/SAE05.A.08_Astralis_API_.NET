@@ -4,6 +4,11 @@ namespace Astralis_API.Models.Repository
 {
     public interface IReportRepository : ICrudRepository<Report, int>
     {
-        Task<IEnumerable<Report>> GetByDateAsync(DateTime date);
+        Task<IEnumerable<Report>> SearchAsync(
+            int? statusId = null,
+            int? motiveId = null,
+            DateTime? minDate = null,
+            DateTime? maxDate = null
+        );
     }
 }

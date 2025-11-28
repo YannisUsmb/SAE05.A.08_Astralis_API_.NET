@@ -5,5 +5,6 @@ namespace Astralis_API.Models.Repository
     public interface ICelestialBodyRepository : IDataRepository<CelestialBody, int, string>
     {
         Task<IEnumerable<CelestialBody>> GetByCelestialBodyTypeIdAsync(int id);
+        Task<IEnumerable<CelestialBody>> GetDiscoveriesAsync();
     }
 }

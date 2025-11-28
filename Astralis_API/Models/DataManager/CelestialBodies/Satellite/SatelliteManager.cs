@@ -23,12 +23,44 @@ namespace Astralis_API.Models.DataManager
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Satellite>> GetByPlanetIdAsync(int id)
+        public async Task<IEnumerable<Satellite>> SearchAsync(
+            string? name = null,
+            int? planetId = null,
+            int? celestialBodyId = null,
+            decimal? minGravity = null,
+            decimal? maxGravity = null,
+            decimal? minRadius = null,
+            decimal? maxRadius = null,
+            decimal? minDensity = null,
+            decimal? maxDensity = null)
         {
-            return await _satellites.Where(s => s.PlanetId == id)
-                            .Include(s => s.CelestialBodyNavigation)
-                            .Include(s => s.PlanetNavigation)
-                            .ToListAsync();
+            var query = _satellites.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                string nameLower = name.ToLower();
+                query = query.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(nameLower));
+            }
+            if (planetId.HasValue)
+                query = query.Where(s => s.PlanetId == planetId.Value);
+            if (celestialBodyId.HasValue)
+                query = query.Where(s => s.CelestialBodyId == celestialBodyId.Value);
+            if (minGravity.HasValue)
+                query = query.Where(s => s.Gravity >= minGravity.Value);
+            if (maxGravity.HasValue)
+                query = query.Where(s => s.Gravity <= maxGravity.Value);
+            if (minRadius.HasValue)
+                query = query.Where(s => s.Radius >= minRadius.Value);
+            if (maxRadius.HasValue)
+                query = query.Where(s => s.Radius <= maxRadius.Value);
+            if (minDensity.HasValue)
+                query = query.Where(s => s.Density >= minDensity.Value);
+            if (maxDensity.HasValue)
+                query = query.Where(s => s.Density <= maxDensity.Value);
+            return await query
+                .Include(s => s.CelestialBodyNavigation)
+                .Include(s => s.PlanetNavigation)
+                .ThenInclude(p => p.CelestialBodyNavigation)
+                .ToListAsync();
         }
     }
 }

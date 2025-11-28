@@ -1,7 +1,5 @@
 ﻿using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
-using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 
 namespace Astralis_API.Models.DataManager
 {

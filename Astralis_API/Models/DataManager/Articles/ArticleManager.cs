@@ -24,11 +24,33 @@ namespace Astralis_API.Models.DataManager
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Article>> GetByTypeOfArticle(int idtype)
+        public async Task<IEnumerable<Article>> SearchAsync(
+            string? title = null,
+            string? content = null,
+            int? userId = null,
+            int? typeId = null,
+            bool? isPremium = null)
         {
-            return await _articles.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == idtype))
+            var query = _articles.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                string titleLower = title.ToLower();
+                query = query.Where(a => a.Title.ToLower().Contains(titleLower));
+            }
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                string contentLower = content.ToLower();
+                query = query.Where(a => a.Content.ToLower().Contains(contentLower));
+            }
+            if (userId.HasValue)
+                query = query.Where(a => a.UserId == userId.Value);
+            if (isPremium.HasValue)
+                query = query.Where(a => a.IsPremium == isPremium.Value);
+            if (typeId.HasValue)
+                query = query.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == typeId.Value));
+            return await query
                 .Include(a => a.TypesOfArticle)
-                .ThenInclude(toa => toa.ArticleTypeNavigation)
+                    .ThenInclude(toa => toa.ArticleTypeNavigation)
                 .Include(a => a.ArticleInterests)
                 .Include(a => a.UserNavigation)
                 .ToListAsync();

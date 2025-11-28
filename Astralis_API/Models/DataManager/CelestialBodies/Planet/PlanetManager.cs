@@ -24,15 +24,67 @@ namespace Astralis_API.Models.DataManager
                             .Include(p => p.Satellites)
                             .ToListAsync();
         }
-
-        public async Task<IEnumerable<Planet>> GetByPlanetTypeIdAsync(int id)
+        public async Task<IEnumerable<Planet>> SearchAsync(
+            string? name = null,
+            int? planetTypeId = null,
+            int? detectionMethodId = null,
+            int? minDiscoveryYear = null,
+            int? maxDiscoveryYear = null,
+            decimal? minOrbitalPeriod = null,
+            decimal? maxOrbitalPeriod = null,
+            decimal? minEccentricity = null,
+            decimal? maxEccentricity = null,
+            decimal? minStellarMagnitude = null,
+            decimal? maxStellarMagnitude = null,
+            string? distance = null,
+            string? radius = null,
+            string? temperature = null,
+            string? hostStarTemperature = null,
+            string? hostStarMass = null)
         {
-            return await _planets.Where(p => p.PlanetTypeId == id)
-                            .Include(p => p.CelestialBodyNavigation)
-                            .Include(p => p.DetectionMethodNavigation)
-                            .Include(p => p.PlanetTypeNavigation)
-                            .Include(p => p.Satellites)
-                            .ToListAsync();
+            var query = _planets.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                string nameLower = name.ToLower();
+                query = query.Where(p => p.CelestialBodyNavigation.Name.ToLower().Contains(nameLower));
+            }
+            if (planetTypeId.HasValue)
+                query = query.Where(p => p.PlanetTypeId == planetTypeId.Value);
+
+            if (detectionMethodId.HasValue)
+                query = query.Where(p => p.DetectionMethodId == detectionMethodId.Value);
+            if (minDiscoveryYear.HasValue)
+                query = query.Where(p => p.DiscoveryYear >= minDiscoveryYear.Value);
+            if (maxDiscoveryYear.HasValue)
+                query = query.Where(p => p.DiscoveryYear <= maxDiscoveryYear.Value);
+            if (minOrbitalPeriod.HasValue)
+                query = query.Where(p => p.OrbitalPeriod >= minOrbitalPeriod.Value);
+            if (maxOrbitalPeriod.HasValue)
+                query = query.Where(p => p.OrbitalPeriod <= maxOrbitalPeriod.Value);
+            if (minEccentricity.HasValue)
+                query = query.Where(p => p.Eccentricity >= minEccentricity.Value);
+            if (maxEccentricity.HasValue)
+                query = query.Where(p => p.Eccentricity <= maxEccentricity.Value);
+            if (minStellarMagnitude.HasValue)
+                query = query.Where(p => p.StellarMagnitude >= minStellarMagnitude.Value);
+            if (maxStellarMagnitude.HasValue)
+                query = query.Where(p => p.StellarMagnitude <= maxStellarMagnitude.Value);
+            if (!string.IsNullOrWhiteSpace(distance))
+                query = query.Where(p => p.Distance != null && p.Distance.ToLower().Contains(distance.ToLower()));
+            if (!string.IsNullOrWhiteSpace(radius))
+                query = query.Where(p => p.Radius != null && p.Radius.ToLower().Contains(radius.ToLower()));
+            if (!string.IsNullOrWhiteSpace(temperature))
+                query = query.Where(p => p.Temperature != null && p.Temperature.ToLower().Contains(temperature.ToLower()));
+            if (!string.IsNullOrWhiteSpace(hostStarMass))
+                query = query.Where(p => p.HostStarMass != null && p.HostStarMass.ToLower().Contains(hostStarMass.ToLower()));
+            if (!string.IsNullOrWhiteSpace(hostStarTemperature))
+                query = query.Where(p => p.HostStarTemperature != null && p.HostStarTemperature.ToLower().Contains(hostStarTemperature.ToLower()));
+            return await query
+                .Include(p => p.CelestialBodyNavigation)
+                .Include(p => p.DetectionMethodNavigation)
+                .Include(p => p.PlanetTypeNavigation)
+                .Include(p => p.Satellites)
+                .ToListAsync();
         }
     }
 }
