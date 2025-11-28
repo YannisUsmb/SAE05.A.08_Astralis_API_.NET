@@ -23,7 +23,6 @@ builder.Services.AddSwaggerGen(
         doc.IncludeXmlComments(xmlFile);
     }
 );
-builder.Services.AddDbContext<AstralisDbContext>();
 
 // DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
