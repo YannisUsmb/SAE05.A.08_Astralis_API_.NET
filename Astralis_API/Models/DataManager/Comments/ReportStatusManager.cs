@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ReportStatusManager : ReadableManager<ReportMotive, int>, IReportMotiveRepository
+    public class ReportStatusManager : ReadableManager<ReportStatus, int>, IReportStatusRepository
     {
         public ReportStatusManager(AstralisDbContext context) : base(context)
         {
