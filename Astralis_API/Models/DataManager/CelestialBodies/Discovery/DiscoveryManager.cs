@@ -29,32 +29,20 @@ namespace Astralis_API.Models.DataManager
         
         public async Task<IEnumerable<Discovery>> SearchAsync(
             string? title = null,
-            int? userId = null,
-            int? celestialBodyId = null,
             int? discoveryStatusId = null,
             int? aliasStatusId = null,
             int? discoveryApprovalUserId = null,
             int? aliasApprovalUserId = null)
         {
             var query = _discoveries.AsQueryable();
-            if (!string.IsNullOrWhiteSpace(title))
-            {
-                string titleLower = title.ToLower();
-                query = query.Where(d => d.Title.ToLower().Contains(titleLower));
-            }
-            if (userId.HasValue)
-                query = query.Where(d => d.UserId == userId.Value);
-
-            if (celestialBodyId.HasValue)
-                query = query.Where(d => d.CelestialBodyId == celestialBodyId.Value);
+            if (!string.IsNullOrWhiteSpace(title))            
+                query = query.Where(d => d.Title.ToLower().Contains(title.ToLower()));
             if (discoveryStatusId.HasValue)
                 query = query.Where(d => d.DiscoveryStatusId == discoveryStatusId.Value);
-
             if (aliasStatusId.HasValue)
                 query = query.Where(d => d.AliasStatusId == aliasStatusId.Value);
             if (discoveryApprovalUserId.HasValue)
                 query = query.Where(d => d.DiscoveryApprovalUserId == discoveryApprovalUserId.Value);
-
             if (aliasApprovalUserId.HasValue)
                 query = query.Where(d => d.AliasApprovalUserId == aliasApprovalUserId.Value);
             return await query
