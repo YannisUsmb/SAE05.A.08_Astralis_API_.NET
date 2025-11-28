@@ -26,8 +26,7 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Product>> GetByKeyAsync(string name)
         {
-            return await WithIncludes(_products.Where(p => p.Label.ToLower().Contains(name.ToLower())))
-                            .ToListAsync();
+            return await WithIncludes(_products.Where(p => p.Label.ToLower().Contains(name.ToLower()))).ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> SearchAsync(
@@ -51,11 +50,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(p => p.Price >= minPrice.Value);
             if (maxPrice.HasValue)
                 query = query.Where(p => p.Price <= maxPrice.Value);
-            return await query
-                .Include(p => p.ProductCategoryNavigation)
-                .Include(p => p.UserNavigation)
-                .Include(p => p.CartItems)
-                .Include(p => p.OrderDetails)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }
