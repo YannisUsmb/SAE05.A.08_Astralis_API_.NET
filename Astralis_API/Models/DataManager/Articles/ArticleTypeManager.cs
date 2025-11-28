@@ -1,5 +1,6 @@
 ﻿using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
@@ -8,5 +9,11 @@ namespace Astralis_API.Models.DataManager
         public ArticleTypeManager(AstralisDbContext context) : base(context)
         {
         }
+
+        protected override IQueryable<ArticleType> WithIncludes(IQueryable<ArticleType> query)
+        {
+            return query
+                .Include(at => at.TypesOfArticle);
+        }
     }
-}       
+}

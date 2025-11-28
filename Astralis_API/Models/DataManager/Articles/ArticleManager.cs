@@ -15,12 +15,18 @@ namespace Astralis_API.Models.DataManager
             _articles = _context.Set<Article>();
         }
 
+        protected override IQueryable<Article> WithIncludes(IQueryable<Article> query)
+        {
+            return query
+                .Include(a => a.TypesOfArticle)
+                    .ThenInclude(toa => toa.ArticleTypeNavigation)
+                .Include(a => a.ArticleInterests)
+                .Include(a => a.UserNavigation);
+        }
+
         public async override Task<IEnumerable<Article>> GetByKeyAsync(string title)
         {
-            return await _articles.Where(a => a.Title.ToLower().Contains(title.ToLower()))
-                            .Include(a => a.TypesOfArticle)
-                            .Include(a => a.ArticleInterests)
-                            .Include(a => a.UserNavigation)
+            return await WithIncludes(_articles.Where(a => a.Title.ToLower().Contains(title.ToLower())))
                             .ToListAsync();
         }
 
@@ -48,11 +54,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(a => a.IsPremium == isPremium.Value);
             if (typeId.HasValue)
                 query = query.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == typeId.Value));
-            return await query
-                .Include(a => a.TypesOfArticle)
-                    .ThenInclude(toa => toa.ArticleTypeNavigation)
-                .Include(a => a.ArticleInterests)
-                .Include(a => a.UserNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

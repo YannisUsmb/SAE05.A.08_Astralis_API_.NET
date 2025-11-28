@@ -4,7 +4,6 @@ namespace Astralis_API.Models.Repository
 {
     public interface IAsteroidRepository : IDataRepository<Asteroid, int, string>
     {
-        Task<IEnumerable<Asteroid>> GetByOrbitalIClassIdAsync(int id);
         Task<IEnumerable<Asteroid>> SearchAsync(
             string? reference = null,
             int? orbitalClassId = null,

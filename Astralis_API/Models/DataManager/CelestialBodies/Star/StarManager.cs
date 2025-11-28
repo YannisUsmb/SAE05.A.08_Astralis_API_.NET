@@ -15,11 +15,15 @@ namespace Astralis_API.Models.DataManager
             _stars = _context.Set<Star>();
         }
 
+        protected override IQueryable<Star> WithIncludes(IQueryable<Star> query)
+        {
+            return query.Include(s => s.CelestialBodyNavigation)
+                        .Include(s => s.SpectralClassNavigation);
+        }
+
         public async override Task<IEnumerable<Star>> GetByKeyAsync(string reference)
         {
-            return await _stars.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower()))
-                            .Include(s => s.CelestialBodyNavigation)
-                            .Include(s => s.SpectralClassNavigation)
+            return await WithIncludes( _stars.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower())))                            
                             .ToListAsync();
         }
 
@@ -77,9 +81,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(s => s.Temperature >= minTemperature.Value);
             if (maxTemperature.HasValue)
                 query = query.Where(s => s.Temperature <= maxTemperature.Value);
-            return await query
-                .Include(s => s.CelestialBodyNavigation)
-                .Include(s => s.SpectralClassNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

@@ -15,6 +15,15 @@ namespace Astralis_API.Models.DataManager
             _reports = _context.Set<Report>();
         }
 
+        protected override IQueryable<Report> WithIncludes(IQueryable<Report> query)
+        {
+            return query.Include(r => r.AdminNavigation)
+                .Include(r => r.CommentNavigation)
+                .Include(r => r.ReportMotiveNavigation)
+                .Include(r => r.ReportStatusNavigation)
+                .Include(r => r.UserNavigation);
+        }
+
         public async Task<IEnumerable<Report>> SearchAsync(
              int? statusId = null,
              int? motiveId = null,
@@ -31,12 +40,7 @@ namespace Astralis_API.Models.DataManager
             if (maxDate.HasValue)
                 query = query.Where(r => r.Date <= maxDate.Value);
             query = query.OrderByDescending(r => r.Date);
-            return await query
-                .Include(r => r.AdminNavigation)
-                .Include(r => r.CommentNavigation)
-                .Include(r => r.ReportMotiveNavigation)
-                .Include(r => r.ReportStatusNavigation)
-                .Include(r => r.UserNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

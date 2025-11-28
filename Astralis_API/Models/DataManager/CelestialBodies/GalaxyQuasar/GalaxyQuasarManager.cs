@@ -15,12 +15,16 @@ namespace Astralis_API.Models.DataManager
             _galaxyQuasars = _context.Set<GalaxyQuasar>();
         }
 
+        protected override IQueryable<GalaxyQuasar> WithIncludes(IQueryable<GalaxyQuasar> query)
+        {
+            return query.Include(gq => gq.CelestialBodyNavigation)
+                        .Include(gq => gq.GalaxyQuasarClassNavigation);
+        }
+
         public async override Task<IEnumerable<GalaxyQuasar>> GetByKeyAsync(string reference)
         {
-            return await _galaxyQuasars.Where(gq => gq.Reference.ToLower().Contains(reference.ToLower()))
-                            .Include(gq => gq.CelestialBodyNavigation)
-                            .Include(gq => gq.GalaxyQuasarClassNavigation)
-                            .ToListAsync();
+            return await WithIncludes(_galaxyQuasars.Where(gq => gq.Reference.ToLower().Contains(reference.ToLower()))
+                            ).ToListAsync();
         }
 
         public async Task<IEnumerable<GalaxyQuasar>> SearchAsync(
@@ -68,9 +72,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(gq => gq.ModifiedJulianDateObservation >= minMjdObs.Value);
             if (maxMjdObs.HasValue)
                 query = query.Where(gq => gq.ModifiedJulianDateObservation <= maxMjdObs.Value);
-            return await query
-                .Include(gq => gq.CelestialBodyNavigation)
-                .Include(gq => gq.GalaxyQuasarClassNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

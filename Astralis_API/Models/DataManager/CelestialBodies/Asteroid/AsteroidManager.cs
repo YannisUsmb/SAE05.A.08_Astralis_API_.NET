@@ -15,19 +15,16 @@ namespace Astralis_API.Models.DataManager
             _asteroids = _context.Set<Asteroid>();
         }
 
-        public async override Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
+        protected override IQueryable<Asteroid> WithIncludes(IQueryable<Asteroid> query)
         {
-            return await _asteroids.Where(cb => cb.Reference.ToLower().Contains(reference.ToLower()))
-                            .Include(cb => cb.CelestialBodyNavigation)
-                            .Include(cb => cb.OrbitalClassNavigation)
-                            .ToListAsync();
+            return query
+                .Include(a => a.CelestialBodyNavigation)
+                .Include(a => a.OrbitalClassNavigation);
         }
 
-        public async Task<IEnumerable<Asteroid>> GetByOrbitalIClassIdAsync(int id)
+        public async override Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
         {
-            return await _asteroids.Where(cb => cb.OrbitalClassId == id)
-                            .Include(cb => cb.CelestialBodyNavigation)
-                            .Include(cb => cb.OrbitalClassNavigation)
+            return await WithIncludes(_asteroids.Where(a => a.Reference.ToLower().Contains(reference.ToLower())))
                             .ToListAsync();
         }
 
@@ -80,9 +77,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(a => a.FirstObservationDate == firstObservationDate.Value);
             if (lastObservationDate.HasValue)
                 query = query.Where(a => a.LastObservationDate == lastObservationDate.Value);
-            return await query
-                .Include(a => a.CelestialBodyNavigation)
-                .Include(a => a.OrbitalClassNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

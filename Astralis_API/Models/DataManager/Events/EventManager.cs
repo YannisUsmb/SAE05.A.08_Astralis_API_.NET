@@ -15,21 +15,21 @@ namespace Astralis_API.Models.DataManager
             _events = _context.Set<Event>();
         }
 
+        protected override IQueryable<Event> WithIncludes(IQueryable<Event> query)
+        {
+            return query.Include(e => e.EventInterests)
+                .Include(e => e.EventTypeNavigation)
+                .Include(e => e.UserNavigation);
+        }
         public async override Task<IEnumerable<Event>> GetByKeyAsync(string title)
         {
-            return await _events.Where(s => s.Title.ToLower().Contains(title.ToLower()))
-                            .Include(s => s.EventTypeNavigation)
-                            .Include(s => s.UserNavigation)
-                            .Include(s => s.EventInterests)
+            return await WithIncludes(_events.Where(s => s.Title.ToLower().Contains(title.ToLower())))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Event>> GetByStartDateAsync(DateTime date)
         {
-            return await _events.Where(s => s.StartDate == date)
-                            .Include(s => s.EventTypeNavigation)
-                            .Include(s => s.UserNavigation)
-                            .Include(s => s.EventInterests)
+            return await WithIncludes(_events.Where(s => s.StartDate == date))
                             .ToListAsync();
         }
     }

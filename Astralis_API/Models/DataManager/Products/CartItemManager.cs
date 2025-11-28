@@ -1,5 +1,6 @@
 ﻿using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
@@ -7,6 +8,12 @@ namespace Astralis_API.Models.DataManager
     {
         public CartItemManager(AstralisDbContext context) : base(context)
         {
+        }
+
+        protected override IQueryable<CartItem> WithIncludes(IQueryable<CartItem> query)
+        {
+            return query.Include(ci => ci.ProductNavigation)
+                .Include(ci => ci.UserNavigation);
         }
     }
 }

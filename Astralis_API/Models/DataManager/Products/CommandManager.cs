@@ -15,21 +15,22 @@ namespace Astralis_API.Models.DataManager
             _command = _context.Set<Command>();
         }
 
+        protected override IQueryable<Command> WithIncludes(IQueryable<Command> query)
+        {
+            return query.Include(c => c.UserNavigation)
+                .Include(c => c.CommandStatusNavigation)
+                .Include(c => c.OrderDetails);
+        }
+
         public async override Task<IEnumerable<Command>> GetByKeyAsync(int id)
         {
-            return await _command.Where(c => c.UserId==id)
-                            .Include(c => c.CommandStatusNavigation)
-                            .Include(c => c.UserNavigation)
-                            .Include(c => c.OrderDetails)
+            return await WithIncludes( _command.Where(c => c.UserId==id))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Command>> GetByCommandStatusIdAsync(int id)
         {
-            return await _command.Where(c => c.CommandStatusId == id)
-                            .Include(c => c.CommandStatusNavigation)
-                            .Include(c => c.UserNavigation)
-                            .Include(c => c.OrderDetails)
+            return await WithIncludes( _command.Where(c => c.CommandStatusId == id))
                             .ToListAsync();
         }
     }

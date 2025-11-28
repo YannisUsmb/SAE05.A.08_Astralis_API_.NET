@@ -1,5 +1,6 @@
 ﻿using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
@@ -7,6 +8,10 @@ namespace Astralis_API.Models.DataManager
     {
         public GalaxyQuasarClassManager(AstralisDbContext context) : base(context)
         {
+        }
+        protected override IQueryable<GalaxyQuasarClass> WithIncludes(IQueryable<GalaxyQuasarClass> query)
+        {
+            return query.Include(d => d.GalaxiesQuasars);
         }
     }
 }

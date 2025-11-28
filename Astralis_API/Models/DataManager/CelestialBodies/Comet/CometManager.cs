@@ -15,10 +15,14 @@ namespace Astralis_API.Models.DataManager
             _comets = _context.Set<Comet>();
         }
 
+        protected override IQueryable<Comet> WithIncludes(IQueryable<Comet> query)
+        {
+            return query.Include(cb => cb.CelestialBodyNavigation);
+        }
+
         public async override Task<IEnumerable<Comet>> GetByKeyAsync(string reference)
         {
-            return await _comets.Where(c => c.Reference.ToLower().Contains(reference.ToLower()))
-                            .Include(c => c.CelestialBodyNavigation)
+            return await WithIncludes(_comets.Where(c => c.Reference.ToLower().Contains(reference.ToLower())))
                             .ToListAsync();
         }
 
@@ -71,8 +75,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(c => c.MinimumOrbitIntersectionDistanceAU >= minMOID.Value);
             if (maxMOID.HasValue)
                 query = query.Where(c => c.MinimumOrbitIntersectionDistanceAU <= maxMOID.Value);
-            return await query
-                .Include(c => c.CelestialBodyNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

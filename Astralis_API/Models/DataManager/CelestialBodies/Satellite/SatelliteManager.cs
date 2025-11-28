@@ -15,12 +15,17 @@ namespace Astralis_API.Models.DataManager
             _satellites = _context.Set<Satellite>();
         }
 
+        protected override IQueryable<Satellite> WithIncludes(IQueryable<Satellite> query)
+        {
+            return query.Include(s => s.CelestialBodyNavigation)
+                        .Include(s => s.PlanetNavigation)
+                            .ThenInclude(p => p.CelestialBodyNavigation);
+        }
+
         public async override Task<IEnumerable<Satellite>> GetByKeyAsync(string reference)
         {
-            return await _satellites.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower()))
-                            .Include(s => s.CelestialBodyNavigation)
-                            .Include(s => s.PlanetNavigation)
-                            .ToListAsync();
+            return await WithIncludes(_satellites.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower()))
+                            ).ToListAsync();
         }
 
         public async Task<IEnumerable<Satellite>> SearchAsync(
@@ -56,10 +61,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(s => s.Density >= minDensity.Value);
             if (maxDensity.HasValue)
                 query = query.Where(s => s.Density <= maxDensity.Value);
-            return await query
-                .Include(s => s.CelestialBodyNavigation)
-                .Include(s => s.PlanetNavigation)
-                .ThenInclude(p => p.CelestialBodyNavigation)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

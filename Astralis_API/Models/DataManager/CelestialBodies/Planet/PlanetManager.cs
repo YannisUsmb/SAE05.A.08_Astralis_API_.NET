@@ -15,13 +15,17 @@ namespace Astralis_API.Models.DataManager
             _planets = _context.Set<Planet>();
         }
 
-        public async override Task<IEnumerable<Planet>> GetByKeyAsync(string reference)
+        protected override IQueryable<Planet> WithIncludes(IQueryable<Planet> query)
         {
-            return await _planets.Where(p => p.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower()))
-                            .Include(p => p.CelestialBodyNavigation)
+            return query.Include(p => p.CelestialBodyNavigation)
                             .Include(p => p.DetectionMethodNavigation)
                             .Include(p => p.PlanetTypeNavigation)
-                            .Include(p => p.Satellites)
+                            .Include(p => p.Satellites);
+        }
+
+        public async override Task<IEnumerable<Planet>> GetByKeyAsync(string reference)
+        {
+            return await WithIncludes(_planets.Where(p => p.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower())))
                             .ToListAsync();
         }
         public async Task<IEnumerable<Planet>> SearchAsync(
@@ -79,11 +83,7 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(p => p.HostStarMass != null && p.HostStarMass.ToLower().Contains(hostStarMass.ToLower()));
             if (!string.IsNullOrWhiteSpace(hostStarTemperature))
                 query = query.Where(p => p.HostStarTemperature != null && p.HostStarTemperature.ToLower().Contains(hostStarTemperature.ToLower()));
-            return await query
-                .Include(p => p.CelestialBodyNavigation)
-                .Include(p => p.DetectionMethodNavigation)
-                .Include(p => p.PlanetTypeNavigation)
-                .Include(p => p.Satellites)
+            return await WithIncludes(query)
                 .ToListAsync();
         }
     }

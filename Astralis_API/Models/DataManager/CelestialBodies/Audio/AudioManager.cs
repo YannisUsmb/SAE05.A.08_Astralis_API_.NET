@@ -14,18 +14,21 @@ namespace Astralis_API.Models.DataManager
             _context = context;
             _audios = _context.Set<Audio>();
         }
-
+        protected override IQueryable<Audio> WithIncludes(IQueryable<Audio> query)
+        {
+            return query
+                .Include(a => a.CelestialBodyTypeNavigation)
+                ;
+        }
         public async override Task<IEnumerable<Audio>> GetByKeyAsync(string title)
         {
-            return await _audios.Where(cb => cb.Title.ToLower().Contains(title.ToLower()))
-                            .Include(cb => cb.CelestialBodyTypeNavigation)
+            return await WithIncludes(_audios.Where(a => a.Title.ToLower().Contains(title.ToLower())))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Audio>> GetByCategoryIdAsync(int id)
         {
-            return await _audios.Where(cb => cb.CelestialBodyTypeId == id)
-                            .Include(cb => cb.CelestialBodyTypeNavigation)
+            return await WithIncludes(_audios.Where(a => a.CelestialBodyTypeId == id))
                             .ToListAsync();
         }
     }

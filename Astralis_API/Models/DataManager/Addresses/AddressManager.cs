@@ -1,5 +1,6 @@
 ﻿using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
@@ -7,6 +8,13 @@ namespace Astralis_API.Models.DataManager
     {
         public AddressManager(AstralisDbContext context) : base(context)
         {
+        }
+        protected override IQueryable<Address> WithIncludes(IQueryable<Address> query)
+        {
+            return query
+                .Include(a => a.CityNavigation)
+                .Include(a => a.InvoicingAddressUsers)
+                .Include(a => a.DeliveryAddressUsers);
         }
     }
 }

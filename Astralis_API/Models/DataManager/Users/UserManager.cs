@@ -15,10 +15,9 @@ namespace Astralis_API.Models.DataManager
             _users = _context.Set<User>();
         }
 
-        public async override Task<IEnumerable<User>> GetByKeyAsync(string username)
+        protected override IQueryable<User> WithIncludes(IQueryable<User> query)
         {
-            return await _users.Where(u => u.Username.ToLower().Contains(username.ToLower()))
-                            .Include(u => u.DeliveryAddressNavigation)
+            return query.Include(u => u.DeliveryAddressNavigation)
                             .Include(u => u.InvoicingAddressNavigation)
                             .Include(u => u.PhonePrefixNavigation)
                             .Include(u => u.UserRoleNavigation)
@@ -36,32 +35,18 @@ namespace Astralis_API.Models.DataManager
                             .Include(u => u.Discoveries)
                             .Include(u => u.ApprovedDiscoveries)
                             .Include(u => u.ApprovedAliasDiscoveries)
-                            .Include(u => u.UserNotifications) 
+                            .Include(u => u.UserNotifications);
+        }
+
+        public async override Task<IEnumerable<User>> GetByKeyAsync(string username)
+        {
+            return await WithIncludes(_users.Where(u => u.Username.ToLower().Contains(username.ToLower())))                             
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetByUserRoleIdAsync(int id)
         {
-            return await _users.Where(u => u.UserRoleId == id)
-                            .Include(u => u.DeliveryAddressNavigation)
-                            .Include(u => u.InvoicingAddressNavigation)
-                            .Include(u => u.PhonePrefixNavigation)
-                            .Include(u => u.UserRoleNavigation)
-                            .Include(u => u.CreditCards)
-                            .Include(u => u.Events)
-                            .Include(u => u.Commands)
-                            .Include(u => u.CartItems)
-                            .Include(u => u.Products)
-                            .Include(u => u.EventInterests)
-                            .Include(u => u.Articles)
-                            .Include(u => u.ArticleInterests)
-                            .Include(u => u.Comments)
-                            .Include(u => u.Reports)
-                            .Include(u => u.TreatedReports)
-                            .Include(u => u.Discoveries)
-                            .Include(u => u.ApprovedDiscoveries)
-                            .Include(u => u.ApprovedAliasDiscoveries)
-                            .Include(u => u.UserNotifications)
+            return await WithIncludes (_users.Where(u => u.UserRoleId == id))
                             .ToListAsync();
         }
     }
