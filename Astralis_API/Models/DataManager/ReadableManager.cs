@@ -17,12 +17,18 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return await _entities.ToListAsync();
+            return await WithIncludes(_entities).ToListAsync();
         }
+
 
         public async Task<TEntity> GetByIdAsync(TIdentifier id)
         {
             return await _entities.FindAsync(id);
+        }
+
+        protected virtual IQueryable<TEntity> WithIncludes(IQueryable<TEntity> query)
+        {
+            return query;
         }
     }
 }

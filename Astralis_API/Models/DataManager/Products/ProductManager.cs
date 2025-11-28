@@ -16,23 +16,24 @@ namespace Astralis_API.Models.DataManager
             _products = _context.Set<Product>();
         }
 
+        protected override IQueryable<Product> WithIncludes(IQueryable<Product> query)
+        {
+            return query
+                .Include(p => p.ProductCategoryNavigation)
+                .Include(p => p.UserNavigation)
+                .Include(p => p.CartItems)
+                .Include(p => p.OrderDetails);
+        }
+
         public async override Task<IEnumerable<Product>> GetByKeyAsync(string name)
         {
-            return await _products.Where(p => p.Label.ToLower().Contains(name.ToLower()))
-                            .Include(p => p.ProductCategoryNavigation)
-                            .Include(p => p.UserNavigation)
-                            .Include(p => p.CartItems)
-                            .Include(p => p.OrderDetails)
+            return await WithIncludes(_products.Where(p => p.Label.ToLower().Contains(name.ToLower())))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetByProductCategoryIdAsync(int id)
         {
-            return await _products.Where(p => p.ProductCategoryId == id)
-                            .Include(p => p.ProductCategoryNavigation)
-                            .Include(p => p.UserNavigation)
-                            .Include(p => p.CartItems)
-                            .Include(p => p.OrderDetails)
+            return await WithIncludes(_products.Where(p => p.ProductCategoryId == id))                            
                             .ToListAsync();
         }
     }
