@@ -26,17 +26,45 @@ namespace Astralis_API.Models.DataManager
                             .Include(d => d.DiscoveryStatusNavigation)
                             .ToListAsync();
         }
-
-        public async Task<IEnumerable<Discovery>> GetByUserIdAsync(int id)
+        
+        public async Task<IEnumerable<Discovery>> SearchAsync(
+            string? title = null,
+            int? userId = null,
+            int? celestialBodyId = null,
+            int? discoveryStatusId = null,
+            int? aliasStatusId = null,
+            int? discoveryApprovalUserId = null,
+            int? aliasApprovalUserId = null)
         {
-            return await _discoveries.Where(d => d.UserId == id)
-                            .Include(d => d.AliasStatusNavigation)
-                            .Include(d => d.ApprovalAliasUserNavigation)
-                            .Include(d => d.CelestialBodyNavigation)
-                            .Include(d => d.ApprovalUserNavigation)
-                            .Include(d => d.UserNavigation)
-                            .Include(d => d.DiscoveryStatusNavigation)
-                            .ToListAsync();
+            var query = _discoveries.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                string titleLower = title.ToLower();
+                query = query.Where(d => d.Title.ToLower().Contains(titleLower));
+            }
+            if (userId.HasValue)
+                query = query.Where(d => d.UserId == userId.Value);
+
+            if (celestialBodyId.HasValue)
+                query = query.Where(d => d.CelestialBodyId == celestialBodyId.Value);
+            if (discoveryStatusId.HasValue)
+                query = query.Where(d => d.DiscoveryStatusId == discoveryStatusId.Value);
+
+            if (aliasStatusId.HasValue)
+                query = query.Where(d => d.AliasStatusId == aliasStatusId.Value);
+            if (discoveryApprovalUserId.HasValue)
+                query = query.Where(d => d.DiscoveryApprovalUserId == discoveryApprovalUserId.Value);
+
+            if (aliasApprovalUserId.HasValue)
+                query = query.Where(d => d.AliasApprovalUserId == aliasApprovalUserId.Value);
+            return await query
+                .Include(d => d.AliasStatusNavigation)
+                .Include(d => d.ApprovalAliasUserNavigation)
+                .Include(d => d.CelestialBodyNavigation)
+                .Include(d => d.ApprovalUserNavigation)
+                .Include(d => d.UserNavigation)
+                .Include(d => d.DiscoveryStatusNavigation)
+                .ToListAsync();
         }
     }
 }

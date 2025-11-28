@@ -17,7 +17,8 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<CelestialBody>> GetByKeyAsync(string name)
         {
-            return await _celestialBodies.Where(cb => cb.Name.ToLower().Contains(name.ToLower()))
+            return await _celestialBodies.Where(cb => cb.Name.ToLower().Contains(name)
+                          ||(cb.Alias != null && cb.Alias.ToLower().Contains(name)))
                             .Include(cb => cb.PlanetNavigation)
                             .Include(cb => cb.GalaxyQuasarNavigation)
                             .Include(cb => cb.StarNavigation)

@@ -23,5 +23,15 @@ namespace Astralis_API.Models.DataManager
                             .Include(a => a.UserNavigation)
                             .ToListAsync();
         }
+
+        public async Task<IEnumerable<Article>> GetByTypeOfArticle(int idtype)
+        {
+            return await _articles.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == idtype))
+                .Include(a => a.TypesOfArticle)
+                .ThenInclude(toa => toa.ArticleTypeNavigation)
+                .Include(a => a.ArticleInterests)
+                .Include(a => a.UserNavigation)
+                .ToListAsync();
+        }
     }
 }
