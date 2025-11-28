@@ -8,7 +8,7 @@ namespace Astralis_API.Models.Mapper
     {
         public MapperProfile()
         {
-            // Address.
+            ///// Address.
 
             // Entity to DTO (Read).
             CreateMap<Address, AddressDto>()
@@ -23,6 +23,11 @@ namespace Astralis_API.Models.Mapper
             // DTO to Entity (Write).
             CreateMap<AddressCreateDto, Address>();
             CreateMap<AddressUpdateDto, Address>();
+
+            ///// Alias Status.
+
+            // Entity to DTO (Read).
+            CreateMap<AliasStatus, AliasStatusDto>();
         }
     }
 }
