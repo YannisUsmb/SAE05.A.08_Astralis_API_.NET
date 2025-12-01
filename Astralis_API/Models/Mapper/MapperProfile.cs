@@ -277,6 +277,22 @@ namespace Astralis_API.Models.Mapper
             ///// ProductCategory.
             // Entity to DTO (Read).
             CreateMap<ProductCategory, ProductCategoryDto>();
+
+            ///// Report.
+            // Entity to DTO (Read).
+            CreateMap<Report, ReportDto>()
+                // .Include(r => r.ReportMotiveNavigation)
+                .ForMember(dest => dest.ReportMotiveLabel, opt => opt.MapFrom(src => src.ReportMotiveNavigation.Label))
+                // .Include(r => r.ReportStatusNavigation)
+                .ForMember(dest => dest.ReportStatusLabel, opt => opt.MapFrom(src => src.ReportStatusNavigation.Label))
+                // .Include(r => r.UserNavigation)
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                // .Include(r => r.AdminNavigation)
+                .ForMember(dest => dest.AdminName, opt => opt.MapFrom(src =>
+                    src.AdminNavigation != null ? src.AdminNavigation.Username : null));
+            // DTO to Entity (Write).
+            CreateMap<ReportCreateDto, Report>();
+            CreateMap<ReportUpdateDto, Report>();
         }
     }
 }
