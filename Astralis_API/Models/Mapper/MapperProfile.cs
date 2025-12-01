@@ -58,6 +58,10 @@ namespace Astralis_API.Models.Mapper
             ///// ArticleInterest.
             // Entity to DTO (Read).
             CreateMap<ArticleInterest, ArticleInterestDto>();
+
+            ///// ArticleType.
+            // Entity to DTO (Read).
+            CreateMap<ArticleType, ArticleTypeDto>();
         }
     }
 }
