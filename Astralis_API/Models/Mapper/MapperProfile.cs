@@ -119,6 +119,20 @@ namespace Astralis_API.Models.Mapper
             CreateMap<CometCreateDto, Comet>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+
+            ///// Command.
+            // Entity to DTO (Read).
+            CreateMap<Command, CommandListDto>()
+                // .Include(c => c.CommandStatusNavigation)
+                .ForMember(dest => dest.CommandStatusLabel, opt => opt.MapFrom(src => src.CommandStatusNavigation.Label))
+                // Computed Property.
+                .ForMember(dest => dest.CountItems, opt => opt.MapFrom(src => 
+                    src.OrderDetails.Sum(od => od.Quantity)));
+            CreateMap<Command, CommandDetailDto>()
+                // .Include(c => c.CommandStatusNavigation)
+                .ForMember(dest => dest.CommandStatusLabel, opt => opt.MapFrom(src => src.CommandStatusNavigation.Label));
+            // DTO to Entity (Write).
+            CreateMap<CommandUpdateDto, Command>();
         }
     }
 }
