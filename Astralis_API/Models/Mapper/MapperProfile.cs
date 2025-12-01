@@ -113,6 +113,19 @@ namespace Astralis_API.Models.Mapper
                 // .Include(c => c.CountryNavigation)
                 .ForMember(dest => dest.CountryId, opt => opt.MapFrom(src => src.CountryNavigation.Id))
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CountryNavigation.Name));
+
+            ///// Comet.
+            // Entity to DTO (Read).
+            CreateMap<Comet, CometDto>()
+                // .Include(c => c.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias));
+            // DTO to Entity (Write).
+            CreateMap<CometUpdateDto, Comet>();
+            CreateMap<CometCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<CometCreateDto, Comet>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
         }
     }
 }
