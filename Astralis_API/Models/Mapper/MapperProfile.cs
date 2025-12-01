@@ -9,7 +9,6 @@ namespace Astralis_API.Models.Mapper
         public MapperProfile()
         {
             ///// Address.
-
             // Entity to DTO (Read).
             CreateMap<Address, AddressDto>()
                 // .Include(a => a.CityNavigation)
@@ -19,18 +18,15 @@ namespace Astralis_API.Models.Mapper
                 // .ThenInclude(c => c.CountryNavigation)
                 .ForMember(dest => dest.CountryId, opt => opt.MapFrom(src => src.CityNavigation.CountryNavigation.Id))
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CityNavigation.CountryNavigation.Name));
-
             // DTO to Entity (Write).
             CreateMap<AddressCreateDto, Address>();
             CreateMap<AddressUpdateDto, Address>();
 
             ///// Alias Status.
-
             // Entity to DTO (Read).
             CreateMap<AliasStatus, AliasStatusDto>();
 
             ///// Article.
-
             // Entity to DTO (Read).
             CreateMap<Article, ArticleListDto>()
                 // Computed Property: Preview.
@@ -44,7 +40,6 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.ArticleInterests.Count()))
                 // Computed Property: CommentsCount.
                 .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src => src.Comments.Count()));
-
             CreateMap<Article, ArticleDetailDto>()
                 // .Include(a => a.UserNavigation)
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserNavigation.Id))
@@ -56,10 +51,13 @@ namespace Astralis_API.Models.Mapper
                 // .ThenInclude(toa => toa.ArticleTypeNavigation)
                 .ForMember(dest => dest.CategoryNames, opt => opt.MapFrom(src => 
                     src.TypesOfArticle.Select(toa => toa.ArticleTypeNavigation.Label).ToList()));
-
             // DTO to Entity (Write).
             CreateMap<ArticleCreateDto, Article>();
             CreateMap<ArticleUpdateDto, Article>();
+
+            ///// ArticleInterest.
+            // Entity to DTO (Read).
+            CreateMap<ArticleInterest, ArticleInterestDto>();
         }
     }
 }
