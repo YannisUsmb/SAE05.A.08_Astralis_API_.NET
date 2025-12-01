@@ -234,6 +234,10 @@ namespace Astralis_API.Models.Mapper
                 // .Include(od => od.ProductNavigation)
                 .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
+
+            ///// PhonePrefix.
+            // Entity to DTO (Read).
+            CreateMap<PhonePrefix, PhonePrefixDto>();
         }
     }
 }
