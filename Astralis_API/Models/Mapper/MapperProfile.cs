@@ -32,15 +32,15 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.Preview, opt => opt.MapFrom(src => 
                     (src.Content.Length > 100) ? src.Content.Substring(0, 100) + "..." : src.Content))
                 // .Include(a => a.UserNavigation)
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.UserNavigation.Username))
-                .ForMember(dest => dest.AuthorAvatarPath, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
+                .ForMember(dest => dest.AuthorUsername, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                .ForMember(dest => dest.AuthorAvatarUrl, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
                 // Computed Properties.
                 .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.ArticleInterests.Count())) // Computed Property: LikesCount.
                 .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src => src.Comments.Count())); // Computed Property: CommentsCount.
             CreateMap<Article, ArticleDetailDto>()
                 // .Include(a => a.UserNavigation)
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.UserNavigation.Username))
-                .ForMember(dest => dest.AuthorAvatarPath, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
+                .ForMember(dest => dest.AuthorUsername, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                .ForMember(dest => dest.AuthorAvatarUrl, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
                 // .Include(a => a.TypesOfArticle)
                 .ForMember(dest => dest.CategoryIds, opt => opt.MapFrom(src => 
                     src.TypesOfArticle.Select(toa => toa.ArticleTypeId).ToList()))
@@ -142,8 +142,11 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<Comment, CommentDto>()
                 // .Include(c => c.UserNavigation)
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserNavigation.Username))
                 .ForMember(dest => dest.UserAvatarUrl, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl));
+            // DTO to Entity (Write).
+            CreateMap<CommentCreateDto, Comment>();
+            CreateMap<CommentUpdateDto, Comment>();
         }
     }
 }
