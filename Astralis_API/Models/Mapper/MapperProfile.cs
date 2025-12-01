@@ -106,6 +106,13 @@ namespace Astralis_API.Models.Mapper
             ///// CelestialBodyType.
             // Entity to DTO (Read).
             CreateMap<CelestialBodyType, CelestialBodyTypeDto>();
+
+            ///// City.
+            // Entity to DTO (Read).
+            CreateMap<City, CityDto>()
+                // .Include(c => c.CountryNavigation)
+                .ForMember(dest => dest.CountryId, opt => opt.MapFrom(src => src.CountryNavigation.Id))
+                .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CountryNavigation.Name));
         }
     }
 }
