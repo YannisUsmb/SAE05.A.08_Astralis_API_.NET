@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class CountryManager : CrudManager<Country, int>, ICountryRepository
+    public class CountryManager : ReadableManager<Country, int>, ICountryRepository
     {
         public CountryManager(AstralisDbContext context) : base(context)
         {

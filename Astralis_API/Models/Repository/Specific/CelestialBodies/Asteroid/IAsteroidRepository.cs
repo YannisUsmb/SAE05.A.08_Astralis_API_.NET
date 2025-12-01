@@ -9,15 +9,14 @@ namespace Astralis_API.Models.Repository
             IEnumerable<int>? orbitalClassIds = null,
             bool? isPotentiallyHazardous = null,
             int? orbitId = null,
-            decimal? absoluteMagnitude = null,
+            decimal? minAbsoluteMagnitude = null,
+            decimal? maxAbsoluteMagnitude = null, 
             decimal? minDiameter = null,
             decimal? maxDiameter = null,
             decimal? minInclination = null,
             decimal? maxInclination = null,
             decimal? maxSemiMajorAxis = null,
-            decimal? minSemiMajorAxis = null,
-            DateTime? firstObservationDate = null,
-            DateTime? lastObservationDate = null
+            decimal? minSemiMajorAxis = null
         );
     }
 }
