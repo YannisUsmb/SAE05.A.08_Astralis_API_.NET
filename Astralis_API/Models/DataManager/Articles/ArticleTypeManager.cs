@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class ArticleTypeManager : CrudManager<ArticleType, int>, IArticleTypeRepository
+    public class ArticleTypeManager : ReadableManager<ArticleType, int>, IArticleTypeRepository
     {
         public ArticleTypeManager(AstralisDbContext context) : base(context)
         {

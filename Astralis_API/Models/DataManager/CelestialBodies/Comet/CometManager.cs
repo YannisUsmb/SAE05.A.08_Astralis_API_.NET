@@ -28,7 +28,6 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<Comet>> SearchAsync(
             string? reference = null,
-            int? celestialBodyId = null,
             decimal? minEccentricity = null,
             decimal? maxEccentricity = null,
             decimal? minInclination = null,
@@ -48,33 +47,43 @@ namespace Astralis_API.Models.DataManager
                 string refLower = reference.ToLower();
                 query = query.Where(c => c.Reference != null && c.Reference.ToLower().Contains(refLower));
             }
-
-            if (celestialBodyId.HasValue)
-                query = query.Where(c => c.CelestialBodyId == celestialBodyId.Value);
+           
             if (minEccentricity.HasValue)
                 query = query.Where(c => c.OrbitalEccentricity >= minEccentricity.Value);
+
             if (maxEccentricity.HasValue)
                 query = query.Where(c => c.OrbitalEccentricity <= maxEccentricity.Value);
+
             if (minInclination.HasValue)
                 query = query.Where(c => c.OrbitalInclinationDegrees >= minInclination.Value);
+
             if (maxInclination.HasValue)
                 query = query.Where(c => c.OrbitalInclinationDegrees <= maxInclination.Value);
+
             if (minPerihelionAU.HasValue)
                 query = query.Where(c => c.PerihelionDistanceAU >= minPerihelionAU.Value);
+
             if (maxPerihelionAU.HasValue)
                 query = query.Where(c => c.PerihelionDistanceAU <= maxPerihelionAU.Value);
+
             if (minAphelionAU.HasValue)
                 query = query.Where(c => c.AphelionDistanceAU >= minAphelionAU.Value);
+
             if (maxAphelionAU.HasValue)
                 query = query.Where(c => c.AphelionDistanceAU <= maxAphelionAU.Value);
+
             if (minOrbitalPeriod.HasValue)
                 query = query.Where(c => c.OrbitalPeriodYears >= minOrbitalPeriod.Value);
+
             if (maxOrbitalPeriod.HasValue)
                 query = query.Where(c => c.OrbitalPeriodYears <= maxOrbitalPeriod.Value);
+
             if (minMOID.HasValue)
                 query = query.Where(c => c.MinimumOrbitIntersectionDistanceAU >= minMOID.Value);
+
             if (maxMOID.HasValue)
                 query = query.Where(c => c.MinimumOrbitIntersectionDistanceAU <= maxMOID.Value);
+
             return await WithIncludes(query)
                 .ToListAsync();
         }

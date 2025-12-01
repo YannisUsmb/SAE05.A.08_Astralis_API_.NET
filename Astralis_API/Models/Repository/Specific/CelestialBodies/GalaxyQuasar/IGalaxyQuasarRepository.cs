@@ -6,7 +6,6 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<GalaxyQuasar>> SearchAsync(
             string? reference = null,
-            int? celestialBodyId = null,
             int? galaxyQuasarClassId = null,
             decimal? minRightAscension = null,
             decimal? maxRightAscension = null,

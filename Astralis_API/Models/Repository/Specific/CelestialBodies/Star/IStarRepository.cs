@@ -6,13 +6,10 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Star>> SearchAsync(
                     string? name = null,
-                    int? spectralClassId = null,
-                    int? celestialBodyId = null,
+                    IEnumerable<int>? spectralClassIds = null,
                     string? constellation = null,
                     string? designation = null,
                     string? bayerDesignation = null,
-                    DateOnly? minApprovalDate = null,
-                    DateOnly? maxApprovalDate = null,
                     decimal? minDistance = null,
                     decimal? maxDistance = null,
                     decimal? minLuminosity = null,

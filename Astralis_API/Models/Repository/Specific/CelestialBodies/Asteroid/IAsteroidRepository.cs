@@ -6,15 +6,16 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Asteroid>> SearchAsync(
             string? reference = null,
-            int? orbitalClassId = null,
+            IEnumerable<int>? orbitalClassIds = null,
             bool? isPotentiallyHazardous = null,
             int? orbitId = null,
             decimal? absoluteMagnitude = null,
             decimal? minDiameter = null,
-            decimal? MaxDiameter = null,
+            decimal? maxDiameter = null,
             decimal? minInclination = null,
-            decimal? MaxInclination = null,
-            decimal? semiMajorAxis = null,
+            decimal? maxInclination = null,
+            decimal? maxSemiMajorAxis = null,
+            decimal? minSemiMajorAxis = null,
             DateTime? firstObservationDate = null,
             DateTime? lastObservationDate = null
         );

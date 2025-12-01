@@ -6,7 +6,6 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Comet>> SearchAsync(
             string? reference = null,
-            int? celestialBodyId = null,
             decimal? minEccentricity = null,
             decimal? maxEccentricity = null,
             decimal? minInclination = null,

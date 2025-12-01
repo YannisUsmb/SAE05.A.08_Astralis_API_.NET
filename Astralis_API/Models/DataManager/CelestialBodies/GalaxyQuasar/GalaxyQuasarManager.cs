@@ -29,7 +29,6 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<GalaxyQuasar>> SearchAsync(
             string? reference = null,
-            int? celestialBodyId = null,
             int? galaxyQuasarClassId = null,
             decimal? minRightAscension = null,
             decimal? maxRightAscension = null,
@@ -48,30 +47,40 @@ namespace Astralis_API.Models.DataManager
                 string refLower = reference.ToLower();
                 query = query.Where(gq => gq.Reference != null && gq.Reference.ToLower().Contains(refLower));
             }
-            if (celestialBodyId.HasValue)
-                query = query.Where(gq => gq.CelestialBodyId == celestialBodyId.Value);
+            
             if (galaxyQuasarClassId.HasValue)
                 query = query.Where(gq => gq.GalaxyQuasarClassId == galaxyQuasarClassId.Value);
+
             if (minRightAscension.HasValue)
                 query = query.Where(gq => gq.RightAscension >= minRightAscension.Value);
+
             if (maxRightAscension.HasValue)
                 query = query.Where(gq => gq.RightAscension <= maxRightAscension.Value);
+
             if (minDeclination.HasValue)
                 query = query.Where(gq => gq.Declination >= minDeclination.Value);
+
             if (maxDeclination.HasValue)
                 query = query.Where(gq => gq.Declination <= maxDeclination.Value);
+
             if (minRedshift.HasValue)
                 query = query.Where(gq => gq.Redshift >= minRedshift.Value);
+
             if (maxRedshift.HasValue)
                 query = query.Where(gq => gq.Redshift <= maxRedshift.Value);
+
             if (minRMagnitude.HasValue)
                 query = query.Where(gq => gq.RMagnitude >= minRMagnitude.Value);
+
             if (maxRMagnitude.HasValue)
                 query = query.Where(gq => gq.RMagnitude <= maxRMagnitude.Value);
+
             if (minMjdObs.HasValue)
                 query = query.Where(gq => gq.ModifiedJulianDateObservation >= minMjdObs.Value);
+
             if (maxMjdObs.HasValue)
                 query = query.Where(gq => gq.ModifiedJulianDateObservation <= maxMjdObs.Value);
+
             return await WithIncludes(query)
                 .ToListAsync();
         }
