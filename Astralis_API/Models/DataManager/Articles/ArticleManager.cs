@@ -34,7 +34,6 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<Article>> SearchAsync(
             string? searchTerm = null,
-            int? userId = null,
             int? typeId = null,
             bool? isPremium = null)
         {
@@ -46,9 +45,6 @@ namespace Astralis_API.Models.DataManager
                     a.Title.ToLower().Contains(searchTermLower) || a.Content.ToLower().Contains(searchTermLower)
                 );
             }
-
-            if (userId.HasValue)
-                query = query.Where(a => a.UserId == userId.Value);
 
             if (isPremium.HasValue)
                 query = query.Where(a => a.IsPremium == isPremium.Value);
