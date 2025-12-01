@@ -297,6 +297,10 @@ namespace Astralis_API.Models.Mapper
             ///// ReportMotive.
             // Entity to DTO (Read).
             CreateMap<ReportMotive, ReportMotiveDto>();
+
+            ///// ReportStatus.
+            // Entity to DTO (Read).
+            CreateMap<ReportStatus, ReportStatusDto>();
         }
     }
 }
