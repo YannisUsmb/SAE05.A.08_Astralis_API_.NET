@@ -62,6 +62,22 @@ namespace Astralis_API.Models.Mapper
             ///// ArticleType.
             // Entity to DTO (Read).
             CreateMap<ArticleType, ArticleTypeDto>();
+
+            ///// Asteroid.
+            // Entity to DTO (Read).
+            CreateMap<Asteroid, AsteroidDto>()
+                // .Include(a => a.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
+                // .ThenInclude(cb => cb.OrbitalClassNavigation)
+                .ForMember(dest => dest.OrbitalClassName, opt => opt.MapFrom(src => src.OrbitalClassNavigation.Label))
+                .ForMember(dest => dest.OrbitalClassDescription, opt => opt.MapFrom(src => src.OrbitalClassNavigation.Description));
+            // DTO to Entity (Write).
+            CreateMap<AsteroidUpdateDto, Asteroid>();
+            CreateMap<AsteroidCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<AsteroidCreateDto, Asteroid>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
         }
     }
 }
