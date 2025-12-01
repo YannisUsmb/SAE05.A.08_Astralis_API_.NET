@@ -179,6 +179,18 @@ namespace Astralis_API.Models.Mapper
             ///// DiscoveryStatus.
             // Entity to DTO (Read).
             CreateMap<DiscoveryStatus, DiscoveryStatusDto>();
+
+            ///// Event.
+            // Entity to DTO (Read).
+            CreateMap<Event, EventDto>()
+                // .Include(e => e.EventTypeNavigation)
+                .ForMember(dest => dest.EventTypeLabel, opt => opt.MapFrom(src => src.EventTypeNavigation.Label))
+                // Computed Property.
+                .ForMember(dest => dest.InterestCount, opt => opt.MapFrom(src => 
+                    src.EventInterests.Count()));
+            // DTO to Entity (Write).
+            CreateMap<EventCreateDto, Event>();
+            CreateMap<EventUpdateDto, Event>();
         }
     }
 }
