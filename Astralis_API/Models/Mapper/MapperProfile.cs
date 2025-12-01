@@ -238,6 +238,25 @@ namespace Astralis_API.Models.Mapper
             ///// PhonePrefix.
             // Entity to DTO (Read).
             CreateMap<PhonePrefix, PhonePrefixDto>();
+
+            ///// Planet.
+            // Entity to DTO (Read).
+            CreateMap<Planet, PlanetDto>()
+                // .Include(p => p.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
+                // .Include(p => p.PlanetTypeNavigation)
+                .ForMember(dest => dest.PlanetTypeName, opt => opt.MapFrom(src => src.PlanetTypeNavigation.Label))
+                // .Include(p => p.DetectionMethodNavigation)
+                .ForMember(dest => dest.DetectionMethodName, opt => opt.MapFrom(src => src.DetectionMethodNavigation.Label))
+                // Computed Property.
+                .ForMember(dest => dest.SatelliteCount, opt => opt.MapFrom(src => src.Satellites.Count()));
+            // DTO to Entity (Write).
+            CreateMap<PlanetCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<PlanetCreateDto, Planet>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+            CreateMap<PlanetUpdateDto, Planet>();
         }
     }
 }
