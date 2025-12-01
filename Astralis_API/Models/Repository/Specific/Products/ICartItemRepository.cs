@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface ICartItemRepository : ICrudRepository<CartItem, int>
+    public interface ICartItemRepository : IJoinRepository<CartItem, int, int>
     {
     }
 }

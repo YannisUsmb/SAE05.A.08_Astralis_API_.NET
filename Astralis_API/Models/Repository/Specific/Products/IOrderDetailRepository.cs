@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IOrderDetailRepository : ICrudRepository<OrderDetail, int>
+    public interface IOrderDetailRepository : IJoinRepository<OrderDetail, int, int>
     {
     }
 }

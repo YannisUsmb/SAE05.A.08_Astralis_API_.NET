@@ -31,7 +31,7 @@ namespace Astralis_API.Models.DataManager
         public async Task<IEnumerable<Planet>> SearchAsync(
             string? name = null,
             IEnumerable<int>? planetTypeIds = null,
-            int? detectionMethodId = null,
+            IEnumerable<int>? detectionMethodIds = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
             decimal? minOrbitalPeriod = null,
@@ -57,9 +57,10 @@ namespace Astralis_API.Models.DataManager
             {
                 query = query.Where(a => planetTypeIds.Contains(a.PlanetTypeId));
             }
-
-            if (detectionMethodId.HasValue)
-                query = query.Where(p => p.DetectionMethodId == detectionMethodId.Value);
+            if (detectionMethodIds != null && detectionMethodIds.Any())
+            {
+                query = query.Where(a => detectionMethodIds.Contains(a.DetectionMethodId));
+            }            
 
             if (minDiscoveryYear.HasValue)
                 query = query.Where(p => p.DiscoveryYear >= minDiscoveryYear.Value);

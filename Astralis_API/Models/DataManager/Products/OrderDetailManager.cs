@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class OrderDetailManager : CrudManager<OrderDetail, int>, IOrderDetailRepository
+    public class OrderDetailManager : JoinManager<OrderDetail, int, int>, IOrderDetailRepository
     {
         public OrderDetailManager(AstralisDbContext context) : base(context)
         {

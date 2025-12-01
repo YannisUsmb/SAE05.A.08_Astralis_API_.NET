@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class CartItemManager : CrudManager<CartItem, int>, ICartItemRepository
+    public class CartItemManager : JoinManager<CartItem, int, int>, ICartItemRepository
     {
         public CartItemManager(AstralisDbContext context) : base(context)
         {
