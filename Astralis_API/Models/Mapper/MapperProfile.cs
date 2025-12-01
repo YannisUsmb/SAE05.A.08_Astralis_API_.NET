@@ -137,6 +137,13 @@ namespace Astralis_API.Models.Mapper
             ///// CommandStatus.
             // Entity to DTO (Read).
             CreateMap<CommandStatus, CommandStatusDto>();
+
+            ///// Comment.
+            // Entity to DTO (Read).
+            CreateMap<Comment, CommentDto>()
+                // .Include(c => c.UserNavigation)
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                .ForMember(dest => dest.UserAvatarUrl, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl));
         }
     }
 }
