@@ -78,6 +78,10 @@ namespace Astralis_API.Models.Mapper
             CreateMap<AsteroidCreateDto, Asteroid>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+
+            ///// Audio.
+            // Entity to DTO (Read).
+            CreateMap<Audio, AudioDto>();
         }
     }
 }
