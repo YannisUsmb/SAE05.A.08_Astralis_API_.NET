@@ -147,6 +147,10 @@ namespace Astralis_API.Models.Mapper
             // DTO to Entity (Write).
             CreateMap<CommentCreateDto, Comment>();
             CreateMap<CommentUpdateDto, Comment>();
+
+            ///// Country.
+            // Entity to DTO (Read).
+            CreateMap<Country, CountryDto>();
         }
     }
 }
