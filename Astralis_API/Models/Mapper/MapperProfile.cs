@@ -151,6 +151,10 @@ namespace Astralis_API.Models.Mapper
             ///// Country.
             // Entity to DTO (Read).
             CreateMap<Country, CountryDto>();
+
+            ///// CreditCard.
+            // Entity to DTO (Read).
+            CreateMap<CreditCard, CreditCardDto>();
         }
     }
 }
