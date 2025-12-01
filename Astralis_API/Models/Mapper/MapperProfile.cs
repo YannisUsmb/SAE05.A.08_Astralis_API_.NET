@@ -214,6 +214,10 @@ namespace Astralis_API.Models.Mapper
             CreateMap<GalaxyQuasarCreateDto, GalaxyQuasar>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+
+            ///// GalaxyQuasarClass.
+            // Entity to DTO (Read).
+            CreateMap<GalaxyQuasarClass, GalaxyQuasarClassDto>();
         }
     }
 }
