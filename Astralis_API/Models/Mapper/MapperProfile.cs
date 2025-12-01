@@ -273,6 +273,10 @@ namespace Astralis_API.Models.Mapper
             // DTO to Entity (Write).
             CreateMap<ProductCreateDto, Product>();
             CreateMap<ProductUpdateDto, Product>();
+
+            ///// ProductCategory.
+            // Entity to DTO (Read).
+            CreateMap<ProductCategory, ProductCategoryDto>();
         }
     }
 }
