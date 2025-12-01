@@ -133,6 +133,10 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.CommandStatusLabel, opt => opt.MapFrom(src => src.CommandStatusNavigation.Label));
             // DTO to Entity (Write).
             CreateMap<CommandUpdateDto, Command>();
+
+            ///// CommandStatus.
+            // Entity to DTO (Read).
+            CreateMap<CommandStatus, CommandStatusDto>();
         }
     }
 }
