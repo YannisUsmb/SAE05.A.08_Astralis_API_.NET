@@ -13,7 +13,8 @@ namespace Astralis_API.Models.DataManager
         protected override IQueryable<ArticleType> WithIncludes(IQueryable<ArticleType> query)
         {
             return query
-                .Include(at => at.TypesOfArticle);
+                .Include(at => at.TypesOfArticle)
+                    .ThenInclude(toa =>toa.ArticleNavigation);
         }
     }
 }

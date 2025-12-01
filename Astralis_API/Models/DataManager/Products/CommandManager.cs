@@ -19,18 +19,19 @@ namespace Astralis_API.Models.DataManager
         {
             return query.Include(c => c.UserNavigation)
                 .Include(c => c.CommandStatusNavigation)
-                .Include(c => c.OrderDetails);
+                .Include(c => c.OrderDetails)
+                    .ThenInclude(od => od.ProductNavigation);
         }
 
         public async override Task<IEnumerable<Command>> GetByKeyAsync(int id)
         {
-            return await WithIncludes( _command.Where(c => c.UserId==id))
+            return await WithIncludes(_command.Where(c => c.UserId == id))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Command>> GetByCommandStatusIdAsync(int id)
         {
-            return await WithIncludes( _command.Where(c => c.CommandStatusId == id))
+            return await WithIncludes(_command.Where(c => c.CommandStatusId == id))
                             .ToListAsync();
         }
     }

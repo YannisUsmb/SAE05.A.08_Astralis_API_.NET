@@ -25,17 +25,21 @@ namespace Astralis_API.Models.DataManager
                             .Include(u => u.Events)
                             .Include(u => u.Commands)
                             .Include(u => u.CartItems)
+                                .ThenInclude(ci => ci.ProductNavigation)
                             .Include(u => u.Products)
                             .Include(u => u.EventInterests)
+                                .ThenInclude(ei => ei.EventNavigation)
                             .Include(u => u.Articles)
                             .Include(u => u.ArticleInterests)
+                                .ThenInclude(ai => ai.ArticleNavigation)
                             .Include(u => u.Comments)
                             .Include(u => u.Reports)
                             .Include(u => u.TreatedReports)
                             .Include(u => u.Discoveries)
                             .Include(u => u.ApprovedDiscoveries)
                             .Include(u => u.ApprovedAliasDiscoveries)
-                            .Include(u => u.UserNotifications);
+                            .Include(u => u.UserNotifications)
+                                .ThenInclude(un=> un.NotificationNavigation);
         }
 
         public async override Task<IEnumerable<User>> GetByKeyAsync(string username)

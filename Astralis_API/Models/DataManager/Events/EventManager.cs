@@ -17,7 +17,9 @@ namespace Astralis_API.Models.DataManager
 
         protected override IQueryable<Event> WithIncludes(IQueryable<Event> query)
         {
-            return query.Include(e => e.EventInterests)
+            return query
+                .Include(e => e.EventInterests)
+                    .ThenInclude(ei => ei.UserNavigation)
                 .Include(e => e.EventTypeNavigation)
                 .Include(e => e.UserNavigation);
         }

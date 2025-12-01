@@ -21,7 +21,9 @@ namespace Astralis_API.Models.DataManager
                 .Include(a => a.TypesOfArticle)
                     .ThenInclude(toa => toa.ArticleTypeNavigation)
                 .Include(a => a.ArticleInterests)
-                .Include(a => a.UserNavigation);
+                    .ThenInclude(ai => ai.UserNavigation)
+                .Include(a => a.UserNavigation)
+                .Include(a => a.Comments);
         }
 
         public async override Task<IEnumerable<Article>> GetByKeyAsync(string title)
@@ -31,29 +33,29 @@ namespace Astralis_API.Models.DataManager
         }
 
         public async Task<IEnumerable<Article>> SearchAsync(
-            string? title = null,
-            string? content = null,
+            string? searchTerm = null,
             int? userId = null,
             int? typeId = null,
             bool? isPremium = null)
         {
             var query = _articles.AsQueryable();
-            if (!string.IsNullOrWhiteSpace(title))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                string titleLower = title.ToLower();
-                query = query.Where(a => a.Title.ToLower().Contains(titleLower));
+                string searchTermLower = searchTerm.ToLower();
+                query = query.Where(a =>
+                    a.Title.ToLower().Contains(searchTermLower) || a.Content.ToLower().Contains(searchTermLower)
+                );
             }
-            if (!string.IsNullOrWhiteSpace(content))
-            {
-                string contentLower = content.ToLower();
-                query = query.Where(a => a.Content.ToLower().Contains(contentLower));
-            }
+
             if (userId.HasValue)
                 query = query.Where(a => a.UserId == userId.Value);
+
             if (isPremium.HasValue)
                 query = query.Where(a => a.IsPremium == isPremium.Value);
+
             if (typeId.HasValue)
                 query = query.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == typeId.Value));
+
             return await WithIncludes(query)
                 .ToListAsync();
         }

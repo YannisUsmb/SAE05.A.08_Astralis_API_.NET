@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IEventInterestRepository : ICrudRepository<EventInterest, int>
+    public interface IEventInterestRepository : IJoinRepository<EventInterest, int, int>
     {
     }
 }

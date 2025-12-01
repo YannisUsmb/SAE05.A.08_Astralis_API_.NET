@@ -21,10 +21,13 @@ namespace Astralis_API.Models.DataManager
                         .Include(s => s.SpectralClassNavigation);
         }
 
-        public async override Task<IEnumerable<Star>> GetByKeyAsync(string reference)
+        public async override Task<IEnumerable<Star>> GetByKeyAsync(string search)
         {
-            return await WithIncludes( _stars.Where(s => s.CelestialBodyNavigation.Name.ToLower().Contains(reference.ToLower())))                            
-                            .ToListAsync();
+            return await WithIncludes(_stars.Where(s => 
+                s.CelestialBodyNavigation.Name.ToLower().Contains(search) ||
+                (s.Designation != null && s.Designation.ToLower().Contains(search)) || 
+                (s.BayerDesignation != null && s.BayerDesignation.ToLower().Contains(search))
+            )).ToListAsync();
         }
 
         public async Task<IEnumerable<Star>> SearchAsync(

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class EventInterestManager : CrudManager<EventInterest, int>, IEventInterestRepository
+    public class EventInterestManager : JoinManager<EventInterest, int, int>, IEventInterestRepository
     {
         public EventInterestManager(AstralisDbContext context) : base(context)
         {
