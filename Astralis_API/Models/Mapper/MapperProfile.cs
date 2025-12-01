@@ -218,6 +218,22 @@ namespace Astralis_API.Models.Mapper
             ///// GalaxyQuasarClass.
             // Entity to DTO (Read).
             CreateMap<GalaxyQuasarClass, GalaxyQuasarClassDto>();
+
+            ///// Notification.
+            // Entity to DTO (Read).
+            //CreateMap<Notification, MyNotificationDto>()
+            //    // .Include(n => n.NotificationTypeNavigation)
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.NotificationNavigation.Id))
+            //    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.NotificationNavigation.Label))
+            //    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.NotificationNavigation.Description))
+            // A RETRAVAILLER CAR MODELS MAL FAIT !!!
+
+            ///// OrderDetail.
+            // Entity to DTO (Read).
+            CreateMap<OrderDetail, OrderDetailDto>()
+                // .Include(od => od.ProductNavigation)
+                .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
+                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
         }
     }
 }
