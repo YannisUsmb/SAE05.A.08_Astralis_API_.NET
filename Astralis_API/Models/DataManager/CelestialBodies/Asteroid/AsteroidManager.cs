@@ -32,15 +32,14 @@ namespace Astralis_API.Models.DataManager
             string? reference = null,
             IEnumerable<int>? orbitalClassIds = null, bool? isPotentiallyHazardous = null,
             int? orbitId = null,
-            decimal? absoluteMagnitude = null,
+            decimal? minAbsoluteMagnitude = null,
+            decimal? maxAbsoluteMagnitude = null, 
             decimal? minDiameter = null,
             decimal? maxDiameter = null,
             decimal? minInclination = null,
             decimal? maxInclination = null,
             decimal? minSemiMajorAxis = null,
-            decimal? maxSemiMajorAxis = null,
-            DateTime? firstObservationDate = null,
-            DateTime? lastObservationDate = null)
+            decimal? maxSemiMajorAxis = null)
         {
             var query = _asteroids.AsQueryable();
             if (!string.IsNullOrWhiteSpace(reference))
@@ -60,6 +59,12 @@ namespace Astralis_API.Models.DataManager
             if (isPotentiallyHazardous.HasValue)
                 query = query.Where(a => a.IsPotentiallyHazardous == isPotentiallyHazardous.Value);
 
+            if (minAbsoluteMagnitude.HasValue)
+                query = query.Where(a => a.AbsoluteMagnitude >= minAbsoluteMagnitude.Value);
+
+            if (maxAbsoluteMagnitude.HasValue)
+                query = query.Where(a => a.AbsoluteMagnitude <= maxAbsoluteMagnitude.Value);
+
             if (minDiameter.HasValue)
                 query = query.Where(a => a.DiameterMinKm >= minDiameter.Value);
 
@@ -71,21 +76,12 @@ namespace Astralis_API.Models.DataManager
 
             if (maxInclination.HasValue)
                 query = query.Where(a => a.Inclination <= maxInclination.Value);
-
-            if (absoluteMagnitude.HasValue)
-                query = query.Where(a => a.AbsoluteMagnitude == absoluteMagnitude.Value);
-
+                        
             if (minSemiMajorAxis.HasValue)
                 query = query.Where(a => a.SemiMajorAxis >= minSemiMajorAxis.Value);
 
             if (maxSemiMajorAxis.HasValue)
-                query = query.Where(a => a.SemiMajorAxis <= maxSemiMajorAxis.Value);
-
-            if (firstObservationDate.HasValue)
-                query = query.Where(a => a.FirstObservationDate == firstObservationDate.Value);
-
-            if (lastObservationDate.HasValue)
-                query = query.Where(a => a.LastObservationDate == lastObservationDate.Value);
+                query = query.Where(a => a.SemiMajorAxis <= maxSemiMajorAxis.Value);           
 
             return await WithIncludes(query)
                 .ToListAsync();

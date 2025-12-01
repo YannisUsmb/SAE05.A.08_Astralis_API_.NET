@@ -29,7 +29,7 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<GalaxyQuasar>> SearchAsync(
             string? reference = null,
-            int? galaxyQuasarClassId = null,
+            IEnumerable<int>? galaxyQuasarClassIds = null,
             decimal? minRightAscension = null,
             decimal? maxRightAscension = null,
             decimal? minDeclination = null,
@@ -47,10 +47,10 @@ namespace Astralis_API.Models.DataManager
                 string refLower = reference.ToLower();
                 query = query.Where(gq => gq.Reference != null && gq.Reference.ToLower().Contains(refLower));
             }
-            
-            if (galaxyQuasarClassId.HasValue)
-                query = query.Where(gq => gq.GalaxyQuasarClassId == galaxyQuasarClassId.Value);
 
+            if (galaxyQuasarClassIds != null && galaxyQuasarClassIds.Any())
+                query = query.Where(gq => galaxyQuasarClassIds.Contains(gq.GalaxyQuasarClassId));
+            
             if (minRightAscension.HasValue)
                 query = query.Where(gq => gq.RightAscension >= minRightAscension.Value);
 
