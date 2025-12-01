@@ -9,6 +9,13 @@ namespace Astralis_API.Models.DataManager
         public CommentManager(AstralisDbContext context) : base(context)
         {
         }
+
+        public new async Task<Comment?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
         protected override IQueryable<Comment> WithIncludes(IQueryable<Comment> query)
         {
             return query.Include(c => c.ArticleNavigation)
