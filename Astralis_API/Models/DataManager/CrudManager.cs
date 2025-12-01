@@ -6,13 +6,9 @@ namespace Astralis_API.Models.DataManager
 {
     public class CrudManager<TEntity, TIdentifier> : ReadableManager<TEntity, TIdentifier>, ICrudRepository<TEntity, TIdentifier> where TEntity : class
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<TEntity> _entities;
 
         public CrudManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _entities = _context.Set<TEntity>();
         }
 
         public async Task AddAsync(TEntity entity)

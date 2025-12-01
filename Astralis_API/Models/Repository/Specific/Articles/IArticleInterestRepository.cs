@@ -2,7 +2,8 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IArticleInterestRepository : ICrudRepository<ArticleInterest, int>
+    public interface IArticleInterestRepository : IJoinRepository<ArticleInterest, int, int>
     {
+        Task<IEnumerable<ArticleInterest>> GetByUserIdAsync(int userId);
     }
 }

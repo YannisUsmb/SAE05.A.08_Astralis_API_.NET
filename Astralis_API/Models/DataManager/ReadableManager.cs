@@ -6,8 +6,8 @@ namespace Astralis_API.Models.DataManager
 {
     public class ReadableManager<TEntity, TIdentifier> : IReadableRepository<TEntity, TIdentifier> where TEntity : class
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<TEntity> _entities;
+        protected readonly AstralisDbContext? _context;
+        protected readonly DbSet<TEntity> _entities;
 
         public ReadableManager(AstralisDbContext context)
         {
