@@ -199,6 +199,21 @@ namespace Astralis_API.Models.Mapper
             ///// EventType.
             // Entity to DTO (Read).
             CreateMap<EventType, EventTypeDto>();
+
+            ///// GalaxyQuasar.
+            // Entity to DTO (Read).
+            CreateMap<GalaxyQuasar, GalaxyQuasarDto>()
+                // .Include(gq => gq.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
+                // .Include(gq => gq.GalaxyQuasarClassNavigation)
+                .ForMember(dest => dest.GalaxyQuasarClassName, opt => opt.MapFrom(src => src.GalaxyQuasarClassNavigation.Label));
+            // DTO to Entity (Write).
+            CreateMap<GalaxyQuasarUpdateDto, GalaxyQuasar>();
+            CreateMap<GalaxyQuasarCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<GalaxyQuasarCreateDto, GalaxyQuasar>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
         }
     }
 }
