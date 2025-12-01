@@ -155,6 +155,10 @@ namespace Astralis_API.Models.Mapper
             ///// CreditCard.
             // Entity to DTO (Read).
             CreateMap<CreditCard, CreditCardDto>();
+
+            ///// DetectionMethod.
+            // Entity to DTO (Read).
+            CreateMap<DetectionMethod, DetectionMethodDto>();
         }
     }
 }
