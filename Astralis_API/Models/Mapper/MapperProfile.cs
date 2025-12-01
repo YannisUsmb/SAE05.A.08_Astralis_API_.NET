@@ -261,6 +261,18 @@ namespace Astralis_API.Models.Mapper
             ///// PlanetType.
             // Entity to DTO (Read).
             CreateMap<PlanetType, PlanetTypeDto>();
+
+            ///// Product.
+            // Entity to DTO (Read).
+            CreateMap<Product, ProductListDto>()
+                // .Include(p => p.ProductCategoryNavigation)
+                .ForMember(dest => dest.CategoryLabel, opt => opt.MapFrom(src => src.ProductCategoryNavigation.Label));
+            CreateMap<Product, ProductDetailDto>()
+                // .Include(p => p.ProductCategoryNavigation)
+                .ForMember(dest => dest.CategoryLabel, opt => opt.MapFrom(src => src.ProductCategoryNavigation.Label));
+            // DTO to Entity (Write).
+            CreateMap<ProductCreateDto, Product>();
+            CreateMap<ProductUpdateDto, Product>();
         }
     }
 }
