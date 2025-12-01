@@ -12,7 +12,6 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<Address, AddressDto>()
                 // .Include(a => a.CityNavigation)
-                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.CityNavigation.Id))
                 .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.CityNavigation.Name))
                 .ForMember(dest => dest.PostCode, opt => opt.MapFrom(src => src.CityNavigation.PostCode))
                 // .ThenInclude(c => c.CountryNavigation)
@@ -33,16 +32,13 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.Preview, opt => opt.MapFrom(src => 
                     (src.Content.Length > 100) ? src.Content.Substring(0, 100) + "..." : src.Content))
                 // .Include(a => a.UserNavigation)
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserNavigation.Id))
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.UserNavigation.Username))
                 .ForMember(dest => dest.AuthorAvatarPath, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
-                // Computed Property: LikesCount.
-                .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.ArticleInterests.Count()))
-                // Computed Property: CommentsCount.
-                .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src => src.Comments.Count()));
+                // Computed Properties.
+                .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.ArticleInterests.Count())) // Computed Property: LikesCount.
+                .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src => src.Comments.Count())); // Computed Property: CommentsCount.
             CreateMap<Article, ArticleDetailDto>()
                 // .Include(a => a.UserNavigation)
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserNavigation.Id))
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.UserNavigation.Username))
                 .ForMember(dest => dest.AuthorAvatarPath, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
                 // .Include(a => a.TypesOfArticle)
@@ -87,7 +83,6 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<CartItem, CartItemDto>()
                 // .Include(ci => ci.ProductNavigation)
-                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductNavigation.Id))
                 .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
             // DTO to Entity (Write).
@@ -97,7 +92,6 @@ namespace Astralis_API.Models.Mapper
             ///// CelestialBody.
             // Entity to DTO (Read).
             CreateMap<CelestialBody, CelestialBodyListDto>()
-                .ForMember(dest => dest.CelestialBodyTypeId, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Id))
                 .ForMember(dest => dest.CelestialBodyTypeName, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Label));
             // DTO to Entity (Write).
             CreateMap<CelestialBodyCreateDto, CelestialBody>();
@@ -111,7 +105,6 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<City, CityDto>()
                 // .Include(c => c.CountryNavigation)
-                .ForMember(dest => dest.CountryId, opt => opt.MapFrom(src => src.CountryNavigation.Id))
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CountryNavigation.Name));
 
             ///// Comet.
