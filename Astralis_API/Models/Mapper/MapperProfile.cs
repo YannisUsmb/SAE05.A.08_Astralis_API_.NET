@@ -175,6 +175,10 @@ namespace Astralis_API.Models.Mapper
             CreateMap<DiscoveryCreateDto, Discovery>();
             CreateMap<DiscoveryUpdateDto, Discovery>();
             CreateMap<DiscoveryModerationDto, Discovery>();
+
+            ///// DiscoveryStatus.
+            // Entity to DTO (Read).
+            CreateMap<DiscoveryStatus, DiscoveryStatusDto>();
         }
     }
 }
