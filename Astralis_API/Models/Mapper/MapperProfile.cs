@@ -159,6 +159,22 @@ namespace Astralis_API.Models.Mapper
             ///// DetectionMethod.
             // Entity to DTO (Read).
             CreateMap<DetectionMethod, DetectionMethodDto>();
+
+            ///// Discovery.
+            // Entity to DTO (Read).
+            CreateMap<Discovery, DiscoveryDto>()
+                // .Include(d => d.CelestialBodyNavigation)
+                .ForMember(dest => dest.CelestialBodyName, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                // .Include(d => d.UserNavigation)
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserNavigation.Username))
+                // .Include(d => d.DiscoveryStatusNavigation)
+                .ForMember(dest => dest.DiscoveryStatusLabel, opt => opt.MapFrom(src => src.DiscoveryStatusNavigation.Label))
+                // .Include(d => d.AliasStatusNavigation)
+                .ForMember(dest => dest.AliasStatusLabel, opt => opt.MapFrom(src => src.AliasStatusNavigation != null ? src.AliasStatusNavigation.Label : null));
+            // DTO to Entity (Write).
+            CreateMap<DiscoveryCreateDto, Discovery>();
+            CreateMap<DiscoveryUpdateDto, Discovery>();
+            CreateMap<DiscoveryModerationDto, Discovery>();
         }
     }
 }
