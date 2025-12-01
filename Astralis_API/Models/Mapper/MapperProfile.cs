@@ -82,6 +82,26 @@ namespace Astralis_API.Models.Mapper
             ///// Audio.
             // Entity to DTO (Read).
             CreateMap<Audio, AudioDto>();
+
+            ///// CartItem.
+            // Entity to DTO (Read).
+            CreateMap<CartItem, CartItemDto>()
+                // .Include(ci => ci.ProductNavigation)
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductNavigation.Id))
+                .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
+                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
+            // DTO to Entity (Write).
+            CreateMap<CartItemCreateDto, CartItem>();
+            CreateMap<CartItemUpdateDto, CartItem>();
+
+            ///// CelestialBody.
+            // Entity to DTO (Read).
+            CreateMap<CelestialBody, CelestialBodyListDto>()
+                .ForMember(dest => dest.CelestialBodyTypeId, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Id))
+                .ForMember(dest => dest.CelestialBodyTypeName, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Label));
+            // DTO to Entity (Write).
+            CreateMap<CelestialBodyCreateDto, CelestialBody>();
+            CreateMap<CelestialBodyUpdateDto, CelestialBody>();
         }
     }
 }
