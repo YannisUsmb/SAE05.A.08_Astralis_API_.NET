@@ -191,6 +191,10 @@ namespace Astralis_API.Models.Mapper
             // DTO to Entity (Write).
             CreateMap<EventCreateDto, Event>();
             CreateMap<EventUpdateDto, Event>();
+
+            ///// EventInterest.
+            // Entity to DTO (Read).
+            CreateMap<EventInterest, EventInterestDto>();
         }
     }
 }
