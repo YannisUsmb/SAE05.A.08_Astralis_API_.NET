@@ -340,6 +340,15 @@ namespace Astralis_API.Models.Mapper
             ///// TypeOfArticle.
             // Entity to DTO (Read).
             CreateMap<TypeOfArticle, TypeOfArticleDto>();
+
+            ///// User.
+            // Entity to DTO (Read).
+            CreateMap<User, UserDetailDto>();
+            // DTO to Entity (Write).
+            CreateMap<UserCreateDto, User>();
+            CreateMap<UserUpdateDto, User>();
+            CreateMap<ChangePasswordDto, User>();
+            CreateMap<UserLoginDto, User>();
         }
     }
 }
