@@ -21,10 +21,10 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all {EntityName}s.
+        /// Retrieves all {EntityNamePlural}.
         /// </summary>
-        /// <returns>A list of {EntityName}s.</returns>
-        /// <response code="200">The list of {EntityName}s was successfully retrieved.</response>
+        /// <returns>A list of {EntityNamePlural}.</returns>
+        /// <response code="200">The list of {EntityNamePlural} was successfully retrieved.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpGet]
         [ActionName("GetAll")]
