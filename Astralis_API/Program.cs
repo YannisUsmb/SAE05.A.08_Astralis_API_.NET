@@ -109,6 +109,9 @@ builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<IUserNotificationRepository, UserNotificationManager>();
 builder.Services.AddScoped<IUserRoleRepository,UserRoleManager>();
 
+// automapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 //      Cors
 builder.Services.AddCors(options =>
 {
