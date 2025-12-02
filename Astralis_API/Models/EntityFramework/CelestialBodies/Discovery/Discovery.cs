@@ -56,7 +56,7 @@ namespace Astralis_API.Models.EntityFramework
         [InverseProperty(nameof(User.ApprovedDiscoveries))]
         public virtual User? ApprovalUserNavigation { get; set; }
 
-        [ForeignKey(nameof(DiscoveryApprovalUserId))]
+        [ForeignKey(nameof(AliasApprovalUserId))]
         [InverseProperty(nameof(User.ApprovedAliasDiscoveries))]
         public virtual User? ApprovalAliasUserNavigation { get; set; }
     }
