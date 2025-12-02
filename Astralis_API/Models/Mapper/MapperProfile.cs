@@ -221,12 +221,12 @@ namespace Astralis_API.Models.Mapper
 
             ///// Notification.
             // Entity to DTO (Read).
-            //CreateMap<Notification, MyNotificationDto>()
-            //    // .Include(n => n.NotificationTypeNavigation)
-            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.NotificationNavigation.Id))
-            //    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.NotificationNavigation.Label))
-            //    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.NotificationNavigation.Description))
-            // A RETRAVAILLER CAR MODELS MAL FAIT !!!
+            CreateMap<Notification, NotificationDto>()
+                // .Include(n => n.NotificationTypeNavigation)
+                .ForMember(dest => dest.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeNavigation.Label));
+            // DTO to Entity (Write).
+            CreateMap<NotificationCreateDto, Notification>();
+            CreateMap<NotificationUpdateDto, Notification>();
 
             ///// OrderDetail.
             // Entity to DTO (Read).
