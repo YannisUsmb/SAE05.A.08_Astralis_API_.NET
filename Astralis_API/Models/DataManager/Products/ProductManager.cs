@@ -46,14 +46,15 @@ namespace Astralis_API.Models.DataManager
                 );
             }
 
-            if (productCategoryIds != null && productCategoryIds.Any())
-            {
-                query = query.Where(cb => productCategoryIds.Contains(cb.ProductCategoryId));
-            }
+            if (productCategoryIds != null && productCategoryIds.Any())           
+                query = query.Where(p => productCategoryIds.Contains(p.ProductCategoryId));
+            
             if (minPrice.HasValue)
                 query = query.Where(p => p.Price >= minPrice.Value);
+
             if (maxPrice.HasValue)
                 query = query.Where(p => p.Price <= maxPrice.Value);
+
             return await WithIncludes(query)
                 .ToListAsync();
         }
