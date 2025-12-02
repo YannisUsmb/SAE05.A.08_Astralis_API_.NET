@@ -320,6 +320,22 @@ namespace Astralis_API.Models.Mapper
             ///// SpectralClass.
             // Entity to DTO (Read).
             CreateMap<SpectralClass, SpectralClassDto>();
+
+            ///// Star.
+            // Entity to DTO (Read).
+            CreateMap<Star, StarDto>()
+                // .Include(s => s.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
+                // .Include(s => s.SpectralClassNavigation)
+                .ForMember(dest => dest.SpectralClassName, opt => opt.MapFrom(src => 
+                    src.SpectralClassNavigation != null ? src.SpectralClassNavigation.Label : null));
+            // DTO to Entity (Write).
+            CreateMap<StarCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<StarCreateDto, Star>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+            CreateMap<StarUpdateDto, Star>();
         }
     }
 }
