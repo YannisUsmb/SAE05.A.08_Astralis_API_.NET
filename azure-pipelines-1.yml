@@ -1,17 +1,14 @@
 trigger:
-- develop  # ou 'master' ou 'main', selon ta branche principale
-
-resources:
-- repositories:
-  - repository: self
+- develop
 
 variables:
   imageRepository: 'astralis-dotnet'
   dockerfilePath: '**/Dockerfile'
   dockerRegistryServiceConnection: 'ACR_Connection_Manual'
+  tag: '$(Build.BuildId)'
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
 - task: Docker@2
@@ -22,5 +19,5 @@ steps:
     dockerfile: $(dockerfilePath)
     containerRegistry: $(dockerRegistryServiceConnection)
     tags: |
-      $(Build.BuildId)
+      $(tag)
       latest
