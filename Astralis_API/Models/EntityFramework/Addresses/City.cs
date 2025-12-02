@@ -25,9 +25,11 @@ namespace Astralis_API.Models.EntityFramework
         public string PostCode { get; set; } = null!;
 
         [Column("cit_latitude", TypeName = "NUMERIC(10,7)")]
+        [Required(ErrorMessage = "The latitude is required.")]
         public decimal Latitude { get; set; }
 
         [Column("cit_longitude", TypeName = "NUMERIC(10,7)")]
+        [Required(ErrorMessage = "The longitude is required.")]
         public decimal Longitude { get; set; }
 
         [ForeignKey(nameof(CountryId))]

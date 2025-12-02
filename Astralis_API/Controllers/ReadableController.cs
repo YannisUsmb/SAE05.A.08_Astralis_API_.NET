@@ -4,6 +4,9 @@ using Astralis_API.Models.Repository;
 
 namespace Astralis_API.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing {EntityName} readable entities.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public abstract class ReadableController<TEntity, TGetAllDto, TGetDto, TId> : ControllerBase
