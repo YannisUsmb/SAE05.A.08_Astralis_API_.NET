@@ -22,14 +22,6 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The receiving date is required.")]
         public DateTime ReceivedAt { get; set; } = DateTime.Now;
 
-        [Column("uno_isread")]
-        [Required(ErrorMessage = "The readed status is required.")]
-        public bool IsRead { get; set; } = false;
-
-        [Column("uno_receivedat")]
-        [Required(ErrorMessage = "The received date is required.")]
-        public DateTime ReceivedAt { get; set; }
-
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.UserNotifications))]
         public virtual User UserNavigation { get; set; } = null!;
