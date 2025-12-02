@@ -1,3 +1,4 @@
+using Astralis_API.Configuration;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
@@ -23,6 +24,7 @@ builder.Services.AddSwaggerGen(
         // Configure Swagger to use the XML documentation file.
         var xmlFile = Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml");
         doc.IncludeXmlComments(xmlFile);
+        doc.OperationFilter<SwaggerGenericFilter>();
     }
 );
 
