@@ -357,6 +357,10 @@ namespace Astralis_API.Models.Mapper
             ///// UserNotification.
             // Wait for Models correction.
 
+            ///// UserNotificationType.
+            // Entity to DTO (Read).
+            CreateMap<UserNotificationType, UserNotificationTypeDto>();
+
             ///// UserRole.
             // Entity to DTO (Read).
             CreateMap<UserRole, UserRoleDto>();
