@@ -31,7 +31,7 @@ namespace Astralis_API.Controllers
         /// <response code="500">An internal server error occurred.</response>
         [HttpPost]
         [ActionName("Post")]
-        [ProducesResponseType(StatusCodes.Status200OK)] // Note: 200 OK car on ne peut pas générer l'URL de ressource sans BaseEntity
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public virtual async Task<ActionResult<TGetDto>> Post(TCreateDto createDto)
