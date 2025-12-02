@@ -25,9 +25,9 @@ namespace Astralis_API.Models.DataManager
                     .ThenInclude(od => od.ProductNavigation);
         }
 
-        public async override Task<IEnumerable<Command>> GetByKeyAsync(int id)
+        public async override Task<IEnumerable<Command>> GetByKeyAsync(int userId)
         {
-            return await WithIncludes(_entities.Where(c => c.UserId == id))
+            return await WithIncludes(_entities.Where(c => c.UserId == userId))
                             .ToListAsync();
         }
 
