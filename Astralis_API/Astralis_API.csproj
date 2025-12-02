@@ -32,7 +32,6 @@
     <Folder Include="Models\DataManager\CelestialBodies\Star\" />
     <Folder Include="Models\DataManager\CelestialBodies\Planet\" />
     <Folder Include="Models\DataManager\CelestialBodies\Satellite\" />
-    <Folder Include="Models\Mapper\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,6 +18,7 @@ namespace Astralis_API.Models.DataManager
         {
             return query
                 .Include(a => a.CityNavigation)
+                    .ThenInclude(c => c.CountryNavigation)
                 .Include(a => a.InvoicingAddressUsers)
                 .Include(a => a.DeliveryAddressUsers);
         }
