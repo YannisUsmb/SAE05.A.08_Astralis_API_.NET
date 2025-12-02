@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_j_usernotificationtype_unt")]
+    [PrimaryKey(nameof(UserId), nameof(NotificationTypeId))]
     public class UserNotificationType
     {
         [Column("usr_id")]

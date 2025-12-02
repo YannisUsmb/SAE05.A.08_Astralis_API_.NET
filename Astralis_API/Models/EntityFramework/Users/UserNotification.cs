@@ -15,11 +15,11 @@ namespace Astralis_API.Models.EntityFramework
         public int NotificationId { get; set; }
 
         [Column("uno_isread")]
-        [Required(ErrorMessage = "The readed status is required.")]
+        [Required(ErrorMessage = "The read status is required.")]
         public bool IsRead { get; set; }
 
         [Column("uno_receivedat")]
-        [Required(ErrorMessage = "The received date is required.")]
+        [Required(ErrorMessage = "The receiving date is required.")]
         public DateTime ReceivedAt { get; set; } = DateTime.Now;
 
         [ForeignKey(nameof(UserId))]
