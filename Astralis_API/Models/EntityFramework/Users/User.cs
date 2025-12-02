@@ -131,5 +131,8 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(UserNotification.UserNavigation))]
         public virtual ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+
+        [InverseProperty(nameof(UserNotificationType.UserNavigation))]
+        public virtual ICollection<UserNotificationType> UserNotificationTypes { get; set; } = new List<UserNotificationType>();
     }
 }
