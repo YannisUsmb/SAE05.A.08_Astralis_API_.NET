@@ -106,6 +106,8 @@ namespace Astralis_API.Models.Mapper
             CreateMap<City, CityDto>()
                 // .Include(c => c.CountryNavigation)
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CountryNavigation.Name));
+            // DTO to Entity (Write).
+            CreateMap<CityCreateDto, City>();
 
             ///// Comet.
             // Entity to DTO (Read).
