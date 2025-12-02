@@ -10,7 +10,7 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
-        public new async Task<CelestialBodyType?> GetByIdAsync(int id)
+        public override async Task<CelestialBodyType?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(cbt => cbt.Id == id);

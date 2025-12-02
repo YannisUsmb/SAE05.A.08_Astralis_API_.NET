@@ -2,8 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IUserRepository : IDataRepository<User, int, string>
+    public interface IUserRepository : ICrudRepository<User, int>
     {
-        Task<IEnumerable<User>> GetByUserRoleIdAsync(int id);
     }
 }

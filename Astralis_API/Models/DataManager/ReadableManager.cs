@@ -21,7 +21,7 @@ namespace Astralis_API.Models.DataManager
         }
 
 
-        public async Task<TEntity> GetByIdAsync(TIdentifier id)
+        public virtual async Task<TEntity> GetByIdAsync(TIdentifier id)
         {
             return await _entities.FindAsync(id);
         }

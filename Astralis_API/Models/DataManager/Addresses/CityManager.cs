@@ -9,7 +9,7 @@ namespace Astralis_API.Models.DataManager
         public CityManager(AstralisDbContext context) : base(context)
         {
         }
-        public new async Task<City?> GetByIdAsync(int id)
+        public override async Task<City?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(c => c.Id == id);

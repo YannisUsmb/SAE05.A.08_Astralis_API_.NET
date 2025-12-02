@@ -10,7 +10,7 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
-        public new async Task<GalaxyQuasar?> GetByIdAsync(int id)
+        public override async Task<GalaxyQuasar?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(gq => gq.Id == id);

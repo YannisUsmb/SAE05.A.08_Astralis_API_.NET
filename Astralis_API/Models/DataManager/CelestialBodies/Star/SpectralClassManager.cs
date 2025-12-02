@@ -10,7 +10,7 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
-        public new async Task<SpectralClass?> GetByIdAsync(int id)
+        public override async Task<SpectralClass?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(sc => sc.Id == id);

@@ -9,7 +9,7 @@ namespace Astralis_API.Models.DataManager
         public AudioManager(AstralisDbContext context) : base(context)
         {
         }
-        public new async Task<Audio?> GetByIdAsync(int id)
+        public override async Task<Audio?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(c => c.Id == id);

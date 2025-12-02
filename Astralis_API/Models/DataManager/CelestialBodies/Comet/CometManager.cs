@@ -9,7 +9,11 @@ namespace Astralis_API.Models.DataManager
         public CometManager(AstralisDbContext context) : base(context)
         {
         }
-
+        public override async Task<Comet?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(c => c.Id == id);
+        }
         protected override IQueryable<Comet> WithIncludes(IQueryable<Comet> query)
         {
             return query.Include(c => c.CelestialBodyNavigation);

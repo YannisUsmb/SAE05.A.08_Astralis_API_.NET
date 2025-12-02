@@ -10,7 +10,7 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
-        public new async Task<Product?> GetByIdAsync(int id)
+        public override async Task<Product?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(p => p.Id == id);
@@ -32,7 +32,7 @@ namespace Astralis_API.Models.DataManager
 
         public async Task<IEnumerable<Product>> SearchAsync(
             string? searchText = null,
-            int? productCategoryId = null,
+            IEnumerable<int>? productCategoryIds = null,
             decimal? minPrice = null,
             decimal? maxPrice = null)
         {
@@ -45,8 +45,11 @@ namespace Astralis_API.Models.DataManager
                     || (p.Description != null && p.Description.ToLower().Contains(textLower))
                 );
             }
-            if (productCategoryId.HasValue)
-                query = query.Where(p => p.ProductCategoryId == productCategoryId.Value);
+
+            if (productCategoryIds != null && productCategoryIds.Any())
+            {
+                query = query.Where(cb => productCategoryIds.Contains(cb.ProductCategoryId));
+            }
             if (minPrice.HasValue)
                 query = query.Where(p => p.Price >= minPrice.Value);
             if (maxPrice.HasValue)

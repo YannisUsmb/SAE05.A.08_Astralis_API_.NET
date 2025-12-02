@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class UserManager : DataManager<User, int, string>, IUserRepository
+    public class UserManager : CrudManager<User, int>, IUserRepository
     {
         public UserManager(AstralisDbContext context) : base(context)
         {
         }
 
-        public new async Task<User?> GetByIdAsync(int id)
+        public override async Task<User?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(e => e.Id == id);
@@ -41,18 +41,6 @@ namespace Astralis_API.Models.DataManager
                             .Include(u => u.ApprovedAliasDiscoveries)
                             .Include(u => u.UserNotifications)
                                 .ThenInclude(un=> un.NotificationNavigation);
-        }
-
-        public async override Task<IEnumerable<User>> GetByKeyAsync(string username)
-        {
-            return await WithIncludes(_entities.Where(u => u.Username.ToLower().Contains(username.ToLower())))                             
-                            .ToListAsync();
-        }
-
-        public async Task<IEnumerable<User>> GetByUserRoleIdAsync(int id)
-        {
-            return await WithIncludes (_entities.Where(u => u.UserRoleId == id))
-                            .ToListAsync();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Product>> SearchAsync(
                     string? searchText = null,
-                    int? productCategoryId = null,
+                    IEnumerable<int>? productCategoryId = null,
                     decimal? minPrice = null,
                     decimal? maxPrice = null
                 );
