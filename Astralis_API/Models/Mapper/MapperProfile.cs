@@ -349,6 +349,13 @@ namespace Astralis_API.Models.Mapper
             CreateMap<UserUpdateDto, User>();
             CreateMap<ChangePasswordDto, User>();
             CreateMap<UserLoginDto, User>();
+
+            ///// UserNotification.
+            // Wait for Models correction.
+
+            ///// UserRole.
+            // Entity to DTO (Read).
+            CreateMap<UserRole, UserRoleDto>();
         }
     }
 }
