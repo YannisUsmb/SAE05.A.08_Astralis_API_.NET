@@ -124,6 +124,17 @@ public partial class AstralisDbContext : DbContext
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.HasKey(n => n.Id).HasName("notification_pkey");
+
+            entity.HasOne(n => n.NotificationTypeNavigation)
+                .WithMany(nt => nt.Notifications)
+                .HasForeignKey(n => n.NotificationTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_notification_notificationtype");
+        });
+
+        modelBuilder.Entity<NotificationType>(entity =>
+        {
+            entity.HasKey(nty => nty.Id).HasName("notificationtype_pkey");
         });
 
         modelBuilder.Entity<UserNotification>(entity =>
@@ -141,6 +152,23 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(un => un.NotificationId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_usernotification_notification");
+        });
+
+        modelBuilder.Entity<UserNotificationType>(entity =>
+        {
+            entity.HasKey(unt => new { unt.UserId, unt.NotificationTypeId }).HasName("usernotificationtype_pkey");
+
+            entity.HasOne(unt => unt.UserNavigation)
+                .WithMany(u => u.UserNotificationTypes)
+                .HasForeignKey(unt => unt.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_usernotificationtype_user");
+
+            entity.HasOne(unt => unt.NotificationTypeNavigation)
+                .WithMany(nt => nt.UserNotificationTypes)
+                .HasForeignKey(unt => unt.NotificationTypeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_usernotificationtype_notificationtype");
         });
 
 
