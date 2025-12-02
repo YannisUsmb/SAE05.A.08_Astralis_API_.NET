@@ -10,6 +10,10 @@ namespace Astralis_API.Models.EntityFramework
         [Column("not_id")]
         public int Id { get; set; }
 
+        [Column("nty_id")]
+        [Required(ErrorMessage = "The notification type ID is required.")]
+        public int NotificationTypeId { get; set; }
+
         [Column("not_label")]
         [Required(ErrorMessage = "The label is required.")]
         [StringLength(100, ErrorMessage = "The label cannot be longer than 100 characters.")]
@@ -21,5 +25,9 @@ namespace Astralis_API.Models.EntityFramework
 
         [InverseProperty(nameof(UserNotification.NotificationNavigation))]
         public virtual ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+
+        [ForeignKey(nameof(NotificationTypeId))]
+        [InverseProperty(nameof(NotificationType.Notifications))]
+        public virtual NotificationType NotificationTypeNavigation { get; set; } = null!;
     }
 }
