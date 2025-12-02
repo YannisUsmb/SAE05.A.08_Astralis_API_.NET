@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Astralis_API.Models.EntityFramework
 {
     [Table("t_e_reportstatus_rst")]

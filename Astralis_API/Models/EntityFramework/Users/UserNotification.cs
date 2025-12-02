@@ -14,9 +14,13 @@ namespace Astralis_API.Models.EntityFramework
         [Column("not_id")]
         public int NotificationId { get; set; }
 
-        [Column("uno_bymail")]
-        [Required(ErrorMessage = "The mail notification status is required.")]
-        public bool ByMail { get; set; }
+        [Column("uno_isread")]
+        [Required(ErrorMessage = "The read status is required.")]
+        public bool IsRead { get; set; }
+
+        [Column("uno_receivedat")]
+        [Required(ErrorMessage = "The receiving date is required.")]
+        public DateTime ReceivedAt { get; set; } = DateTime.Now;
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.UserNotifications))]
