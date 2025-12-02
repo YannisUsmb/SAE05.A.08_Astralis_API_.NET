@@ -4,6 +4,9 @@ using Astralis_API.Models.Repository;
 
 namespace Astralis_API.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing {EntityName} crud entities.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public abstract class CrudController<TEntity, TGetAllDto, TGetDto, TCreateDto, TUpdateDto, TId>
