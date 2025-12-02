@@ -301,6 +301,21 @@ namespace Astralis_API.Models.Mapper
             ///// ReportStatus.
             // Entity to DTO (Read).
             CreateMap<ReportStatus, ReportStatusDto>();
+
+            ///// Satellite.
+            // Entity to DTO (Read).
+            CreateMap<Satellite, SatelliteDto>()
+                // .Include(s => s.CelestialBodyNavigation)
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
+                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
+                // .Include(s => s.PlanetNavigation).ThenInclude(p => p.CelestialBodyNavigation)
+                .ForMember(dest => dest.PlanetName, opt => opt.MapFrom(src => src.PlanetNavigation.CelestialBodyNavigation.Name));
+            // DTO to Entity (Write).
+            CreateMap<SatelliteCreateDto, CelestialBody>(); // DTO to Parent Entity.
+            CreateMap<SatelliteCreateDto, Satellite>() // DTO to Child Entity.
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
+            CreateMap<SatelliteUpdateDto, Satellite>();
         }
     }
 }
