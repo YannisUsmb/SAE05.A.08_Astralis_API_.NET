@@ -316,6 +316,10 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore());
             CreateMap<SatelliteUpdateDto, Satellite>();
+
+            ///// SpectralClass.
+            // Entity to DTO (Read).
+            CreateMap<SpectralClass, SpectralClassDto>();
         }
     }
 }
