@@ -9,6 +9,13 @@ namespace Astralis_API.Models.DataManager
         public NotificationManager(AstralisDbContext context) : base(context)
         {
         }
+
+        public new async Task<Notification?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(n => n.Id == id);
+        }
+
         protected override IQueryable<Notification> WithIncludes(IQueryable<Notification> query)
         {
             return query.Include(n => n.UserNotifications);

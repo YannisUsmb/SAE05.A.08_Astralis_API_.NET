@@ -6,7 +6,7 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Article>> SearchAsync(
             string? searchTerm = null,
-            int? typeId = null,
+            IEnumerable<int>? typeId = null,
             bool? isPremium = null
         );
     }

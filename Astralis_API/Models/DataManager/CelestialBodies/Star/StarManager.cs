@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class StarManager : DataManager<Star, int, string>, IStarRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Star> _stars;
-
         public StarManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _stars = _context.Set<Star>();
+        }
+
+        public new async Task<Star?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         protected override IQueryable<Star> WithIncludes(IQueryable<Star> query)
@@ -23,7 +24,7 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Star>> GetByKeyAsync(string search)
         {
-            return await WithIncludes(_stars.Where(s => 
+            return await WithIncludes(_entities.Where(s => 
                 s.CelestialBodyNavigation.Name.ToLower().Contains(search) ||
                 (s.Designation != null && s.Designation.ToLower().Contains(search)) || 
                 (s.BayerDesignation != null && s.BayerDesignation.ToLower().Contains(search))
@@ -45,7 +46,7 @@ namespace Astralis_API.Models.DataManager
             decimal? minTemperature = null,
             decimal? maxTemperature = null)
         {
-            var query = _stars.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(name))
             {
                 string nameLower = name.ToLower();

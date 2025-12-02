@@ -6,8 +6,7 @@ namespace Astralis_API.Models.Repository
     {
         Task<IEnumerable<Satellite>> SearchAsync(
                     string? name = null,
-                    int? planetId = null,
-                    int? celestialBodyId = null,
+                    IEnumerable<int>? planetIds = null,
                     decimal? minGravity = null,
                     decimal? maxGravity = null,
                     decimal? minRadius = null,

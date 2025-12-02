@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class ReportManager : CrudManager<Report, int>, IReportRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Report> _reports;
-
         public ReportManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _reports = _context.Set<Report>();
+        }
+
+        public new async Task<Report?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         protected override IQueryable<Report> WithIncludes(IQueryable<Report> query)
@@ -30,7 +31,7 @@ namespace Astralis_API.Models.DataManager
              DateTime? minDate = null,
              DateTime? maxDate = null)
         {
-            var query = _reports.AsQueryable();
+            var query = _entities.AsQueryable();
             if (statusId.HasValue)
                 query = query.Where(r => r.ReportStatusId == statusId.Value);
             if (motiveId.HasValue)

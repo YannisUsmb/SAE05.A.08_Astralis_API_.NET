@@ -10,6 +10,12 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
+        public new async Task<ReportStatus?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(rs => rs.Id == id);
+        }
+
         protected override IQueryable<ReportStatus> WithIncludes(IQueryable<ReportStatus> query)
         {
             return query.Include(rs => rs.Reports);

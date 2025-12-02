@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class ProductManager : DataManager<Product, int, string>, IProductRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Product> _products;
-
         public ProductManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _products = _context.Set<Product>();
+        }
+
+        public new async Task<Product?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         protected override IQueryable<Product> WithIncludes(IQueryable<Product> query)
@@ -26,7 +27,7 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Product>> GetByKeyAsync(string name)
         {
-            return await WithIncludes(_products.Where(p => p.Label.ToLower().Contains(name.ToLower()))).ToListAsync();
+            return await WithIncludes(_entities.Where(p => p.Label.ToLower().Contains(name.ToLower()))).ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> SearchAsync(
@@ -35,7 +36,7 @@ namespace Astralis_API.Models.DataManager
             decimal? minPrice = null,
             decimal? maxPrice = null)
         {
-            var query = _products.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 string textLower = searchText.ToLower();

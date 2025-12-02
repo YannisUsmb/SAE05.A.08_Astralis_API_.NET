@@ -4,7 +4,10 @@ namespace Astralis_API.Models.Repository
 {
     public interface ICelestialBodyRepository : IDataRepository<CelestialBody, int, string>
     {
-        Task<IEnumerable<CelestialBody>> GetByCelestialBodyTypeIdAsync(int id);
-        Task<IEnumerable<CelestialBody>> GetDiscoveriesAsync();
+        Task<IEnumerable<CelestialBody>> SearchAsync(
+            string? searchText = null,
+            IEnumerable<int>? celestialBodyTypeIds = null,
+            bool? isDiscovery = null
+        );
     }
 }

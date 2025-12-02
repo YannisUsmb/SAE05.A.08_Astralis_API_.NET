@@ -9,6 +9,13 @@ namespace Astralis_API.Models.DataManager
         public ReportMotiveManager(AstralisDbContext context) : base(context)
         {
         }
+
+        public new async Task<ReportMotive?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(rm => rm.Id == id);
+        }
+
         protected override IQueryable<ReportMotive> WithIncludes(IQueryable<ReportMotive> query)
         {
             return query.Include(rm => rm.Reports);

@@ -9,6 +9,7 @@ namespace Astralis_API.Models.DataManager
         public EventInterestManager(AstralisDbContext context) : base(context)
         {
         }
+
         protected override IQueryable<EventInterest> WithIncludes(IQueryable<EventInterest> query)
         {
             return query.Include(ei => ei.UserNavigation)

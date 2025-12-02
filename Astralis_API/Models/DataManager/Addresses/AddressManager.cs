@@ -9,6 +9,11 @@ namespace Astralis_API.Models.DataManager
         public AddressManager(AstralisDbContext context) : base(context)
         {
         }
+        public new async Task<Address?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(a => a.Id == id);
+        }
         protected override IQueryable<Address> WithIncludes(IQueryable<Address> query)
         {
             return query

@@ -10,6 +10,12 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
+        public new async Task<CreditCard?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(cc => cc.Id == id);
+        }
+
         protected override IQueryable<CreditCard> WithIncludes(IQueryable<CreditCard> query)
         {
             return query.Include(cc => cc.UserNavigation);

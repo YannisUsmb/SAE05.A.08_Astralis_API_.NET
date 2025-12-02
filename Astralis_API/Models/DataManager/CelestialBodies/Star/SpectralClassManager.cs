@@ -4,14 +4,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class SpectralClassManager : CrudManager<SpectralClass, int>, ISpectralClassRepository
+    public class SpectralClassManager : ReadableManager<SpectralClass, int>, ISpectralClassRepository
     {
         public SpectralClassManager(AstralisDbContext context) : base(context)
         {
         }
+
+        public new async Task<SpectralClass?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(sc => sc.Id == id);
+        }
+
         protected override IQueryable<SpectralClass> WithIncludes(IQueryable<SpectralClass> query)
         {
-            return query.Include(s => s.Stars);
+            return query.Include(sc => sc.Stars);
         }
     }
 }

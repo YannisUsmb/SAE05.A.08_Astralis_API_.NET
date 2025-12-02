@@ -9,6 +9,12 @@ namespace Astralis_API.Models.DataManager
         public CountryManager(AstralisDbContext context) : base(context)
         {
         }
+        public new async Task<Country?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
         protected override IQueryable<Country> WithIncludes(IQueryable<Country> query)
         {
             return query

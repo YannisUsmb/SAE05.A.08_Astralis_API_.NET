@@ -6,13 +6,15 @@ namespace Astralis_API.Models.DataManager
 {
     public class CommandManager : DataManager<Command, int, int>, ICommandRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Command> _command;
 
         public CommandManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _command = _context.Set<Command>();
+        }
+
+        public new async Task<Command?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         protected override IQueryable<Command> WithIncludes(IQueryable<Command> query)
@@ -25,13 +27,13 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Command>> GetByKeyAsync(int id)
         {
-            return await WithIncludes(_command.Where(c => c.UserId == id))
+            return await WithIncludes(_entities.Where(c => c.UserId == id))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Command>> GetByCommandStatusIdAsync(int id)
         {
-            return await WithIncludes(_command.Where(c => c.CommandStatusId == id))
+            return await WithIncludes(_entities.Where(c => c.CommandStatusId == id))
                             .ToListAsync();
         }
     }

@@ -10,9 +10,17 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
+        public new async Task<CelestialBodyType?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(cbt => cbt.Id == id);
+        }
+
         protected override IQueryable<CelestialBodyType> WithIncludes(IQueryable<CelestialBodyType> query)
         {
-            return query.Include(cbt => cbt.CelestialBodies);
+            return query
+                    .Include(cbt => cbt.CelestialBodies)
+                    .Include(cbt => cbt.Audios);
         }
     }
 }

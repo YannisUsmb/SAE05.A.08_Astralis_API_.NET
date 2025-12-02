@@ -6,14 +6,16 @@ namespace Astralis_API.Models.DataManager
 {
     public class GalaxyQuasarManager : DataManager<GalaxyQuasar, int, string>, IGalaxyQuasarRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<GalaxyQuasar> _galaxyQuasars;
-
         public GalaxyQuasarManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _galaxyQuasars = _context.Set<GalaxyQuasar>();
         }
+
+        public new async Task<GalaxyQuasar?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(gq => gq.Id == id);
+        }
+
 
         protected override IQueryable<GalaxyQuasar> WithIncludes(IQueryable<GalaxyQuasar> query)
         {
@@ -23,7 +25,7 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<GalaxyQuasar>> GetByKeyAsync(string reference)
         {
-            return await WithIncludes(_galaxyQuasars.Where(gq => gq.Reference.ToLower().Contains(reference.ToLower()))
+            return await WithIncludes(_entities.Where(gq => gq.Reference.ToLower().Contains(reference.ToLower()))
                             ).ToListAsync();
         }
 
@@ -41,7 +43,7 @@ namespace Astralis_API.Models.DataManager
             int? minMjdObs = null,
             int? maxMjdObs = null)
         {
-            var query = _galaxyQuasars.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(reference))
             {
                 string refLower = reference.ToLower();

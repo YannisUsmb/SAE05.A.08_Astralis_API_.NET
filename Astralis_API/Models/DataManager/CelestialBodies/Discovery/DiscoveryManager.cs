@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class DiscoveryManager : DataManager<Discovery, int, string>, IDiscoveryRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Discovery> _discoveries;
-
         public DiscoveryManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _discoveries = _context.Set<Discovery>();
+        }
+
+        public new async Task<Discovery?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(d => d.Id == id);
         }
 
         protected override IQueryable<Discovery> WithIncludes(IQueryable<Discovery> query)
@@ -27,7 +28,7 @@ namespace Astralis_API.Models.DataManager
         }
         public async override Task<IEnumerable<Discovery>> GetByKeyAsync(string reference)
         {
-            return await _discoveries.Where(d => d.Title.ToLower().Contains(reference.ToLower()))
+            return await _entities.Where(d => d.Title.ToLower().Contains(reference.ToLower()))
                             .ToListAsync();
         }
 
@@ -38,9 +39,9 @@ namespace Astralis_API.Models.DataManager
             int? discoveryApprovalUserId = null,
             int? aliasApprovalUserId = null)
         {
-            var query = _discoveries.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(title))
-                query = query.Where(d => d.Title.ToLower().Contains(title.ToLower()));
+                query = query.Where(d => d.Title.ToLower().Contains(title.ToLower()) || d.CelestialBodyNavigation.Alias.ToLower().Contains(title.ToLower()));
             if (discoveryStatusId.HasValue)
                 query = query.Where(d => d.DiscoveryStatusId == discoveryStatusId.Value);
             if (aliasStatusId.HasValue)

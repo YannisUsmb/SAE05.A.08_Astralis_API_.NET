@@ -9,6 +9,11 @@ namespace Astralis_API.Models.DataManager
         public OrbitalClassManager(AstralisDbContext context) : base(context)
         {
         }
+        public new async Task<OrbitalClass?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(oc => oc.Id == id);
+        }
 
         protected override IQueryable<OrbitalClass> WithIncludes(IQueryable<OrbitalClass> query)
         {

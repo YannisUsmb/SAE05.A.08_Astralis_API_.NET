@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class ArticleManager : DataManager<Article, int, string>, IArticleRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Article> _articles;
-
         public ArticleManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _articles = _context.Set<Article>();
+        }
+
+        public new async Task<Article?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         protected override IQueryable<Article> WithIncludes(IQueryable<Article> query)
@@ -28,16 +29,16 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Article>> GetByKeyAsync(string title)
         {
-            return await WithIncludes(_articles.Where(a => a.Title.ToLower().Contains(title.ToLower())))
+            return await WithIncludes(_entities.Where(a => a.Title.ToLower().Contains(title.ToLower() )|| a.Content.ToLower().Contains(title.ToLower())))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Article>> SearchAsync(
             string? searchTerm = null,
-            int? typeId = null,
+            IEnumerable<int>? typeIds = null,
             bool? isPremium = null)
         {
-            var query = _articles.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 string searchTermLower = searchTerm.ToLower();
@@ -49,8 +50,11 @@ namespace Astralis_API.Models.DataManager
             if (isPremium.HasValue)
                 query = query.Where(a => a.IsPremium == isPremium.Value);
 
-            if (typeId.HasValue)
-                query = query.Where(a => a.TypesOfArticle.Any(toa => toa.ArticleTypeId == typeId.Value));
+            if (typeIds != null && typeIds.Any())
+            {
+                query = query.Where(a => a.TypesOfArticle.Any(toa => typeIds.Contains(toa.ArticleTypeId)));
+            }
+
 
             return await WithIncludes(query)
                 .ToListAsync();

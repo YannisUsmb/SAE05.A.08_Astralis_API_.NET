@@ -6,13 +6,14 @@ namespace Astralis_API.Models.DataManager
 {
     public class AsteroidManager : DataManager<Asteroid, int, string>, IAsteroidRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Asteroid> _asteroids;
-
         public AsteroidManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _asteroids = _context.Set<Asteroid>();
+        }
+
+        public new async Task<Asteroid?> GetByIdAsync(int id)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         protected override IQueryable<Asteroid> WithIncludes(IQueryable<Asteroid> query)
@@ -24,13 +25,14 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<Asteroid>> GetByKeyAsync(string reference)
         {
-            return await WithIncludes(_asteroids.Where(a => a.Reference.ToLower().Contains(reference.ToLower())))
+            return await WithIncludes(_entities.Where(a => a.Reference.ToLower().Contains(reference.ToLower())))
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<Asteroid>> SearchAsync(
             string? reference = null,
-            IEnumerable<int>? orbitalClassIds = null, bool? isPotentiallyHazardous = null,
+            IEnumerable<int>? orbitalClassIds = null, 
+            bool? isPotentiallyHazardous = null,
             int? orbitId = null,
             decimal? minAbsoluteMagnitude = null,
             decimal? maxAbsoluteMagnitude = null, 
@@ -41,13 +43,10 @@ namespace Astralis_API.Models.DataManager
             decimal? minSemiMajorAxis = null,
             decimal? maxSemiMajorAxis = null)
         {
-            var query = _asteroids.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(reference))
-            {
-                string refLower = reference.ToLower();
-                query = query.Where(a => a.Reference != null && a.Reference.ToLower().Contains(refLower));
-            }
-
+                query = query.Where(a => a.Reference != null && a.Reference.ToLower().Contains(reference.ToLower()));
+            
             if (orbitalClassIds != null && orbitalClassIds.Any())
             {
                 query = query.Where(a => orbitalClassIds.Contains(a.OrbitalClassId));

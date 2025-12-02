@@ -6,23 +6,18 @@ namespace Astralis_API.Models.DataManager
 {
     public class CometManager : DataManager<Comet, int, string>, ICometRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<Comet> _comets;
-
         public CometManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _comets = _context.Set<Comet>();
         }
 
         protected override IQueryable<Comet> WithIncludes(IQueryable<Comet> query)
         {
-            return query.Include(cb => cb.CelestialBodyNavigation);
+            return query.Include(c => c.CelestialBodyNavigation);
         }
 
         public async override Task<IEnumerable<Comet>> GetByKeyAsync(string reference)
         {
-            return await WithIncludes(_comets.Where(c => c.Reference.ToLower().Contains(reference.ToLower())))
+            return await WithIncludes(_entities.Where(c => c.Reference.ToLower().Contains(reference.ToLower())))
                             .ToListAsync();
         }
 
@@ -41,7 +36,7 @@ namespace Astralis_API.Models.DataManager
             decimal? minMOID = null,
             decimal? maxMOID = null)
         {
-            var query = _comets.AsQueryable();
+            var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(reference))
             {
                 string refLower = reference.ToLower();
