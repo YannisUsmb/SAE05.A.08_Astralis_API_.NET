@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
-    [Table("t_e_notification_nty")]
+    [Table("t_e_notificationtype_nty")]
     public class NotificationType
     {
         [Key]
