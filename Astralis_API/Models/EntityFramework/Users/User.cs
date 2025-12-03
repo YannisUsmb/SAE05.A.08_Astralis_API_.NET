@@ -57,7 +57,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("usr_avatarurl", TypeName = "TEXT")]
         [Url(ErrorMessage = "The avatar url must be a valid URL.")]
-        public string AvatarUrl { get; set; } = null!;
+        public string? AvatarUrl { get; set; }
 
         [Column("usr_inscriptiondate")]
         [Required(ErrorMessage = "The inscription date is required.")]
