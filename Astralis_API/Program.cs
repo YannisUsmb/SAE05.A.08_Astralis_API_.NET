@@ -2,11 +2,12 @@ using Astralis_API.Configuration;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,16 +21,42 @@ builder.Services.AddControllers()
     });
 
 // Swagger/OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(
-    doc =>
+builder.Services.AddSwaggerGen(c =>
+{
+    // Configure Swagger to use the XML documentation file.
+    var xmlFile = Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml");
+    c.IncludeXmlComments(xmlFile);
+    c.OperationFilter<SwaggerGenericFilter>();
+
+    // Security definition for JWT Bearer
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        // Configure Swagger to use the XML documentation file.
-        var xmlFile = Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml");
-        doc.IncludeXmlComments(xmlFile);
-        doc.OperationFilter<SwaggerGenericFilter>();
-    }
-);
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    // Security requirement for JWT Bearer
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
 
 // DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
