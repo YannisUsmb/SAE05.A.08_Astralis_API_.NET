@@ -56,7 +56,6 @@ namespace Astralis_API.Models.EntityFramework
         public string Password { get; set; } = null!;
 
         [Column("usr_avatarurl", TypeName = "TEXT")]
-        [Required(ErrorMessage = "The avatar url is required.")]
         [Url(ErrorMessage = "The avatar url must be a valid URL.")]
         public string AvatarUrl { get; set; } = null!;
 
