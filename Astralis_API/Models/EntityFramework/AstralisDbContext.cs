@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Astralis.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.EntityFramework;
 
@@ -108,6 +109,17 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(u => u.InvoicingId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_user_invoicingaddress");
+
+            entity.Property(u => u.Gender)
+                .HasConversion(
+                v => v == GenderType.Male ? "M" :
+                    v == GenderType.Female ? "F" :
+                    "U",
+
+                v => v == "M" ? GenderType.Male :
+                    v == "F" ? GenderType.Female :
+                    GenderType.Unknown
+          );
         });
 
         modelBuilder.Entity<CreditCard>(entity =>
