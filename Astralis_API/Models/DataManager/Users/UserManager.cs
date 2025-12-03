@@ -40,7 +40,9 @@ namespace Astralis_API.Models.DataManager
                             .Include(u => u.ApprovedDiscoveries)
                             .Include(u => u.ApprovedAliasDiscoveries)
                             .Include(u => u.UserNotifications)
-                                .ThenInclude(un=> un.NotificationNavigation);
+                                .ThenInclude(un=> un.NotificationNavigation)
+                            .Include(u => u.UserNotificationTypes)
+                                .ThenInclude(unt => unt.NotificationTypeNavigation);
         }
     }
 }

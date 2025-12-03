@@ -10,6 +10,12 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
+        public override async Task<CartItem?> GetByIdAsync(int userId, int productId)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(ci => ci.UserId == userId && ci.ProductId == productId);
+        }
+
         protected override IQueryable<CartItem> WithIncludes(IQueryable<CartItem> query)
         {
             return query.Include(ci => ci.ProductNavigation)

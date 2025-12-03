@@ -21,7 +21,7 @@ namespace Astralis_API.Models.DataManager
             return await WithIncludes(_entities).ToListAsync();
         }
 
-        public async Task<TEntity?> GetByIdAsync(TKey1 key1, TKey2 key2)
+        public virtual async Task<TEntity?> GetByIdAsync(TKey1 key1, TKey2 key2)
         {
             return await _entities.FindAsync(key1, key2);
         }
@@ -29,6 +29,13 @@ namespace Astralis_API.Models.DataManager
         public async Task AddAsync(TEntity entity)
         {
             await _entities.AddAsync(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(TEntity entityToUpdate, TEntity entity)
+        {
+            _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
+
             await _context.SaveChangesAsync();
         }
 

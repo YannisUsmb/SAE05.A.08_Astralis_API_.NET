@@ -10,6 +10,12 @@ namespace Astralis_API.Models.DataManager
         {
         }
 
+        public override async Task<ArticleInterest?> GetByIdAsync(int articleId, int userId)
+        {
+            return await WithIncludes(_entities)
+                         .FirstOrDefaultAsync(ai => ai.ArticleId == articleId && ai.UserId == userId);
+        }
+
         protected override IQueryable<ArticleInterest> WithIncludes(IQueryable<ArticleInterest> query)
         {
             return query

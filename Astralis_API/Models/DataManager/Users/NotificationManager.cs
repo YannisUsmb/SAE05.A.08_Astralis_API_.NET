@@ -18,7 +18,8 @@ namespace Astralis_API.Models.DataManager
 
         protected override IQueryable<Notification> WithIncludes(IQueryable<Notification> query)
         {
-            return query.Include(n => n.UserNotifications);
+            return query.Include(n => n.UserNotifications)
+                        .Include(n => n.NotificationTypeNavigation);
         }
     }
 }
