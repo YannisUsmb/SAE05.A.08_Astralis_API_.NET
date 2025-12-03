@@ -3,7 +3,10 @@ using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +36,30 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AstralisDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
+
+// Configuration JWT
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+// Important : s'assurer que la clé est encodée pareil
+var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+    };
+});
 
 // Dependency Injection for Data Managers
 //      Addresses
@@ -137,6 +164,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazor");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

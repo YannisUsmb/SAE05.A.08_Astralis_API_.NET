@@ -6,13 +6,8 @@ namespace Astralis_API.Models.DataManager
 {
     public class UserManager : DataManager<User, int, string>, IUserRepository
     {
-        private readonly AstralisDbContext? _context;
-        private readonly DbSet<User> _users;
-
         public UserManager(AstralisDbContext context) : base(context)
         {
-            _context = context;
-            _users = _context.Set<User>();
         }
 
         protected override IQueryable<User> WithIncludes(IQueryable<User> query)
@@ -44,13 +39,13 @@ namespace Astralis_API.Models.DataManager
 
         public async override Task<IEnumerable<User>> GetByKeyAsync(string username)
         {
-            return await WithIncludes(_users.Where(u => u.Username.ToLower().Contains(username.ToLower())))                             
+            return await WithIncludes(_entities.Where(u => u.Username.ToLower().Contains(username.ToLower())))                             
                             .ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetByUserRoleIdAsync(int id)
         {
-            return await WithIncludes (_users.Where(u => u.UserRoleId == id))
+            return await WithIncludes (_entities.Where(u => u.UserRoleId == id))
                             .ToListAsync();
         }
     }
