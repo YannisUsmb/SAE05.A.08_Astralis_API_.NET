@@ -223,16 +223,16 @@ namespace Astralis_API.Models.Mapper
 
             ///// Notification.
             // Entity to DTO (Read).
-            //CreateMap<Notification, NotificationDto>()
-            //    // .Include(n => n.NotificationTypeNavigation)
-            //    .ForMember(dest => dest.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeNavigation.Label));
+            CreateMap<Notification, NotificationDto>()
+                // .Include(n => n.NotificationTypeNavigation)
+                .ForMember(dest => dest.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeNavigation.Label));
             // DTO to Entity (Write).
             CreateMap<NotificationCreateDto, Notification>();
             CreateMap<NotificationUpdateDto, Notification>();
 
             ///// NotificationType.
             // Entity to DTO (Read).
-            //CreateMap<NotificationType, NotificationTypeDto>();
+            CreateMap<NotificationType, NotificationTypeDto>();
 
             ///// OrderDetail.
             // Entity to DTO (Read).
@@ -365,7 +365,7 @@ namespace Astralis_API.Models.Mapper
 
             ///// UserNotificationType.
             // Entity to DTO (Read).
-            //CreateMap<UserNotificationType, UserNotificationTypeDto>();
+            CreateMap<UserNotificationType, UserNotificationTypeDto>();
 
             ///// UserRole.
             // Entity to DTO (Read).

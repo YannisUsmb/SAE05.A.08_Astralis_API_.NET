@@ -21,6 +21,39 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
+        /// Retrieves all comments (public access).
+        /// </summary>
+        /// <returns>A list of comments.</returns>
+        /// <response code="200">Returns the list of comments.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override Task<ActionResult<IEnumerable<CommentDto>>> GetAll()
+        {
+            return base.GetAll();
+        }
+
+        /// <summary>
+        /// Retrieves a specific comment by ID (public access).
+        /// </summary>
+        /// <param name="id">The unique identifier of the comment.</param>
+        /// <returns>The requested comment.</returns>
+        /// <response code="200">Returns the comment.</response>
+        /// <response code="404">Comment not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override Task<ActionResult<CommentDto>> GetById(int id)
+        {
+            return base.GetById(id);
+        }
+
+        /// <summary>
         /// Creates a new Comment linked to the authenticated user.
         /// </summary>
         /// <param name="createDto">The comment content and article ID.</param>

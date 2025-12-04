@@ -10,11 +10,10 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    [DisplayName("Address")]
-    public class AddressesController : CrudController<Address, AddressDto, AddressDto, AddressCreateDto, AddressUpdateDto, int>
+    [DisplayName("ReportStatus")]
+    public class ReportStatusesController : ReadableController<ReportStatus, ReportStatusDto, ReportStatusDto, int>
     {
-        public AddressesController(IAddressRepository repository, IMapper mapper)
+        public ReportStatusesController(IReportStatusRepository repository, IMapper mapper)
             : base(repository, mapper)
         {
         }
