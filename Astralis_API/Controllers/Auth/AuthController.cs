@@ -23,18 +23,21 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Authenticates a user and returns a JWT token.
+        /// Authenticates a user and returns a JWT token with user details.
         /// </summary>
         /// <param name="loginDto">User credentials (email/username/phone and password).</param>
-        /// <returns>A JWT token if authentication is successful.</returns>
-        /// <response code="200">Returns the token.</response>
+        /// <returns>An AuthResponseDto containing the token and user info.</returns>
+        /// <response code="200">Authentication successful.</response>
         /// <response code="401">Invalid credentials.</response>
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<string>> Login([FromBody] UserLoginDto loginDto)
+        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] UserLoginDto loginDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             User? user = await _context.Users
                 .Include(u => u.UserRoleNavigation)
@@ -49,7 +52,7 @@ namespace Astralis_API.Controllers
                 return Unauthorized("Invalid identifier or password.");
             }
 
-            var claims = new List<Claim>
+            List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
@@ -59,22 +62,35 @@ namespace Astralis_API.Controllers
 
             string? keyString = _configuration["JwtSettings:Key"];
             if (string.IsNullOrEmpty(keyString))
+            {
                 return StatusCode(500, "JWT Key is not configured.");
+            }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
+            DateTime expiresAt = DateTime.Now.AddHours(4);
+
+            JwtSecurityToken token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(4),
+                expires: expiresAt,
                 signingCredentials: creds
             );
 
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            string jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Ok(new { token = jwt });
+            AuthResponseDto response = new AuthResponseDto
+            {
+                Token = jwt,
+                Expiration = expiresAt,
+                Username = user.Username,
+                Role = user.UserRoleNavigation.Label,
+                AvatarPath = user.AvatarUrl
+            };
+
+            return Ok(response);
         }
     }
 }
