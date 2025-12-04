@@ -32,7 +32,7 @@ namespace Astralis_API.Controllers
         /// <response code="400">Invalid input.</response>
         /// <response code="401">User not authenticated.</response>
         [HttpPost]
-        [Authorize(Roles = "Client")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
