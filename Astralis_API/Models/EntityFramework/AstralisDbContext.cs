@@ -20,6 +20,8 @@ public partial class AstralisDbContext : DbContext
     public virtual DbSet<CreditCard> CreditCards { get; set; }
     public virtual DbSet<Notification> Notifications { get; set; }
     public virtual DbSet<UserNotification> UserNotifications { get; set; }
+    public virtual DbSet<NotificationType> NotificationTypes { get; set; }
+    public virtual DbSet<UserNotificationType> UserNotificationTypes { get; set; }
 
     // Addresses
     public virtual DbSet<Address> Addresses { get; set; }
@@ -114,12 +116,14 @@ public partial class AstralisDbContext : DbContext
                 .HasConversion(
                 v => v == GenderType.Male ? "M" :
                     v == GenderType.Female ? "F" :
+                    v == GenderType.Other ? "X" :
                     "U",
 
                 v => v == "M" ? GenderType.Male :
                     v == "F" ? GenderType.Female :
+                    v == "X" ? GenderType.Other :
                     GenderType.Unknown
-          );
+                );
         });
 
         modelBuilder.Entity<CreditCard>(entity =>
