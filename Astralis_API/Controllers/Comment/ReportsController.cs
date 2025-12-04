@@ -11,7 +11,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [DisplayName("Report")]
     public class ReportsController : CrudController<Report, ReportDto, ReportDto, ReportCreateDto, ReportUpdateDto, int>
     {
@@ -29,6 +29,7 @@ namespace Astralis_API.Controllers
         /// <response code="400">Invalid input.</response>
         /// <response code="401">User not authenticated.</response>
         [HttpPost]
+        [Authorize(Roles = "Client")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -37,10 +38,10 @@ namespace Astralis_API.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
-                return Unauthorized("Impossible d'identifier l'utilisateur.");
+                return Unauthorized("Impossible user authentification.");
             }
 
             Report entity = _mapper.Map<Report>(createDto);
@@ -77,21 +78,22 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public override async Task<IActionResult> Put(int id, ReportUpdateDto updateDto)
         {
-            if (id != updateDto.Id) return BadRequest("L'ID de l'URL ne correspond pas au corps de la requête.");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (id != updateDto.Id)
+                return BadRequest("Url ID doesn't match the request body.");
 
-            var entityToUpdate = await _repository.GetByIdAsync(id);
-            if (entityToUpdate == null) return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // 1. Récupérer l'ID de l'Admin qui traite le dossier
-            var adminIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Report? entityToUpdate = await _repository.GetByIdAsync(id);
+            if (entityToUpdate == null)
+                return NotFound();
+
+            string? adminIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(adminIdString, out int adminId))
             {
-                entityToUpdate.AdminId = adminId; // On signe le traitement
+                entityToUpdate.AdminId = adminId;
             }
 
-            // 2. Appliquer la mise à jour (Statut uniquement)
-            // AutoMapper va copier ReportStatusId de updateDto vers entityToUpdate
             _mapper.Map(updateDto, entityToUpdate);
 
             await _repository.UpdateAsync(entityToUpdate, entityToUpdate);
