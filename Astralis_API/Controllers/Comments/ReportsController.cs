@@ -45,7 +45,7 @@ namespace Astralis_API.Controllers
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
-                return Unauthorized("Impossible user authentification.");
+                return Unauthorized();
             }
 
             Report entity = _mapper.Map<Report>(createDto);

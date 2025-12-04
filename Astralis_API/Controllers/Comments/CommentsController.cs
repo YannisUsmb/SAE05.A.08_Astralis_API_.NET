@@ -76,7 +76,7 @@ namespace Astralis_API.Controllers
 
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
-                return Unauthorized("Impossible user authentification.");
+                return Unauthorized();
             }
 
             Comment entity = _mapper.Map<Comment>(createDto);
