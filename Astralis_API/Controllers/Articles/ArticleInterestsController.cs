@@ -14,7 +14,7 @@ namespace Astralis_API.Controllers
     [ApiController]
     [Authorize]
     [DisplayName("Like")]
-    public class ArticleInterestsController : JoinController<ArticleInterest, ArticleInterestDto, int, int>
+    public class ArticleInterestsController : JoinController<ArticleInterest, ArticleInterestDto, ArticleInterestDto, int, int>
     {
         public ArticleInterestsController(IArticleInterestRepository repository, IMapper mapper)
             : base(repository, mapper)

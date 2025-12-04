@@ -12,7 +12,7 @@ namespace Astralis_API.Controllers
     [ApiController]
     [Authorize]
     [DisplayName("EventInterest")]
-    public class EventInterestsController : JoinController<EventInterest, EventInterestDto, int, int>
+    public class EventInterestsController : JoinController<EventInterest, EventInterestDto, EventInterestDto, int, int>
     {
         public EventInterestsController(IEventInterestRepository repository, IMapper mapper)
             : base(repository, mapper)

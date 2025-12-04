@@ -9,9 +9,10 @@ namespace Astralis_API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public abstract class JoinController<TEntity, TDto, TKey1, TKey2> : ControllerBase
+    public abstract class JoinController<TEntity, TDto, TCreateDto, TKey1, TKey2> : ControllerBase
         where TEntity : class
         where TDto : class
+        where TCreateDto : class
     {
         protected readonly IJoinRepository<TEntity, TKey1, TKey2> _repository;
         protected readonly IMapper _mapper;
@@ -72,7 +73,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<ActionResult> Post(TDto dto)
+        public virtual async Task<ActionResult> Post(TCreateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 

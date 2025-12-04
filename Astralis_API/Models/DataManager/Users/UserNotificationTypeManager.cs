@@ -15,6 +15,10 @@ namespace Astralis_API.Models.DataManager
             return await WithIncludes(_entities)
                          .FirstOrDefaultAsync(un => un.UserId == userId && un.NotificationTypeId == notificationTypeId);
         }
+        public async Task<IEnumerable<UserNotificationType?>> GetByUserIdAsync(int userId)
+        {
+            return await WithIncludes(_entities.Where(un => un.UserId == userId)).ToListAsync();
+        }
 
         protected override IQueryable<UserNotificationType> WithIncludes(IQueryable<UserNotificationType> query)
         {
