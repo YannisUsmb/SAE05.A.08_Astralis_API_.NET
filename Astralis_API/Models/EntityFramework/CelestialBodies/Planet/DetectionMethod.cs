@@ -12,7 +12,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("dem_label")]
         [Required(ErrorMessage = "The label is required.")]
-        [StringLength(20, ErrorMessage = "The label cannot be longer than 20 characters.")]
+        [StringLength(30, ErrorMessage = "The label cannot be longer than 30 characters.")]
         public string Label { get; set; } = null!;
 
         [Column("dem_description")]

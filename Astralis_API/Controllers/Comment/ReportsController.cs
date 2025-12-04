@@ -15,9 +15,12 @@ namespace Astralis_API.Controllers
     [DisplayName("Report")]
     public class ReportsController : CrudController<Report, ReportDto, ReportDto, ReportCreateDto, ReportUpdateDto, int>
     {
+        private readonly IReportRepository _reportRepository;
+
         public ReportsController(IReportRepository repository, IMapper mapper)
             : base(repository, mapper)
         {
+            _reportRepository = repository;
         }
 
         /// <summary>
@@ -36,7 +39,8 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<ActionResult<ReportDto>> Post(ReportCreateDto createDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
@@ -53,7 +57,7 @@ namespace Astralis_API.Controllers
 
             await _repository.AddAsync(entity);
 
-            var returnDto = _mapper.Map<ReportDto>(entity);
+            ReportDto? returnDto = _mapper.Map<ReportDto>(entity);
             return Ok(returnDto);
         }
 
@@ -99,6 +103,31 @@ namespace Astralis_API.Controllers
             await _repository.UpdateAsync(entityToUpdate, entityToUpdate);
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Searches for reports based on status, motive, or date range.
+        /// </summary>
+        /// <param name="filter">Filter criteria.</param>
+        /// <returns>A list of matching reports.</returns>
+        /// <response code="200">List of reports retrieved successfully.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="403">User not authorized (Admins only).</response>
+        [HttpGet("Search")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IEnumerable<ReportDto>>> Search([FromQuery] ReportFilterDto filter)
+        {
+            IEnumerable<Report?> reports = await _reportRepository.SearchAsync(
+                filter.StatusId,
+                filter.MotiveId,
+                filter.MinDate,
+                filter.MaxDate
+            );
+
+            return Ok(_mapper.Map<IEnumerable<ReportDto>>(reports));
         }
     }
 }
