@@ -139,5 +139,35 @@ namespace Astralis_API.Controllers
         {
             return await base.Put(id, updateDto);
         }
+
+        /// <summary>
+        /// Deletes an event (Commercial Editors only).
+        /// </summary>
+        /// <param name="id">The unique identifier of the Event to delete.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The event was successfully deleted.</response>
+        /// <response code="404">The event does not exist.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Rédacteur commercial")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public virtual async Task<IActionResult> Delete(int id)
+        {
+            Event? entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId) || entity.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            return await base.Delete(id);
+        }
     }
 }
