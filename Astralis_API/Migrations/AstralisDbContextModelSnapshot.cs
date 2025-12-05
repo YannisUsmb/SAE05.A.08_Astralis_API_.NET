@@ -1057,18 +1057,17 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_eccentricity");
 
                     b.Property<string>("HostStarMass")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("pla_hoststarmass");
 
                     b.Property<string>("HostStarTemperature")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
-                        .HasColumnName("pla_hoststartemperature");
-
-                    b.Property<string>("Mass")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
+                        .HasColumnName("pla_hoststartemperature");
+
+                    b.Property<decimal?>("Mass")
+                        .HasColumnType("NUMERIC(20,10)")
                         .HasColumnName("pla_mass");
 
                     b.Property<string>("OrbitalPeriod")
@@ -1095,8 +1094,8 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_stellarmagnitude");
 
                     b.Property<string>("Temperature")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("pla_temperature");
 
                     b.HasKey("Id")

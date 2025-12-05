@@ -8,6 +8,8 @@ namespace Astralis_API.Models.Repository
             string? name = null,
             IEnumerable<int>? planetTypeIds = null,
             IEnumerable<int>? detectionMethodIds = null,
+            decimal? minMass = null,
+            decimal? maxMass = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
             decimal? minEccentricity = null,

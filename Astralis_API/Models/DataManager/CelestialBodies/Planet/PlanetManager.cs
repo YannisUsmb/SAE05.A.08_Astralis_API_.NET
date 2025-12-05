@@ -33,6 +33,8 @@ namespace Astralis_API.Models.DataManager
             string? name = null,
             IEnumerable<int>? planetTypeIds = null,
             IEnumerable<int>? detectionMethodIds = null,
+            decimal? minMass = null,
+            decimal? maxMass = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
             decimal? minEccentricity = null,
@@ -60,6 +62,12 @@ namespace Astralis_API.Models.DataManager
             {
                 query = query.Where(a => detectionMethodIds.Contains(a.DetectionMethodId));
             }            
+
+            if (minMass.HasValue)
+                query = query.Where(p => p.Mass >= minMass.Value);
+
+            if (maxMass.HasValue)
+                query = query.Where(p => p.Mass <= maxMass.Value);
 
             if (minDiscoveryYear.HasValue)
                 query = query.Where(p => p.DiscoveryYear >= minDiscoveryYear.Value);
