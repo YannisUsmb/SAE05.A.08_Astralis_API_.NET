@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Astralis_API.Migrations
 {
     [DbContext(typeof(AstralisDbContext))]
-    [Migration("20251204075959_FixedNotificationTypeTableNameMigration")]
-    partial class FixedNotificationTypeTableNameMigration
+    [Migration("20251205081924_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -226,7 +226,8 @@ namespace Astralis_API.Migrations
                         .HasName("asteroid_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_asteroid_cebid");
 
                     b.HasIndex("OrbitalClassId");
 
@@ -444,7 +445,8 @@ namespace Astralis_API.Migrations
                         .HasName("comet_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_comet_cebid");
 
                     b.ToTable("t_e_comet_cmt", "public");
                 });
@@ -629,8 +631,8 @@ namespace Astralis_API.Migrations
 
                     b.Property<string>("Label")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("dem_label");
 
                     b.HasKey("Id")
@@ -864,7 +866,8 @@ namespace Astralis_API.Migrations
                         .HasName("galaxyquasar_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_galaxyquasar_cebid");
 
                     b.HasIndex("GalaxyQuasarClassId");
 
@@ -1057,22 +1060,22 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_eccentricity");
 
                     b.Property<string>("HostStarMass")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("pla_hoststarmass");
 
                     b.Property<string>("HostStarTemperature")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
-                        .HasColumnName("pla_hoststartemperature");
-
-                    b.Property<string>("Mass")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
+                        .HasColumnName("pla_hoststartemperature");
+
+                    b.Property<decimal?>("Mass")
+                        .HasColumnType("NUMERIC(20,10)")
                         .HasColumnName("pla_mass");
 
-                    b.Property<decimal?>("OrbitalPeriod")
-                        .HasColumnType("NUMERIC(14,12)")
+                    b.Property<string>("OrbitalPeriod")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("pla_orbitalperiod");
 
                     b.Property<int>("PlanetTypeId")
@@ -1094,15 +1097,16 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_stellarmagnitude");
 
                     b.Property<string>("Temperature")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("pla_temperature");
 
                     b.HasKey("Id")
                         .HasName("planet_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_planet_cebid");
 
                     b.HasIndex("DetectionMethodId");
 
@@ -1341,7 +1345,8 @@ namespace Astralis_API.Migrations
                         .HasName("satellite_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_satellite_cebid");
 
                     b.HasIndex("PlanetId");
 
@@ -1403,8 +1408,8 @@ namespace Astralis_API.Migrations
                         .HasColumnName("sta_constellation");
 
                     b.Property<string>("Designation")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
                         .HasColumnName("sta_designation");
 
                     b.Property<decimal?>("Distance")
@@ -1431,7 +1436,8 @@ namespace Astralis_API.Migrations
                         .HasName("star_pkey");
 
                     b.HasIndex("CelestialBodyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("uq_star_cebid");
 
                     b.HasIndex("SpectralClassId");
 

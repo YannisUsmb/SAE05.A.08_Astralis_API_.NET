@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Astralis_API.Migrations
 {
     /// <inheritdoc />
-    public partial class FirstMigrationAstralis : Migration
+    public partial class FirstMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -80,7 +80,7 @@ namespace Astralis_API.Migrations
                 {
                     dem_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    dem_label = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    dem_label = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     dem_description = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false)
                 },
                 constraints: table =>
@@ -133,18 +133,18 @@ namespace Astralis_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "t_e_notification_not",
+                name: "t_e_notificationtype_nty",
                 schema: "public",
                 columns: table => new
                 {
-                    not_id = table.Column<int>(type: "integer", nullable: false)
+                    nty_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    not_label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    not_description = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true)
+                    nty_label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    nty_description = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("notification_pkey", x => x.not_id);
+                    table.PrimaryKey("notificationtype_pkey", x => x.nty_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -312,6 +312,29 @@ namespace Astralis_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "t_e_notification_not",
+                schema: "public",
+                columns: table => new
+                {
+                    not_id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    nty_id = table.Column<int>(type: "integer", nullable: false),
+                    not_label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    not_description = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("notification_pkey", x => x.not_id);
+                    table.ForeignKey(
+                        name: "fk_notification_notificationtype",
+                        column: x => x.nty_id,
+                        principalSchema: "public",
+                        principalTable: "t_e_notificationtype_nty",
+                        principalColumn: "nty_id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "t_e_country_cou",
                 schema: "public",
                 columns: table => new
@@ -449,14 +472,14 @@ namespace Astralis_API.Migrations
                     dem_id = table.Column<int>(type: "integer", nullable: false),
                     pla_distance = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                     pla_discoveryyear = table.Column<int>(type: "integer", nullable: true),
-                    pla_mass = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    pla_mass = table.Column<decimal>(type: "numeric(20,10)", nullable: true),
                     pla_radius = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
-                    pla_temperature = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
-                    pla_orbitalperiod = table.Column<decimal>(type: "numeric(14,12)", nullable: true),
+                    pla_temperature = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    pla_orbitalperiod = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: true),
                     pla_eccentricity = table.Column<decimal>(type: "numeric(4,3)", nullable: true),
                     pla_stellarmagnitude = table.Column<decimal>(type: "numeric(5,3)", nullable: true),
-                    pla_hoststartemperature = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
-                    pla_hoststarmass = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    pla_hoststartemperature = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    pla_hoststarmass = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     pla_remark = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true)
                 },
                 constraints: table =>
@@ -494,7 +517,7 @@ namespace Astralis_API.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ceb_id = table.Column<int>(type: "integer", nullable: false),
                     spc_id = table.Column<int>(type: "integer", nullable: true),
-                    sta_designation = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    sta_designation = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
                     sta_approvaldate = table.Column<DateOnly>(type: "date", nullable: true),
                     sta_constellation = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: true),
                     sta_bayerdesignation = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
@@ -617,10 +640,10 @@ namespace Astralis_API.Migrations
                     usr_email = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     usr_phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     usr_username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    usr_password = table.Column<string>(type: "CHAR(256)", nullable: false),
-                    usr_avatarurl = table.Column<string>(type: "TEXT", nullable: false),
+                    usr_password = table.Column<string>(type: "VARCHAR(64)", maxLength: 64, nullable: false),
+                    usr_avatarurl = table.Column<string>(type: "TEXT", nullable: true),
                     usr_inscriptiondate = table.Column<DateOnly>(type: "date", nullable: false),
-                    usr_gender = table.Column<int>(type: "CHAR(1)", nullable: false),
+                    usr_gender = table.Column<string>(type: "CHAR(1)", nullable: false),
                     usr_ispremium = table.Column<bool>(type: "boolean", nullable: false),
                     usr_multifactorauthentification = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -871,7 +894,6 @@ namespace Astralis_API.Migrations
                 {
                     usr_id = table.Column<int>(type: "integer", nullable: false),
                     not_id = table.Column<int>(type: "integer", nullable: false),
-                    uno_bymail = table.Column<bool>(type: "boolean", nullable: false),
                     uno_isread = table.Column<bool>(type: "boolean", nullable: false),
                     uno_receivedat = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -887,6 +909,34 @@ namespace Astralis_API.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_usernotification_user",
+                        column: x => x.usr_id,
+                        principalSchema: "public",
+                        principalTable: "t_e_user_usr",
+                        principalColumn: "usr_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "t_j_usernotificationtype_unt",
+                schema: "public",
+                columns: table => new
+                {
+                    usr_id = table.Column<int>(type: "integer", nullable: false),
+                    nty_id = table.Column<int>(type: "integer", nullable: false),
+                    unt_bymail = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("usernotificationtype_pkey", x => new { x.usr_id, x.nty_id });
+                    table.ForeignKey(
+                        name: "fk_usernotificationtype_notificationtype",
+                        column: x => x.nty_id,
+                        principalSchema: "public",
+                        principalTable: "t_e_notificationtype_nty",
+                        principalColumn: "nty_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_usernotificationtype_user",
                         column: x => x.usr_id,
                         principalSchema: "public",
                         principalTable: "t_e_user_usr",
@@ -1139,17 +1189,17 @@ namespace Astralis_API.Migrations
                 column: "usr_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_asteroid_ast_ceb_id",
-                schema: "public",
-                table: "t_e_asteroid_ast",
-                column: "ceb_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_t_e_asteroid_ast_oct_id",
                 schema: "public",
                 table: "t_e_asteroid_ast",
                 column: "oct_id");
+
+            migrationBuilder.CreateIndex(
+                name: "uq_asteroid_cebid",
+                schema: "public",
+                table: "t_e_asteroid_ast",
+                column: "ceb_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_audio_aud_cbt_id",
@@ -1170,7 +1220,7 @@ namespace Astralis_API.Migrations
                 column: "cou_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_comet_cmt_ceb_id",
+                name: "uq_comet_cebid",
                 schema: "public",
                 table: "t_e_comet_cmt",
                 column: "ceb_id",
@@ -1268,24 +1318,23 @@ namespace Astralis_API.Migrations
                 column: "usr_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_galaxyquasar_gaq_ceb_id",
-                schema: "public",
-                table: "t_e_galaxyquasar_gaq",
-                column: "ceb_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_t_e_galaxyquasar_gaq_gqc_id",
                 schema: "public",
                 table: "t_e_galaxyquasar_gaq",
                 column: "gqc_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_planet_pla_ceb_id",
+                name: "uq_galaxyquasar_cebid",
                 schema: "public",
-                table: "t_e_planet_pla",
+                table: "t_e_galaxyquasar_gaq",
                 column: "ceb_id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_notification_not_nty_id",
+                schema: "public",
+                table: "t_e_notification_not",
+                column: "nty_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_planet_pla_dem_id",
@@ -1298,6 +1347,13 @@ namespace Astralis_API.Migrations
                 schema: "public",
                 table: "t_e_planet_pla",
                 column: "plt_id");
+
+            migrationBuilder.CreateIndex(
+                name: "uq_planet_cebid",
+                schema: "public",
+                table: "t_e_planet_pla",
+                column: "ceb_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_product_pro_prc_id",
@@ -1342,22 +1398,15 @@ namespace Astralis_API.Migrations
                 column: "usr_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_satellite_sat_ceb_id",
-                schema: "public",
-                table: "t_e_satellite_sat",
-                column: "ceb_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_t_e_satellite_sat_pla_id",
                 schema: "public",
                 table: "t_e_satellite_sat",
                 column: "pla_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_star_sta_ceb_id",
+                name: "uq_satellite_cebid",
                 schema: "public",
-                table: "t_e_star_sta",
+                table: "t_e_satellite_sat",
                 column: "ceb_id",
                 unique: true);
 
@@ -1366,6 +1415,13 @@ namespace Astralis_API.Migrations
                 schema: "public",
                 table: "t_e_star_sta",
                 column: "spc_id");
+
+            migrationBuilder.CreateIndex(
+                name: "uq_star_cebid",
+                schema: "public",
+                table: "t_e_star_sta",
+                column: "ceb_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_add_iddelivery",
@@ -1426,6 +1482,12 @@ namespace Astralis_API.Migrations
                 schema: "public",
                 table: "t_j_usernotification_uno",
                 column: "not_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_j_usernotificationtype_unt_nty_id",
+                schema: "public",
+                table: "t_j_usernotificationtype_unt",
+                column: "nty_id");
         }
 
         /// <inheritdoc />
@@ -1489,6 +1551,10 @@ namespace Astralis_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "t_j_usernotification_uno",
+                schema: "public");
+
+            migrationBuilder.DropTable(
+                name: "t_j_usernotificationtype_unt",
                 schema: "public");
 
             migrationBuilder.DropTable(
@@ -1573,6 +1639,10 @@ namespace Astralis_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "t_e_productcategory_prc",
+                schema: "public");
+
+            migrationBuilder.DropTable(
+                name: "t_e_notificationtype_nty",
                 schema: "public");
 
             migrationBuilder.DropTable(
