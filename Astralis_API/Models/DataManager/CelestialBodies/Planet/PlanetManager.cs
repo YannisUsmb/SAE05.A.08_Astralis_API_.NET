@@ -33,19 +33,18 @@ namespace Astralis_API.Models.DataManager
             string? name = null,
             IEnumerable<int>? planetTypeIds = null,
             IEnumerable<int>? detectionMethodIds = null,
+            decimal? minDistance = null,
+            decimal? maxDistance = null,
             decimal? minMass = null,
             decimal? maxMass = null,
+            decimal? minRadius = null,
+            decimal? maxRadius = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
             decimal? minEccentricity = null,
             decimal? maxEccentricity = null,
             decimal? minStellarMagnitude = null,
-            decimal? maxStellarMagnitude = null,
-            string? distance = null,
-            string? radius = null,
-            string? temperature = null,
-            string? hostStarTemperature = null,
-            string? hostStarMass = null)
+            decimal? maxStellarMagnitude = null)
         {
             var query = _entities.AsQueryable();
             if (!string.IsNullOrWhiteSpace(name))
@@ -61,13 +60,25 @@ namespace Astralis_API.Models.DataManager
             if (detectionMethodIds != null && detectionMethodIds.Any())
             {
                 query = query.Where(a => detectionMethodIds.Contains(a.DetectionMethodId));
-            }            
+            }
+
+            if (minDistance.HasValue)
+                query = query.Where(p => p.Distance >= minDistance.Value);
+
+            if (maxDistance.HasValue)
+                query = query.Where(p => p.Distance <= maxDistance.Value);
 
             if (minMass.HasValue)
                 query = query.Where(p => p.Mass >= minMass.Value);
 
             if (maxMass.HasValue)
                 query = query.Where(p => p.Mass <= maxMass.Value);
+
+            if (minRadius.HasValue)
+                query = query.Where(p => p.Radius >= minRadius.Value);
+
+            if (maxRadius.HasValue)
+                query = query.Where(p => p.Radius <= maxRadius.Value);
 
             if (minDiscoveryYear.HasValue)
                 query = query.Where(p => p.DiscoveryYear >= minDiscoveryYear.Value);
@@ -86,21 +97,6 @@ namespace Astralis_API.Models.DataManager
 
             if (maxStellarMagnitude.HasValue)
                 query = query.Where(p => p.StellarMagnitude <= maxStellarMagnitude.Value);
-
-            if (!string.IsNullOrWhiteSpace(distance))
-                query = query.Where(p => p.Distance != null && p.Distance.ToLower().Contains(distance.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(radius))
-                query = query.Where(p => p.Radius != null && p.Radius.ToLower().Contains(radius.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(temperature))
-                query = query.Where(p => p.Temperature != null && p.Temperature.ToLower().Contains(temperature.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(hostStarMass))
-                query = query.Where(p => p.HostStarMass != null && p.HostStarMass.ToLower().Contains(hostStarMass.ToLower()));
-
-            if (!string.IsNullOrWhiteSpace(hostStarTemperature))
-                query = query.Where(p => p.HostStarTemperature != null && p.HostStarTemperature.ToLower().Contains(hostStarTemperature.ToLower()));
 
             return await WithIncludes(query)
                 .ToListAsync();

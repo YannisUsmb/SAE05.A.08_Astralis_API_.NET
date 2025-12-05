@@ -22,9 +22,8 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The detection method ID is required.")]
         public int DetectionMethodId { get; set; }
 
-        [Column("pla_distance")]
-        [StringLength(10, ErrorMessage = "The distance cannot be longer than 10 characters.")]
-        public string? Distance { get; set; }
+        [Column("pla_distance", TypeName = "NUMERIC(20,10)")]
+        public decimal? Distance { get; set; }
 
         [Column("pla_discoveryyear")]
         public int? DiscoveryYear { get; set; }
@@ -32,12 +31,11 @@ namespace Astralis_API.Models.EntityFramework
         [Column("pla_mass", TypeName = "NUMERIC(20,10)")]
         public decimal? Mass { get; set; }
 
-        [Column("pla_radius")]
-        [StringLength(10, ErrorMessage = "The radius cannot be longer than 10 characters.")]
-        public string? Radius { get; set; }
+        [Column("pla_radius", TypeName = "NUMERIC(20,10)")]
+        public decimal? Radius { get; set; }
 
         [Column("pla_temperature")]
-        [StringLength(20, ErrorMessage = "The temperature cannot be longer than 20 characters.")]
+        [StringLength(30, ErrorMessage = "The temperature cannot be longer than 30 characters.")]
         public string? Temperature { get; set; }
 
         [Column("pla_orbitalperiod")]
@@ -51,11 +49,11 @@ namespace Astralis_API.Models.EntityFramework
         public decimal? StellarMagnitude { get; set; }
 
         [Column("pla_hoststartemperature")]
-        [StringLength(20, ErrorMessage = "The host star temperature cannot be longer than 20 characters.")]
+        [StringLength(30, ErrorMessage = "The host star temperature cannot be longer than 30 characters.")]
         public string? HostStarTemperature { get; set; }
 
         [Column("pla_hoststarmass")]
-        [StringLength(20, ErrorMessage = "The host star mass cannot be longer than 20 characters.")]
+        [StringLength(30, ErrorMessage = "The host star mass cannot be longer than 30 characters.")]
         public string? HostStarMass { get; set; }
 
         [Column("pla_remark")]

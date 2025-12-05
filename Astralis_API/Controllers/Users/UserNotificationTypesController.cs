@@ -29,9 +29,9 @@ namespace Astralis_API.Controllers
         /// <returns>A list of notification preferences.</returns>
         /// <response code="200">Preferences retrieved successfully.</response>
         /// <response code="401">User not authenticated.</response>
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [HttpGet]
         public override async Task<ActionResult<IEnumerable<UserNotificationTypeDto>>> GetAll()
         {
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

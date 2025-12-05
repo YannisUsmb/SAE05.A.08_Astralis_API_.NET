@@ -1047,9 +1047,8 @@ namespace Astralis_API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("pla_discoveryyear");
 
-                    b.Property<string>("Distance")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<decimal?>("Distance")
+                        .HasColumnType("NUMERIC(20,10)")
                         .HasColumnName("pla_distance");
 
                     b.Property<decimal?>("Eccentricity")
@@ -1057,13 +1056,13 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_eccentricity");
 
                     b.Property<string>("HostStarMass")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("pla_hoststarmass");
 
                     b.Property<string>("HostStarTemperature")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("pla_hoststartemperature");
 
                     b.Property<decimal?>("Mass")
@@ -1079,9 +1078,8 @@ namespace Astralis_API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("plt_id");
 
-                    b.Property<string>("Radius")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<decimal?>("Radius")
+                        .HasColumnType("NUMERIC(20,10)")
                         .HasColumnName("pla_radius");
 
                     b.Property<string>("Remark")
@@ -1094,8 +1092,8 @@ namespace Astralis_API.Migrations
                         .HasColumnName("pla_stellarmagnitude");
 
                     b.Property<string>("Temperature")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("pla_temperature");
 
                     b.HasKey("Id")

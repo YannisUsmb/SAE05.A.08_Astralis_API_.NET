@@ -40,7 +40,7 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Retrieves a specific user profile.
+        /// Retrieves a specific user profile (Admin only).
         /// </summary>
         /// <remarks>Users can only view their own profile, unless they have the Admin role.</remarks>
         /// <param name="id">The user ID.</param>
@@ -51,6 +51,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">User not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -105,7 +106,7 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Updates a user profile.
+        /// Updates a user profile (User only).
         /// </summary>
         /// <remarks>Users can only update their own profile.</remarks>
         /// <param name="id">The user ID.</param>
@@ -136,7 +137,7 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Changes the authenticated user's password.
+        /// Changes the authenticated user's password (User only).
         /// </summary>
         /// <param name="id">The user ID.</param>
         /// <param name="passwordDto">The new password details.</param>
