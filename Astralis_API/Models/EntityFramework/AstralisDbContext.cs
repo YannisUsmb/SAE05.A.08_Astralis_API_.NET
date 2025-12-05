@@ -407,6 +407,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(p => p.DetectionMethodId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_planet_detectionmethod");
+
+            entity.HasIndex(p => p.CelestialBodyId).IsUnique().HasDatabaseName("uq_planet_cebid");
         });
 
         modelBuilder.Entity<Satellite>(entity =>
@@ -424,6 +426,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(s => s.PlanetId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_satellite_planet");
+
+            entity.HasIndex(s => s.CelestialBodyId).IsUnique().HasDatabaseName("uq_satellite_cebid");
         });
 
         modelBuilder.Entity<SpectralClass>(entity =>
@@ -446,6 +450,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(s => s.SpectralClassId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_star_spectralclass");
+
+            entity.HasIndex(s => s.CelestialBodyId).IsUnique().HasDatabaseName("uq_star_cebid");
         });
 
         modelBuilder.Entity<OrbitalClass>(entity =>
@@ -468,6 +474,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(a => a.OrbitalClassId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_asteroid_orbitalclass");
+
+            entity.HasIndex(a => a.CelestialBodyId).IsUnique().HasDatabaseName("uq_asteroid_cebid");
         });
 
         modelBuilder.Entity<Comet>(entity =>
@@ -479,6 +487,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey<Comet>(c => c.CelestialBodyId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_comet_celestialbody");
+
+            entity.HasIndex(c => c.CelestialBodyId).IsUnique().HasDatabaseName("uq_comet_cebid");
         });
 
         modelBuilder.Entity<GalaxyQuasarClass>(entity =>
@@ -501,6 +511,8 @@ public partial class AstralisDbContext : DbContext
                 .HasForeignKey(gq => gq.GalaxyQuasarClassId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_galaxyquasar_galaxyquasarclass");
+
+            entity.HasIndex(gq => gq.CelestialBodyId).IsUnique().HasDatabaseName("uq_galaxyquasar_cebid");
         });
 
         // ------- Discoveries -------
