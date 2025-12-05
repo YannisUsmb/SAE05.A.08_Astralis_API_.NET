@@ -21,5 +21,22 @@ namespace Astralis_API.Models.DataManager
             return query.Include(ci => ci.ProductNavigation)
                 .Include(ci => ci.UserNavigation);
         }
+
+        public async Task<IEnumerable<CartItem>> GetByUserIdAsync(int userId)
+        {
+            return await WithIncludes(_entities)
+                         .Where(ci => ci.UserId == userId)
+                         .ToListAsync();
+        }
+
+        public async Task ClearCartAsync(int userId)
+        {
+            var itemsToRemove = await _entities.Where(ci => ci.UserId == userId).ToListAsync();
+            if (itemsToRemove.Any())
+            {
+                _entities.RemoveRange(itemsToRemove);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

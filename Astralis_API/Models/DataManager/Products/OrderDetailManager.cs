@@ -16,6 +16,19 @@ namespace Astralis_API.Models.DataManager
                          .FirstOrDefaultAsync(od => od.CommandId == commandId && od.ProductId == productId);
         }
 
+        public async Task AddRangeAsync(IEnumerable<OrderDetail> orderDetails)
+        {
+            await _entities.AddRangeAsync(orderDetails);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<OrderDetail>> GetByCommandIdAsync(int commandId)
+        {
+            return await WithIncludes(_entities)
+                         .Where(od => od.CommandId == commandId)
+                         .ToListAsync();
+        }
+
         protected override IQueryable<OrderDetail> WithIncludes(IQueryable<OrderDetail> query)
         {
             return query.Include(od => od.ProductNavigation)
