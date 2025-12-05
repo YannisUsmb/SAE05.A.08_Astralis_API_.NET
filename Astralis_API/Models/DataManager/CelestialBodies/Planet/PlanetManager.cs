@@ -35,8 +35,6 @@ namespace Astralis_API.Models.DataManager
             IEnumerable<int>? detectionMethodIds = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
-            decimal? minOrbitalPeriod = null,
-            decimal? maxOrbitalPeriod = null,
             decimal? minEccentricity = null,
             decimal? maxEccentricity = null,
             decimal? minStellarMagnitude = null,
@@ -68,12 +66,6 @@ namespace Astralis_API.Models.DataManager
 
             if (maxDiscoveryYear.HasValue)
                 query = query.Where(p => p.DiscoveryYear <= maxDiscoveryYear.Value);
-
-            if (minOrbitalPeriod.HasValue)
-                query = query.Where(p => p.OrbitalPeriod >= minOrbitalPeriod.Value);
-
-            if (maxOrbitalPeriod.HasValue)
-                query = query.Where(p => p.OrbitalPeriod <= maxOrbitalPeriod.Value);
 
             if (minEccentricity.HasValue)
                 query = query.Where(p => p.Eccentricity >= minEccentricity.Value);

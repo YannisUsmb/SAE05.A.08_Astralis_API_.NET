@@ -10,8 +10,6 @@ namespace Astralis_API.Models.Repository
             IEnumerable<int>? detectionMethodIds = null,
             int? minDiscoveryYear = null,
             int? maxDiscoveryYear = null,
-            decimal? minOrbitalPeriod = null,
-            decimal? maxOrbitalPeriod = null,
             decimal? minEccentricity = null,
             decimal? maxEccentricity = null,
             decimal? minStellarMagnitude = null,

@@ -41,8 +41,9 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(15, ErrorMessage = "The temperature cannot be longer than 15 characters.")]
         public string? Temperature { get; set; }
 
-        [Column("pla_orbitalperiod", TypeName = "NUMERIC(14,12)")]
-        public decimal? OrbitalPeriod { get; set; }
+        [Column("pla_orbitalperiod")]
+        [StringLength(40, ErrorMessage = "The orbital period cannot be longer than 40 characters.")]
+        public string? OrbitalPeriod { get; set; }
 
         [Column("pla_eccentricity", TypeName = "NUMERIC(4,3)")]
         public decimal? Eccentricity { get; set; }
