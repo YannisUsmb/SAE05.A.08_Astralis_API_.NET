@@ -150,7 +150,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<IActionResult> Delete(int id)
+        public override async Task<IActionResult> Delete(int id)
         {
             Article? entity = await _repository.GetByIdAsync(id);
             if (entity == null)

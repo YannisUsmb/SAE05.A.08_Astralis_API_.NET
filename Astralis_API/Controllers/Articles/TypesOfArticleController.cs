@@ -29,7 +29,7 @@ namespace Astralis_API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<ActionResult<IEnumerable<TypeOfArticleDto>>> GetAll()
+        public override async Task<ActionResult<IEnumerable<TypeOfArticleDto>>> GetAll()
         {
             return await base.GetAll();
         }
@@ -48,7 +48,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<ActionResult<TypeOfArticleDto>> GetById(int id1, int id2)
+        public override async Task<ActionResult<TypeOfArticleDto>> GetById(int id1, int id2)
         {
             return await base.GetById(id1, id2);
         }
@@ -66,7 +66,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<ActionResult> Post(TypeOfArticleDto dto)
+        public override async Task<ActionResult> Post(TypeOfArticleDto dto)
         {
             return await base.Post(dto);
         }
@@ -85,7 +85,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public virtual async Task<IActionResult> Delete(int id1, int id2)
+        public override async Task<IActionResult> Delete(int id1, int id2)
         {
             return await base.Delete(id1, id2);
         }
