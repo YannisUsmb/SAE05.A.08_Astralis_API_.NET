@@ -9,10 +9,10 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("Article Type")]
-    public class ArticleTypesController : ReadableController<ArticleType, ArticleTypeDto, ArticleTypeDto, int>
+    [DisplayName("Orbial Class")]
+    public class OrbitalClassesController : ReadableController<OrbitalClass, OrbitalClassDto, OrbitalClassDto, int>
     {
-        public ArticleTypesController(IArticleTypeRepository repository, IMapper mapper)
+        public OrbitalClassesController(IOrbitalClassRepository repository, IMapper mapper)
             : base(repository, mapper)
         {
         }
