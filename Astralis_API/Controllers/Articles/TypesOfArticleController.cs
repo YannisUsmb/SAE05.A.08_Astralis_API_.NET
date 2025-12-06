@@ -11,7 +11,7 @@ namespace Astralis_API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [DisplayName("TypeOfArticle")]
+    [DisplayName("Type of Article")]
     public class TypesOfArticleController : JoinController<TypeOfArticle, TypeOfArticleDto, TypeOfArticleDto, int, int>
     {
         public TypesOfArticleController(IJoinRepository<TypeOfArticle, int, int> repository, IMapper mapper)

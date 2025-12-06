@@ -10,7 +10,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("ReportStatus")]
+    [DisplayName("Report Status")]
     public class ReportStatusesController : ReadableController<ReportStatus, ReportStatusDto, ReportStatusDto, int>
     {
         public ReportStatusesController(IReportStatusRepository repository, IMapper mapper)

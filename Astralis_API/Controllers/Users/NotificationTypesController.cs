@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("NotificationType")]
+    [DisplayName("Notification Type")]
     public class NotificationTypesController : ReadableController<NotificationType, NotificationTypeDto, NotificationTypeDto, int>
     {
         public NotificationTypesController(INotificationTypeRepository repository, IMapper mapper)

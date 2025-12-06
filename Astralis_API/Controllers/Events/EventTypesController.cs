@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("EventType")]
+    [DisplayName("Event Type")]
     public class EventTypesController : ReadableController<EventType, EventTypeDto, EventTypeDto, int>
     {
         public EventTypesController(IEventTypeRepository repository, IMapper mapper)

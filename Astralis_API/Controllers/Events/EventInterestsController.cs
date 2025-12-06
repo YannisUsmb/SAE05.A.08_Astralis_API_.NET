@@ -11,7 +11,7 @@ namespace Astralis_API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [DisplayName("EventInterest")]
+    [DisplayName("Event Interest")]
     public class EventInterestsController : JoinController<EventInterest, EventInterestDto, EventInterestDto, int, int>
     {
         public EventInterestsController(IEventInterestRepository repository, IMapper mapper)

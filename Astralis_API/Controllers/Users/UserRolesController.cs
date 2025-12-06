@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("UserRole")]
+    [DisplayName("User Role")]
     public class UserRolesController : ReadableController<UserRole, UserRoleDto, UserRoleDto, int>
     {
         public UserRolesController(IUserRoleRepository repository, IMapper mapper)

@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("CommandStatus")]
+    [DisplayName("Command Status")]
     public class CommandStatusesController : ReadableController<CommandStatus, CommandStatusDto, ProductCategoryDto, int>
     {
         public CommandStatusesController(ICommandStatusRepository repository, IMapper mapper)

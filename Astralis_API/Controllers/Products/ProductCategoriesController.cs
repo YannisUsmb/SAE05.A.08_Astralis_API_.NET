@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("ProductCategory")]
+    [DisplayName("Product Category")]
     public class ProductCategoriesController : ReadableController<ProductCategory, ProductCategoryDto, ProductCategoryDto, int>
     {
         public ProductCategoriesController(IProductCategoryRepository repository, IMapper mapper)

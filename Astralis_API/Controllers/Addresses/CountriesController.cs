@@ -9,7 +9,7 @@ namespace Astralis_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [DisplayName("City")]
+    [DisplayName("Country")]
     public class CountriesController : ReadableController<Country, CountryDto, CountryDto, int>
     {
         public CountriesController(ICountryRepository repository, IMapper mapper)

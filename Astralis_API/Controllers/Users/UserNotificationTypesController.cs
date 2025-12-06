@@ -12,7 +12,7 @@ namespace Astralis_API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [DisplayName("UserNotificationType")]
+    [DisplayName("User Notification Type")]
     public class UserNotificationTypesController : JoinController<UserNotificationType, UserNotificationTypeDto, UserNotificationTypeCreateDto, int, int>
     {
         private readonly IUserNotificationTypeRepository _userNotificationTypeRepository;
