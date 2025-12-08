@@ -132,5 +132,45 @@ namespace Astralis_API.Controllers
 
             return NoContent();
         }
+
+        /// <summary>
+        /// Deletes a comment.
+        /// </summary>
+        /// <param name="id">The unique identifier of the comment to delete.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The comment was successfully deleted.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="403">User is not authorized (not the author or admin).</response>
+        /// <response code="404">The comment does not exist.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            Comment? entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            if (entity.UserId != userId && userRole != "Admin")
+            {
+                return Forbid();
+            }
+
+            return await base.Delete(id);
+        }
     }
 }
