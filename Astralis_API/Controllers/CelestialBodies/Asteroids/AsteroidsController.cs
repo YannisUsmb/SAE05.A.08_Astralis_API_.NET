@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
+using System.Security.Claims;
 
 namespace Astralis_API.Controllers
 {
@@ -15,11 +16,16 @@ namespace Astralis_API.Controllers
     public class AsteroidsController : CrudController<Asteroid, AsteroidDto, AsteroidDto, AsteroidCreateDto, AsteroidUpdateDto, int>
     {
         private readonly IAsteroidRepository _asteroidRepository;
+        private readonly IDiscoveryRepository _discoveryRepository;
 
-        public AsteroidsController(IAsteroidRepository repository, IMapper mapper)
+        public AsteroidsController(
+            IAsteroidRepository repository,
+            IDiscoveryRepository discoveryRepository,
+            IMapper mapper)
             : base(repository, mapper)
         {
             _asteroidRepository = repository;
+            _discoveryRepository = discoveryRepository;
         }
 
         /// <summary>
@@ -84,6 +90,118 @@ namespace Astralis_API.Controllers
             );
 
             return Ok(_mapper.Map<IEnumerable<AsteroidDto>>(asteroids));
+        }
+
+        /// <summary>
+        /// Generic creation is disabled.
+        /// </summary>
+        /// <remarks>
+        /// You cannot create an Asteroid directly via this endpoint. 
+        /// Please use the polymorphic endpoint 'POST /api/Discoveries/Asteroid' to submit a discovery dossier.
+        /// </remarks>
+        /// <param name="createDto">The asteroid creation data.</param>
+        /// <returns>400 Bad Request.</returns>
+        /// <response code="400">Creation is not allowed on this endpoint.</response>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public override Task<ActionResult<AsteroidDto>> Post(AsteroidCreateDto createDto)
+        {
+            return Task.FromResult<ActionResult<AsteroidDto>>(
+                BadRequest("Cannot create an Asteroid directly. Use 'POST /api/Discoveries/Asteroid' to submit a discovery.")
+            );
+        }
+
+        /// <summary>
+        /// Updates an asteroid's scientific data.
+        /// </summary>
+        /// <param name="id">The unique identifier of the asteroid.</param>
+        /// <param name="updateDto">The updated scientific data.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The asteroid was successfully updated.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not authorized to edit this asteroid (not owner or discovery is locked).</response>
+        /// <response code="404">Asteroid not found.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override async Task<IActionResult> Put(int id, AsteroidUpdateDto updateDto)
+        {
+            Asteroid? asteroid = await _asteroidRepository.GetByIdAsync(id);
+            if (asteroid == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanEditOrDeleteAsync(asteroid))
+            {
+                return Forbid();
+            }
+
+            return await base.Put(id, updateDto);
+        }
+
+        /// <summary>
+        /// Deletes an asteroid.
+        /// </summary>
+        /// <param name="id">The unique identifier of the asteroid.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The asteroid was successfully deleted.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not authorized to delete this asteroid.</response>
+        /// <response code="404">Asteroid not found.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            Asteroid? asteroid = await _asteroidRepository.GetByIdAsync(id);
+            if (asteroid == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanEditOrDeleteAsync(asteroid))
+            {
+                return Forbid();
+            }
+
+            return await base.Delete(id);
+        }
+
+        // --- HELPER SECURITY ---
+        private async Task<bool> CanEditOrDeleteAsync(Asteroid asteroid)
+        {
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (!int.TryParse(userIdString, out int userId))
+                return false;
+
+            if (userRole == "Admin")
+                return true;
+
+            var allDiscoveries = await _discoveryRepository.GetAllAsync();
+            var discovery = allDiscoveries.FirstOrDefault(d => d.CelestialBodyId == asteroid.CelestialBodyId);
+
+            if (discovery == null)
+                return false;
+
+            if (discovery.UserId == userId && discovery.DiscoveryStatusId == 1 && discovery.DiscoveryStatusId == 4)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
