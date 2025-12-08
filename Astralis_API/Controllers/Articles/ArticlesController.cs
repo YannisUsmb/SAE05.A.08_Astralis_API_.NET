@@ -1,5 +1,4 @@
 ﻿using Astralis.Shared.DTOs;
-using Astralis_API.Configuration;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
 using AutoMapper;

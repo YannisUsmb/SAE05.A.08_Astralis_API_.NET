@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class AudioManager : DataManager<Audio, int, string>, IAudioRepository
+    public class AudioManager : ReadableManager<Audio, int>, IAudioRepository
     {
         public AudioManager(AstralisDbContext context) : base(context)
         {
@@ -20,16 +20,32 @@ namespace Astralis_API.Models.DataManager
             return query
                 .Include(a => a.CelestialBodyTypeNavigation);
         }
-        public async override Task<IEnumerable<Audio>> GetByKeyAsync(string title)
+        public async Task<IEnumerable<Audio>> GetByKeyAsync(string title)
         {
             return await WithIncludes(_entities.Where(a => a.Title.ToLower().Contains(title.ToLower())))
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Audio>> GetByCategoryIdAsync(int id)
+        public async Task<IEnumerable<Audio?>> SearchAsync(
+                    string? searchTerm = null,
+                    IEnumerable<int>? celestialBodyTypeIds = null)
         {
-            return await WithIncludes(_entities.Where(a => a.CelestialBodyTypeId == id))
-                            .ToListAsync();
+            var query = _entities.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string searchTermLower = searchTerm.ToLower();
+                query = query.Where(a =>
+                    a.Title.ToLower().Contains(searchTermLower) || a.Description.ToLower().Contains(searchTermLower)
+                );
+            }
+
+            if (celestialBodyTypeIds != null && celestialBodyTypeIds.Any())
+            {
+                query = query.Where(a => celestialBodyTypeIds.Contains(a.CelestialBodyTypeId));
+            }
+
+            return await WithIncludes(query)
+                .ToListAsync();
         }
     }
 }

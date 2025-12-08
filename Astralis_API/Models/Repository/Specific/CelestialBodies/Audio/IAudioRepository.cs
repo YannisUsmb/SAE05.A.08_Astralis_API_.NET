@@ -2,7 +2,11 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IAudioRepository : IDataRepository<Audio, int, string>
+    public interface IAudioRepository : IReadableRepository<Audio, int>, ISearchableRepository<Audio, string>
     {
+        Task<IEnumerable<Audio?>> SearchAsync(
+                    string? searchTerm = null,
+                    IEnumerable<int>? celestialBodyTypeIds = null
+            );
     }
 }
