@@ -2,6 +2,9 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Astralis_API.Tests.Controllers
 {
@@ -43,6 +46,13 @@ namespace Astralis_API.Tests.Controllers
             _context.Set<TEntity>().AddRange(samples);
             _context.SaveChanges();
             _controller = CreateController(_context, _mapper);
+        }
+
+        [TestCleanup]
+        public virtual void BaseCleanup()
+        {
+            _context.Database.EnsureDeleted();
+            _context.Dispose();
         }
     }
 }
