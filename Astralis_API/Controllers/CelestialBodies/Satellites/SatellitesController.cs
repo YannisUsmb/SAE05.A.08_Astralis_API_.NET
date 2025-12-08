@@ -142,6 +142,13 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Deletes a satellite.
         /// </summary>
+        /// <remarks>
+        /// Security Rules:
+        /// <list type="bullet">
+        /// <item><strong>Admins:</strong> Can delete any satellite at any time.</item>
+        /// <item><strong>Owner (User):</strong> Can delete only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">The unique identifier of the satellite.</param>
         /// <returns>No content.</returns>
         /// <response code="204">The satellite was successfully deleted.</response>

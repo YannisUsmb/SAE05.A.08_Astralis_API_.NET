@@ -110,6 +110,13 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Updates a galaxy/quasar's scientific data.
         /// </summary>
+        /// <remarks>
+        /// Security Rules:
+        /// <list type="bullet">
+        /// <item><strong>Admins:</strong> Can update any galaxy or quasar at any time.</item>
+        /// <item><strong>Owner (User):</strong> Can update only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">The unique identifier of the object.</param>
         /// <param name="updateDto">The updated scientific data.</param>
         /// <returns>No content.</returns>
@@ -141,6 +148,13 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Deletes a galaxy or quasar.
         /// </summary>
+        /// <remarks>
+        /// Security Rules:
+        /// <list type="bullet">
+        /// <item><strong>Admins:</strong> Can delete any galaxy or a quasar at any time.</item>
+        /// <item><strong>Owner (User):</strong> Can delete only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">The unique identifier of the object.</param>
         /// <returns>No content.</returns>
         /// <response code="204">The object was successfully deleted.</response>

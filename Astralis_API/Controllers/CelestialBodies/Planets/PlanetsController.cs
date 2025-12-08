@@ -90,8 +90,6 @@ namespace Astralis_API.Controllers
             return Ok(_mapper.Map<IEnumerable<PlanetDto>>(planets));
         }
 
-        // --- WRITE OPERATIONS ---
-
         /// <summary>
         /// Generic creation is disabled.
         /// </summary>
@@ -112,6 +110,13 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Updates an planet's scientific data.
         /// </summary>
+        /// <remarks>
+        /// Security Rules:
+        /// <list type="bullet">
+        /// <item><strong>Admins:</strong> Can update any planet at any time.</item>
+        /// <item><strong>Owner (User):</strong> Can update only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">The unique identifier of the planet.</param>
         /// <param name="updateDto">The updated scientific data.</param>
         /// <returns>No content.</returns>
@@ -143,6 +148,13 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Deletes an planet.
         /// </summary>
+        /// <remarks>
+        /// Security Rules:
+        /// <list type="bullet">
+        /// <item><strong>Admins:</strong> Can delete any planet at any time.</item>
+        /// <item><strong>Owner (User):</strong> Can delete only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">The unique identifier of the planet.</param>
         /// <returns>No content.</returns>
         /// <response code="204">The planet was successfully deleted.</response>

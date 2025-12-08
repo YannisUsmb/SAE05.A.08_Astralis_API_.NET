@@ -1,4 +1,5 @@
 ﻿using Astralis.Shared.DTOs;
+using Astralis_API.Configuration;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
 using AutoMapper;
@@ -12,118 +13,120 @@ namespace Astralis_API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [DisplayName("Comet")]
-    public class CometsController : CrudController<Comet, CometDto, CometDto, CometCreateDto, CometUpdateDto, int>
+    [DisplayName("Star")]
+    public class StarsController : CrudController<Star, StarDto, StarDto, StarCreateDto, StarUpdateDto, int>
     {
-        private readonly ICometRepository _cometRepository;
+        private readonly IStarRepository _starRepository;
         private readonly IDiscoveryRepository _discoveryRepository;
 
-        public CometsController(
-            ICometRepository repository,
+        public StarsController(
+            IStarRepository repository,
             IDiscoveryRepository discoveryRepository,
             IMapper mapper)
             : base(repository, mapper)
         {
-            _cometRepository = repository;
+            _starRepository = repository;
             _discoveryRepository = discoveryRepository;
         }
 
         /// <summary>
-        /// Retrieves all comets (public access).
+        /// Retrieves all stars (public access).
         /// </summary>
-        /// <returns>A list of all comets.</returns>
-        /// <response code="200">Returns the list of comets.</response>
+        /// <returns>A list of all stars.</returns>
+        /// <response code="200">List retrieved successfully.</response>
         /// <response code="500">Internal server error.</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override Task<ActionResult<IEnumerable<CometDto>>> GetAll()
+        public override Task<ActionResult<IEnumerable<StarDto>>> GetAll()
         {
             return base.GetAll();
         }
 
         /// <summary>
-        /// Retrieves a specific comet by ID (public access).
+        /// Retrieves a specific star by ID (public access).
         /// </summary>
-        /// <param name="id">The comet ID.</param>
-        /// <returns>The detailed comet.</returns>
-        /// <response code="200">Returns the comet.</response>
-        /// <response code="404">Comet not found.</response>
+        /// <param name="id">The star ID.</param>
+        /// <returns>The detailed star.</returns>
+        /// <response code="200">Returns the star.</response>
+        /// <response code="404">Star not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpGet("{id}")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override Task<ActionResult<CometDto>> GetById(int id)
+        public override Task<ActionResult<StarDto>> GetById(int id)
         {
             return base.GetById(id);
         }
 
         /// <summary>
-        /// Searches for comets based on orbital parameters.
+        /// Searches for stars based on spectral class, constellation, or physical parameters.
         /// </summary>
-        /// <param name="filter">The search criteria (eccentricity, inclination, distances).</param>
-        /// <returns>A list of matching comets.</returns>
-        /// <response code="200">List retrieved successfully.</response>
+        /// <param name="filter">The search criteria.</param>
+        /// <returns>A list of matching stars.</returns>
+        /// <response code="200">Search successful.</response>
         /// <response code="500">Internal server error.</response>
         [HttpGet("Search")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<CometDto>>> Search([FromQuery] CometFilterDto filter)
+        public async Task<ActionResult<IEnumerable<StarDto>>> Search([FromQuery] StarFilterDto filter)
         {
-            IEnumerable<Comet?> comets = await _cometRepository.SearchAsync(
-                filter.Reference,
-                filter.MinEccentricity, filter.MaxEccentricity,
-                filter.MinInclination, filter.MaxInclination,
-                filter.MinPerihelionAU, filter.MaxPerihelionAU,
-                filter.MinAphelionAU, filter.MaxAphelionAU,
-                filter.MinOrbitalPeriod, filter.MaxOrbitalPeriod,
-                filter.MinMOID, filter.MaxMOID
+            IEnumerable<Star?> stars = await _starRepository.SearchAsync(
+                filter.Name,
+                filter.SpectralClassIds,
+                filter.Constellation,
+                filter.Designation,
+                filter.BayerDesignation,
+                filter.MinDistance, filter.MaxDistance,
+                filter.MinLuminosity, filter.MaxLuminosity,
+                filter.MinRadius, filter.MaxRadius,
+                filter.MinTemperature, filter.MaxTemperature
             );
 
-            return Ok(_mapper.Map<IEnumerable<CometDto>>(comets));
+            return Ok(_mapper.Map<IEnumerable<StarDto>>(stars));
         }
 
         /// <summary>
         /// Generic creation is disabled.
         /// </summary>
         /// <remarks>
-        /// You cannot create a Comet directly via this endpoint. 
-        /// Please use the polymorphic endpoint 'POST /api/Discoveries/Comet' to submit a discovery dossier.
+        /// You cannot create a Star directly via this endpoint. 
+        /// Please use the polymorphic endpoint 'POST /api/Discoveries/Star' to submit a discovery dossier.
         /// </remarks>
-        /// <param name="createDto">The comet creation data.</param>
+        /// <param name="createDto">The star creation data.</param>
         /// <returns>400 Bad Request.</returns>
         /// <response code="400">Creation is not allowed on this endpoint.</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public override Task<ActionResult<CometDto>> Post(CometCreateDto createDto)
+        public override Task<ActionResult<StarDto>> Post(StarCreateDto createDto)
         {
-            return Task.FromResult<ActionResult<CometDto>>(
-                BadRequest("Cannot create a Comet directly. Use 'POST /api/Discoveries/Comet' to submit a discovery.")
+            return Task.FromResult<ActionResult<StarDto>>(
+                BadRequest("Cannot create a Star directly. Use 'POST /api/Discoveries/Star' to submit a discovery.")
             );
         }
 
         /// <summary>
-        /// Updates a comet's scientific data.
+        /// Updates a star's scientific data.
         /// </summary>
         /// <remarks>
         /// Security Rules:
         /// <list type="bullet">
-        /// <item><strong>Admins:</strong> Can update any comet at any time.</item>
+        /// <item><strong>Admins:</strong> Can update any star at any time.</item>
         /// <item><strong>Owner (User):</strong> Can update only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
         /// </list>
         /// </remarks>
-        /// <param name="id">The unique identifier of the comet.</param>
+        /// <param name="id">The unique identifier of the star.</param>
         /// <param name="updateDto">The updated scientific data.</param>
         /// <returns>No content.</returns>
-        /// <response code="204">The comet was successfully updated.</response>
+        /// <response code="204">The star was successfully updated.</response>
         /// <response code="400">Invalid input data.</response>
         /// <response code="401">User is not authenticated.</response>
-        /// <response code="403">User is not authorized to edit this comet.</response>
-        /// <response code="404">Comet not found.</response>
+        /// <response code="403">User is not authorized to edit this star.</response>
+        /// <response code="404">Star not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -132,35 +135,38 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override async Task<IActionResult> Put(int id, CometUpdateDto updateDto)
+        public override async Task<IActionResult> Put(int id, StarUpdateDto updateDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            Comet? comet = await _cometRepository.GetByIdAsync(id);
-            if (comet == null) return NotFound();
+            Star? star = await _starRepository.GetByIdAsync(id);
+            if (star == null)
+                return NotFound();
 
-            if (!await CanEditOrDeleteAsync(comet)) return Forbid();
+            if (!await CanEditOrDeleteAsync(star))
+                return Forbid();
 
             return await base.Put(id, updateDto);
         }
 
         /// <summary>
-        /// Deletes a comet.
+        /// Deletes a star.
         /// </summary>
         /// <remarks>
         /// Security Rules:
         /// <list type="bullet">
-        /// <item><strong>Admins:</strong> Can delete any comet at any time.</item>
+        /// <item><strong>Admins:</strong> Can delete any star at any time.</item>
         /// <item><strong>Owner (User):</strong> Can delete only if the associated Discovery is still a Draft or declined (Status 1 or 4).</item>
         /// </list>
         /// </remarks>
-        /// <param name="id">The unique identifier of the comet.</param>
+        /// <param name="id">The unique identifier of the star.</param>
         /// <returns>No content.</returns>
-        /// <response code="204">The comet was successfully deleted.</response>
+        /// <response code="204">The star was successfully deleted.</response>
         /// <response code="401">User is not authenticated.</response>
-        /// <response code="403">User is not authorized to delete this comet.</response>
-        /// <response code="404">Comet not found.</response>
-        /// <response code="500">An internal server error occurred.</response>
+        /// <response code="403">User is not authorized to delete this star.</response>
+        /// <response code="404">Star not found.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -169,16 +175,18 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<IActionResult> Delete(int id)
         {
-            Comet? comet = await _cometRepository.GetByIdAsync(id);
-            if (comet == null) return NotFound();
+            Star? star = await _starRepository.GetByIdAsync(id);
+            if (star == null)
+                return NotFound();
 
-            if (!await CanEditOrDeleteAsync(comet)) return Forbid();
+            if (!await CanEditOrDeleteAsync(star))
+                return Forbid();
 
             return await base.Delete(id);
         }
 
         // --- HELPER SECURITY ---
-        private async Task<bool> CanEditOrDeleteAsync(Comet comet)
+        private async Task<bool> CanEditOrDeleteAsync(Star star)
         {
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             string? userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -190,7 +198,7 @@ namespace Astralis_API.Controllers
                 return true;
 
             var allDiscoveries = await _discoveryRepository.GetAllAsync();
-            var discovery = allDiscoveries.FirstOrDefault(d => d.CelestialBodyId == comet.CelestialBodyId);
+            var discovery = allDiscoveries.FirstOrDefault(d => d.CelestialBodyId == star.CelestialBodyId);
 
             if (discovery == null)
                 return false;
