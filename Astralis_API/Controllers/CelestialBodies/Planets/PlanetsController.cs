@@ -182,7 +182,7 @@ namespace Astralis_API.Controllers
 
             if (discovery == null) return false;
 
-            if (discovery.UserId == userId && discovery.DiscoveryStatusId == 1)
+            if (discovery.UserId == userId && (discovery.DiscoveryStatusId == 1 || discovery.DiscoveryStatusId == 4))
             {
                 return true;
             }
