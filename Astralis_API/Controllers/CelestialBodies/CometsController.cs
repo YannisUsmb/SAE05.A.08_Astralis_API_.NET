@@ -28,8 +28,6 @@ namespace Astralis_API.Controllers
             _discoveryRepository = discoveryRepository;
         }
 
-        // --- READ OPERATIONS ---
-
         /// <summary>
         /// Retrieves all comets (public access).
         /// </summary>
