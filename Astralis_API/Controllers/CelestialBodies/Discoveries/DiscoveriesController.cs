@@ -16,12 +16,12 @@ namespace Astralis_API.Controllers
     public class DiscoveriesController : CrudController<Discovery, DiscoveryDto, DiscoveryDto, DiscoveryCreateDto, DiscoveryUpdateDto, int>
     {
         private readonly IDiscoveryRepository _discoveryRepository;
-
         private readonly IAsteroidRepository _asteroidRepository;
         private readonly IPlanetRepository _planetRepository;
         private readonly IStarRepository _starRepository;
         private readonly ICometRepository _cometRepository;
         private readonly IGalaxyQuasarRepository _galaxyRepository;
+        private readonly ICelestialBodyRepository _celestialBodyRepository;
 
         public DiscoveriesController(
             IDiscoveryRepository repository,
@@ -30,6 +30,7 @@ namespace Astralis_API.Controllers
             IStarRepository starRepository,
             ICometRepository cometRepository,
             IGalaxyQuasarRepository galaxyRepository,
+            ICelestialBodyRepository celestialBodyRepository,
             IMapper mapper)
             : base(repository, mapper)
         {
@@ -39,6 +40,7 @@ namespace Astralis_API.Controllers
             _starRepository = starRepository;
             _cometRepository = cometRepository;
             _galaxyRepository = galaxyRepository;
+            _celestialBodyRepository = celestialBodyRepository;
         }
 
         /// <summary>
@@ -61,6 +63,9 @@ namespace Astralis_API.Controllers
         /// </summary>
         /// <param name="id">Discovery ID.</param>
         /// <returns>The discovery details.</returns>
+        /// <response code="200">Discovery found.</response>
+        /// <response code="404">Discovery not found.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpGet("{id}")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -76,6 +81,8 @@ namespace Astralis_API.Controllers
         /// </summary>
         /// <param name="filter">Search criteria.</param>
         /// <returns>A list of matching discoveries.</returns>
+        /// <response code="200">Search successful.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpGet("Search")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -93,8 +100,6 @@ namespace Astralis_API.Controllers
             return Ok(_mapper.Map<IEnumerable<DiscoveryDto>>(discoveries));
         }
 
-        // --- SUBMISSION ENDPOINTS (POLYMORPHIC CREATION) ---
-
         /// <summary>
         /// Submits a new Asteroid discovery.
         /// </summary>
@@ -103,10 +108,12 @@ namespace Astralis_API.Controllers
         /// <response code="200">Discovery submitted successfully.</response>
         /// <response code="400">Invalid input data.</response>
         /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpPost("Asteroid")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscoveryDto>> PostAsteroid(DiscoveryAsteroidSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Asteroid, AsteroidCreateDto>(
@@ -119,79 +126,87 @@ namespace Astralis_API.Controllers
         /// <summary>
         /// Submits a new Planet discovery.
         /// </summary>
-        /// <param name="submission">The discovery title and planet details.</param>
+        /// <param name="submission">The discovery title and Planet details.</param>
         /// <returns>The created discovery.</returns>
+        /// <response code="200">Discovery submitted successfully.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpPost("Planet")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscoveryDto>> PostPlanet(DiscoveryPlanetSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Planet, PlanetCreateDto>(
-                submission.Title,
-                submission.Details,
-                _planetRepository.AddAsync
-            );
+                submission.Title, submission.Details, _planetRepository.AddAsync);
         }
 
         /// <summary>
         /// Submits a new Star discovery.
         /// </summary>
-        /// <param name="submission">The discovery title and star details.</param>
+        /// <param name="submission">The discovery title and Star details.</param>
         /// <returns>The created discovery.</returns>
+        /// <response code="200">Discovery submitted successfully.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpPost("Star")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscoveryDto>> PostStar(DiscoveryStarSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Star, StarCreateDto>(
-                submission.Title,
-                submission.Details,
-                _starRepository.AddAsync
-            );
+                submission.Title, submission.Details, _starRepository.AddAsync);
         }
 
         /// <summary>
         /// Submits a new Comet discovery.
         /// </summary>
-        /// <param name="submission">The discovery title and comet details.</param>
+        /// <param name="submission">The discovery title and Comet details.</param>
         /// <returns>The created discovery.</returns>
+        /// <response code="200">Discovery submitted successfully.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpPost("Comet")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscoveryDto>> PostComet(DiscoveryCometSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Comet, CometCreateDto>(
-                submission.Title,
-                submission.Details,
-                _cometRepository.AddAsync
-            );
+                submission.Title, submission.Details, _cometRepository.AddAsync);
         }
 
         /// <summary>
-        /// Submits a new Galaxy or Quasar discovery.
+        /// Submits a new GalaxyQuasar discovery.
         /// </summary>
-        /// <param name="submission">The discovery title and galaxy details.</param>
+        /// <param name="submission">The discovery title and GalaxyQuasar details.</param>
         /// <returns>The created discovery.</returns>
+        /// <response code="200">Discovery submitted successfully.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpPost("GalaxyQuasar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<DiscoveryDto>> PostGalaxyQuasar(DiscoveryGalaxyQuasarSubmissionDto submission)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<DiscoveryDto>> PostGalaxy(DiscoveryGalaxyQuasarSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<GalaxyQuasar, GalaxyQuasarCreateDto>(
-                submission.Title,
-                submission.Details,
-                _galaxyRepository.AddAsync
-            );
+                submission.Title, submission.Details, _galaxyRepository.AddAsync);
         }
 
+
         /// <summary>
-        /// Generic creation endpoint (Disable direct use).
+        /// Generic creation endpoint (Disabled).
         /// </summary>
-        /// <remarks>Please use specific endpoints (e.g., POST api/Discoveries/Asteroid) instead.</remarks>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public override Task<ActionResult<DiscoveryDto>> Post(DiscoveryCreateDto createDto)
@@ -202,76 +217,194 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Updates a discovery title (Owner only).
+        /// Updates a discovery title.
         /// </summary>
+        /// <remarks>The owner can update the title only if the discovery is still a Draft (Status 1).</remarks>
         /// <param name="id">Discovery ID.</param>
         /// <param name="updateDto">New title.</param>
         /// <returns>No content.</returns>
+        /// <response code="204">Update successful.</response>
+        /// <response code="400">Invalid input or Discovery is not a Draft.</response>
+        /// <response code="403">User is not the owner.</response>
+        /// <response code="404">Discovery not found.</response>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public override async Task<IActionResult> Put(int id, DiscoveryUpdateDto updateDto)
         {
-            Discovery? entity = await _repository.GetByIdAsync(id);
+            Discovery? entity = await _discoveryRepository.GetByIdAsync(id);
             if (entity == null) return NotFound();
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || entity.UserId != userId)
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            if (entity.UserId != userId)
             {
                 return Forbid();
             }
 
-            return await base.Put(id, updateDto);
+            if (entity.DiscoveryStatusId != 1)
+            {
+                return BadRequest("You can only modify a draft discovery.");
+            }
+
+            await base.Put(id, updateDto);
+            return NoContent();
         }
 
         /// <summary>
-        /// Deletes a discovery (Admin/Moderator only).
+        /// Deletes a discovery.
         /// </summary>
-        /// <remarks>Regular users cannot delete a discovery once submitted.</remarks>
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public override async Task<IActionResult> Delete(int id)
-        {
-            return await base.Delete(id);
-        }
-
-        // --- MODERATION ENDPOINT ---
-
-        /// <summary>
-        /// Updates the status of a discovery (Admin/Moderator only).
-        /// </summary>
+        /// <remarks>
+        /// Admins can delete any discovery. 
+        /// Owners can delete only if the discovery is a Draft or declined (Status 1 - 4).
+        /// </remarks>
         /// <param name="id">Discovery ID.</param>
-        /// <param name="moderationDto">New status details.</param>
         /// <returns>No content.</returns>
-        [HttpPut("{id}/Status")]
-        [Authorize(Roles = "Admin,Moderator")]
+        /// <response code="204">Delete successful.</response>
+        /// <response code="400">Invalid input or Discovery is not a Draft or declined.</response>
+        /// <response code="403">User is not the owner.</response>
+        /// <response code="404">Discovery not found.</response>
+        [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            Discovery? entity = await _discoveryRepository.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+            if (!int.TryParse(userIdString, out int userId))
+                return Unauthorized();
+
+            if (entity.UserId == userId)
+            {
+                if (entity.DiscoveryStatusId != 1 && entity.DiscoveryStatusId != 4)
+                {
+                    return BadRequest("You can only delete a draft or declined discovery.");
+                }
+            }
+            else if (userRole != "Admin")
+            {
+                return Forbid();
+            }
+
+            return await base.Delete(id);
+        }
+
+        /// <summary>
+        /// Proposes an alias for an accepted discovery.
+        /// </summary>
+        /// <remarks>Only the owner can propose an alias for an Accepted discovery (Status 3).</remarks>
+        /// <param name="id">The unique identifier of the discovery.</param>
+        /// <param name="aliasDto">The proposed alias details.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The alias proposal was submitted successfully.</response>
+        /// <response code="400">Invalid input or the discovery is not in 'Accepted' status.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not the owner of this discovery.</response>
+        /// <response code="404">Discovery not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpPut("{id}/Alias")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ProposeAlias(int id, DiscoveryAliasDto aliasDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Discovery? entity = await _discoveryRepository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            if (entity.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            if (entity.DiscoveryStatusId != 3)
+            {
+                return BadRequest("Discovery must be accepted before proposing an alias.");
+            }
+
+            CelestialBody? celestialBody = await _celestialBodyRepository.GetByIdAsync(entity.CelestialBodyId);
+            if (celestialBody != null)
+            {
+                celestialBody.Alias = aliasDto.Alias;
+                await _celestialBodyRepository.UpdateAsync(celestialBody, celestialBody);
+            }
+
+            entity.AliasStatusId = 1;
+            entity.AliasApprovalUserId = null;
+
+            await _repository.UpdateAsync(entity, entity);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Updates the status of a discovery (Admin only).
+        /// </summary>
+        /// <param name="id">The unique identifier of the discovery.</param>
+        /// <param name="moderationDto">The new status details.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">The status was successfully updated.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not authorized (requires Admin role).</response>
+        /// <response code="404">Discovery not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpPut("{id}/Status")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ModerateDiscovery(int id, DiscoveryModerationDto moderationDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             Discovery? entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            if (entity == null)
+            {
+                return NotFound();
+            }
 
             string? adminIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(adminIdString, out int adminId))
             {
-                // On enregistre qui a validé/refusé
                 entity.DiscoveryApprovalUserId = adminId;
-                // Si le statut d'alias change, on enregistre aussi (simplification)
                 if (moderationDto.AliasStatusId != entity.AliasStatusId)
                 {
                     entity.AliasApprovalUserId = adminId;
                 }
             }
 
-            // Mise à jour manuelle des statuts
             entity.DiscoveryStatusId = moderationDto.DiscoveryStatusId;
             entity.AliasStatusId = moderationDto.AliasStatusId;
 
@@ -280,47 +413,34 @@ namespace Astralis_API.Controllers
             return NoContent();
         }
 
-        // --- HELPER METHOD FOR POLYMORPHISM ---
-        // Cette méthode privée évite de dupliquer la logique pour chaque type d'astre
+        // --- HELPER ---
         private async Task<ActionResult<DiscoveryDto>> ProcessDiscoverySubmission<TEntity, TCreateDto>(
-            string title,
-            TCreateDto detailsDto,
-            Func<TEntity, Task> addMethod)
-            where TEntity : class
+            string title, TCreateDto detailsDto, Func<TEntity, Task> addMethod) where TEntity : class
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+            if (!int.TryParse(userIdString, out int userId))
+                return Unauthorized();
 
-            // 1. Mapper et Créer l'astre (Cela va créer le CelestialBody parent grâce à EF Core)
             TEntity celestialEntity = _mapper.Map<TEntity>(detailsDto);
             await addMethod(celestialEntity);
 
-            // Note: Après le AddAsync, celestialEntity devrait avoir un ID et 
-            // surtout son parent CelestialBody devrait avoir été généré avec un ID.
-            // Il faut parfois récupérer l'ID du CelestialBody généré.
-            // On assume ici que la propriété CelestialBodyId de l'enfant est remplie après le SaveChanges interne au repo.
-
-            // Pour être sûr d'avoir l'ID du parent, on utilise la réflexion ou on suppose que le repo a fait le job.
-            // Dans ton modèle, Asteroid a "int CelestialBodyId". EF le remplit automatiquement.
             int celestialBodyId = (int)celestialEntity.GetType().GetProperty("CelestialBodyId")!.GetValue(celestialEntity)!;
 
-            // 2. Créer la Découverte
             Discovery discovery = new Discovery
             {
                 Title = title,
                 UserId = userId,
                 CelestialBodyId = celestialBodyId,
-                DiscoveryStatusId = 2,
+                DiscoveryStatusId = 1,
                 AliasStatusId = null,
                 DiscoveryApprovalUserId = null,
                 AliasApprovalUserId = null
             };
 
             await _repository.AddAsync(discovery);
-
-            // 3. Retourner le DTO
             return Ok(_mapper.Map<DiscoveryDto>(discovery));
         }
     }
