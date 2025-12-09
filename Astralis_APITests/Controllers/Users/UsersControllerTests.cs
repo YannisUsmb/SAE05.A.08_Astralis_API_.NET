@@ -6,47 +6,64 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Linq; // Important pour AsNoTracking
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Astralis_API.Tests.Controllers
 {
     [TestClass]
     public class UsersControllerTests : CrudControllerTests<User, UsersController, UserDetailDto, UserDetailDto, UserCreateDto, UserUpdateDto, int>
     {
-        // --- 1. Configuration des Données ---
+        // --- CONFIGURATION ---
 
         protected override int GetEntityId(User entity) => entity.Id;
-        protected override int GetNonExistentId()
-        {
-            return 0;
-        }
+        protected override int GetDtoId(UserDetailDto dto) => dto.Id;
+        protected override int GetNonExistentId() => 0;
+
         protected override List<User> GetSampleEntities()
         {
-            // On prépare les users (IDs 1001+ pour éviter conflits)
-            // Note : On ne met pas les Rôles ici, on les gère dans SeedDatabase
             return new List<User>
             {
-                new User { Id = 1001, Username = "UserTest1", Email = "u1@t.com", Password = "Pwd", FirstName = "F1", LastName = "L1", IsPremium = false },
-                new User { Id = 1002, Username = "UserTest2", Email = "u2@t.com", Password = "Pwd", FirstName = "F2", LastName = "L2", IsPremium = true }
+                new User { Id = 1001, Username = "TestUser1", Email = "t1@test.com", Password = "Pwd", UserRoleId=2, FirstName = "F1", LastName = "L1", IsPremium = false },
+                new User { Id = 1002, Username = "TestUser2", Email = "t2@test.com", Password = "Pwd", UserRoleId=2, FirstName = "F2", LastName = "L2", IsPremium = true }
             };
         }
 
-        // Surcharge de SeedDatabase pour attacher proprement les Rôles existants (IDs 2 et 4)
+        // --- CORRECTION 1 : SeedDatabase Robuste ---
         protected void SeedDatabase()
         {
-            var roleClient = new UserRole { Id = 2 }; // ID Client existant
-            var roleAdmin = new UserRole { Id = 4 };  // ID Admin existant
+            // 1. On nettoie le tracker pour éviter les conflits avec ce qui s'est passé avant
+            _context.ChangeTracker.Clear();
 
-            // On attache pour ne pas créer de doublons
+            // 2. On attache les rôles existants (2 et 4) pour éviter de les recréer
+            var roleClient = new UserRole { Id = 2 };
+            var roleAdmin = new UserRole { Id = 4 };
             _context.Attach(roleClient);
             _context.Attach(roleAdmin);
 
             var samples = GetSampleEntities();
+
+            // On lie les rôles
             samples[0].UserRoleNavigation = roleClient;
             samples[1].UserRoleNavigation = roleAdmin;
 
-            _context.Users.AddRange(samples);
+            foreach (var user in samples)
+            {
+                // 3. Vérification Anti-Crash : On n'ajoute QUE si l'ID n'existe pas
+                var exists = _context.Users.AsNoTracking().Any(u => u.Id == user.Id);
+                if (!exists)
+                {
+                    _context.Users.Add(user);
+                }
+            }
+
             _context.SaveChanges();
+
+            // 4. On détache tout pour que le Contrôleur parte sur des bases saines
+            _context.ChangeTracker.Clear();
         }
 
         protected override void UpdateEntityForTest(User entity)
@@ -57,20 +74,38 @@ namespace Astralis_API.Tests.Controllers
             entity.LastName = "UpLast";
             entity.Password = "NewPass!";
 
-            // Gestion FK pour l'update
+            // Pour l'update, on réattache le rôle proprement
             var role = new UserRole { Id = 2 };
-            _context.Attach(role);
-            entity.UserRoleNavigation = role;
+            // On vérifie si le rôle est déjà tracké avant de l'attacher
+            var existingEntry = _context.ChangeTracker.Entries<UserRole>().FirstOrDefault(e => e.Entity.Id == 2);
+            if (existingEntry == null)
+            {
+                _context.Attach(role);
+                entity.UserRoleNavigation = role;
+            }
+            else
+            {
+                entity.UserRoleNavigation = existingEntry.Entity;
+            }
         }
-
-        // --- 2. Configuration du Contrôleur & Sécurité ---
 
         protected override UsersController CreateController(AstralisDbContext context, IMapper mapper)
         {
             return new UsersController(new TestUserRepository(context), mapper);
         }
 
-        // Helper pour simuler l'authentification
+        // --- CORRECTION 2 : Cleanup Robuste ---
+        [TestCleanup]
+
+        public override void Cleanup()
+        {
+            var samples = GetSampleEntities();
+            _context.RemoveRange(samples);
+            _context.SaveChanges();
+            _context.Dispose();
+        }
+        // --- HELPER SECURITE ---
+
         private void SetupHttpContext(int userId, string role)
         {
             var claims = new List<Claim>
@@ -82,7 +117,7 @@ namespace Astralis_API.Tests.Controllers
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = principal } };
         }
 
-        // --- 3. Liaison des Actions (Injection de la Sécurité) ---
+        // --- ACTIONS ---
 
         protected override Task<ActionResult<IEnumerable<UserDetailDto>>> ActionGetAll()
         {
@@ -92,7 +127,7 @@ namespace Astralis_API.Tests.Controllers
 
         protected override Task<ActionResult<UserDetailDto>> ActionGetById(int id)
         {
-            SetupHttpContext(id, "Client"); // User qui consulte son propre profil
+            SetupHttpContext(id, "Client");
             return _controller.GetById(id);
         }
 
@@ -114,19 +149,30 @@ namespace Astralis_API.Tests.Controllers
             return _controller.Delete(id);
         }
 
+        // --- TESTS SPECIFIQUES ---
 
         [TestMethod]
         public async Task ChangePassword_ShouldUpdate_WhenSelf()
         {
-            var user = await _context.Users.FirstAsync();
+            // On s'assure d'avoir un contexte propre pour récupérer le user
+            _context.ChangeTracker.Clear();
+
+            // On récupère le premier user de test (1001)
+            var userId = 1001;
+            var user = await _context.Users.FindAsync(userId);
+
+            // Si le seed a échoué silencieusement, on évite le crash null ref
+            Assert.IsNotNull(user, "L'utilisateur de test n'a pas été trouvé en BDD.");
+
             SetupHttpContext(user.Id, "Client");
-            var dto = new ChangePasswordDto { NewPassword = "NewPassword123!" }; // Assurez-vous que le DTO matche
+            var dto = new ChangePasswordDto { NewPassword = "NewPassword123!" };
 
             var result = await _controller.ChangePassword(user.Id, dto);
 
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
         }
 
+        // --- WRAPPER REPO ---
         private class TestUserRepository : IUserRepository
         {
             private readonly AstralisDbContext _db;

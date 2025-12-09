@@ -19,6 +19,7 @@ namespace Astralis_API.Tests.Controllers
                 new EventType { Id = 200, Label = "Test2" }
             };
         }
+        protected override int GetDtoId(EventTypeDto dto) => dto.Id;
         protected override int GetNonExistentId()
         {
             return 0;
@@ -38,6 +39,23 @@ namespace Astralis_API.Tests.Controllers
 
             public async Task<IEnumerable<EventType>> GetAllAsync() => await _db.EventTypes.ToListAsync();
             public async Task<EventType?> GetByIdAsync(int id) => await _db.EventTypes.FindAsync(id);
+        }
+
+        [TestCleanup]
+        public override void Cleanup()
+        {
+            var samples = GetSampleEntities();
+            var sampleIds = samples.Select(s => s.Id).ToList();
+
+            foreach (var sample in samples)
+            {
+                var entityInDb = _context.EventTypes.Find(sample.Id);
+                if (entityInDb != null)
+                {
+                    _context.EventTypes.Remove(entityInDb);
+                }
+            }
+            _context.SaveChanges();
         }
     }
 }

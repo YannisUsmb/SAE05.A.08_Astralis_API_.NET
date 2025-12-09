@@ -31,9 +31,6 @@ namespace Astralis_API.Tests.Controllers
 
             _context = new AstralisDbContext(options);
 
-            _context.Database.EnsureDeleted();
-            _context.Database.EnsureCreated();
-
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new Models.Mapper.MapperProfile());
@@ -44,5 +41,7 @@ namespace Astralis_API.Tests.Controllers
             _context.SaveChanges();
             _controller = CreateController(_context, _mapper);
         }
+        public abstract void Cleanup();
+
     }
 }
