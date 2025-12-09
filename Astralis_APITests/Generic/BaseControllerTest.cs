@@ -1,9 +1,11 @@
 ﻿using Astralis_API.Models.EntityFramework;
+using Astralis_API.Models.Mapper;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 
-namespace Astralis_API.Tests.Controllers
+namespace Astralis_APITests.Controllers
 {
     public abstract class BaseControllerTests<TEntity, TController>
         where TEntity : class, new()
@@ -12,6 +14,9 @@ namespace Astralis_API.Tests.Controllers
         protected AstralisDbContext _context;
         protected IMapper _mapper;
         protected TController _controller;
+        protected IDbContextTransaction _transaction;
+
+        protected List<TEntity> _seededEntities;
 
         protected abstract TController CreateController(AstralisDbContext context, IMapper mapper);
         protected abstract List<TEntity> GetSampleEntities();
@@ -24,24 +29,43 @@ namespace Astralis_API.Tests.Controllers
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
+
             var testConnectionString = configuration.GetConnectionString("DefaultConnection");
+
             var options = new DbContextOptionsBuilder<AstralisDbContext>()
                 .UseNpgsql(testConnectionString)
                 .Options;
 
             _context = new AstralisDbContext(options);
 
+            _context.Database.OpenConnection();
+            _transaction = _context.Database.BeginTransaction();
+
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile(new Models.Mapper.MapperProfile());
+                cfg.AddProfile(new MapperProfile());
             });
             _mapper = config.CreateMapper();
-            var samples = GetSampleEntities();
-            _context.Set<TEntity>().AddRange(samples);
-            _context.SaveChanges();
+
+            _seededEntities = GetSampleEntities();
+            if (_seededEntities != null && _seededEntities.Any())
+            {
+                _context.Set<TEntity>().AddRange(_seededEntities);
+                _context.SaveChanges();
+            }
+
             _controller = CreateController(_context, _mapper);
         }
-        public abstract void Cleanup();
 
+        [TestCleanup]
+        public virtual void Cleanup()
+        {
+            if (_transaction != null)
+            {
+                _transaction.Rollback();
+                _transaction.Dispose();
+            }
+            _context.Dispose();
+        }
     }
 }
