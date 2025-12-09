@@ -236,6 +236,10 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<NotificationType, NotificationTypeDto>();
 
+            ///// OrbitalClass.
+            // Entity to DTO (Read).
+            CreateMap<OrbitalClass, OrbitalClassDto>();
+
             ///// OrderDetail.
             // Entity to DTO (Read).
             CreateMap<OrderDetail, OrderDetailDto>()
