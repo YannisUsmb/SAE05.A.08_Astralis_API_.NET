@@ -21,7 +21,7 @@ namespace Astralis_API.Tests.Controllers
             return 0;
         }
         protected override List<User> GetSampleEntities()
-            {
+        {
             // On prépare les users (IDs 1001+ pour éviter conflits)
             // Note : On ne met pas les Rôles ici, on les gère dans SeedDatabase
             return new List<User>
@@ -29,7 +29,7 @@ namespace Astralis_API.Tests.Controllers
                 new User { Id = 1001, Username = "UserTest1", Email = "u1@t.com", Password = "Pwd", FirstName = "F1", LastName = "L1", IsPremium = false },
                 new User { Id = 1002, Username = "UserTest2", Email = "u2@t.com", Password = "Pwd", FirstName = "F2", LastName = "L2", IsPremium = true }
             };
-            }
+        }
 
         // Surcharge de SeedDatabase pour attacher proprement les Rôles existants (IDs 2 et 4)
         protected void SeedDatabase()
