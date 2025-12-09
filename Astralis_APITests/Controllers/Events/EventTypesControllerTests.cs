@@ -5,6 +5,9 @@ using Astralis_API.Models.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Astralis_API.Tests.Controllers
 {
@@ -19,10 +22,7 @@ namespace Astralis_API.Tests.Controllers
                 new EventType { Id = 200, Label = "Test2" }
             };
         }
-        protected override int GetNonExistentId()
-        {
-            return 0;
-        }
+
         protected override int GetEntityId(EventType entity) => entity.Id;
         protected override Task<ActionResult<IEnumerable<EventTypeDto>>> ActionGetAll() => _controller.GetAll();
         protected override Task<ActionResult<EventTypeDto>> ActionGetById(int id) => _controller.GetById(id);
