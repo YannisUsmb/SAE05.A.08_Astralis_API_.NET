@@ -47,12 +47,5 @@ namespace Astralis_API.Tests.Controllers
             _context.SaveChanges();
             _controller = CreateController(_context, _mapper);
         }
-
-        [TestCleanup]
-        public virtual void BaseCleanup()
-        {
-            _context.Database.EnsureDeleted();
-            _context.Dispose();
-        }
     }
 }
