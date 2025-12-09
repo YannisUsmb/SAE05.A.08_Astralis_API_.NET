@@ -353,7 +353,8 @@ namespace Astralis_API.Models.Mapper
             // DTO to Entity (Write).
             CreateMap<UserCreateDto, User>();
             CreateMap<UserUpdateDto, User>();
-            CreateMap<ChangePasswordDto, User>();
+            CreateMap<ChangePasswordDto, User>()
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.NewPassword));
             CreateMap<UserLoginDto, User>();
 
             ///// UserNotification.
