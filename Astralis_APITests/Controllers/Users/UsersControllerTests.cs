@@ -6,14 +6,9 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage; // Nécessaire pour IDbContextTransaction
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Astralis_API.Tests.Controllers
 {
@@ -123,7 +118,6 @@ namespace Astralis_API.Tests.Controllers
             return _controller.Delete(id);
         }
 
-        // --- Tests Spécifiques ---
 
         [TestMethod]
         public async Task ChangePassword_ShouldUpdate_WhenSelf()
