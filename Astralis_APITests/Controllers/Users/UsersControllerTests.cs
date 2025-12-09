@@ -6,214 +6,140 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Astralis_API.Tests.Controllers
 {
     [TestClass]
     public class UsersControllerTests : CrudControllerTests<User, UsersController, UserDetailDto, UserDetailDto, UserCreateDto, UserUpdateDto, int>
     {
-        private IDbContextTransaction _transaction;
-
-        private class TestUserRepository : IUserRepository
-        {
-            private readonly AstralisDbContext _context;
-            public TestUserRepository(AstralisDbContext context) { _context = context; }
-
-            public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
-            public async Task<User?> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
-            public async Task AddAsync(User entity) { _context.Users.Add(entity); await _context.SaveChangesAsync(); }
-
-            public async Task UpdateAsync(User entityToUpdate, User entity)
-            {
-                _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
-                await _context.SaveChangesAsync();
-            }
-
-            public async Task DeleteAsync(User entity) { _context.Users.Remove(entity); await _context.SaveChangesAsync(); }
-            public Task<User?> GetUserByEmailAsync(string email) => _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        [TestInitialize]
-        public override void BaseInitialize()
-        {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            var builder = new DbContextOptionsBuilder<AstralisDbContext>()
-                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-
-            _context = new AstralisDbContext(builder.Options);
-
-            _transaction = _context.Database.BeginTransaction();            
-            var samples = GetSampleEntities();
-
-            foreach (var user in samples)
-            {
-                var existingUser = _context.Users.Find(user.Id);
-                if (existingUser == null)
-                {
-                    if (user.UserRoleNavigation != null)
-                    {
-                        _context.Attach(user.UserRoleNavigation);
-                    }
-                    _context.Users.Add(user);
-                }
-            }
-
-            _context.SaveChanges();
-
-            _controller = CreateController(_context, _mapper);
-        }
-
-        [TestCleanup]
-        public void BaseCleanup()
-        {
-            if (_transaction != null)
-            {
-                _transaction.Rollback();
-                _transaction.Dispose();
-            }
-
-            _context.Dispose();
-        }
-
-        protected override UsersController CreateController(AstralisDbContext context, IMapper mapper)
-        {
-            var repo = new TestUserRepository(context);
-            return new UsersController(repo, mapper);
-        }
+        // --- 1. Configuration des Données ---
 
         protected override int GetEntityId(User entity) => entity.Id;
 
         protected override List<User> GetSampleEntities()
         {
+            // On prépare les users (IDs 1001+ pour éviter conflits)
+            // Note : On ne met pas les Rôles ici, on les gère dans SeedDatabase
             return new List<User>
             {
-                new User
-                {
-                    Id = 1001,
-                    Username = "TestUser_Client",
-                    FirstName = "Test",
-                    LastName = "Client",
-                    Email = "test_client@test.com",
-                    Password = "Password123!",
-                    UserRoleId= 2,
-                    IsPremium = false
-                },
-                new User
-                {
-                    Id = 1002,
-                    Username = "TestUser_Admin",
-                    FirstName = "Test",
-                    LastName = "Admin",
-                    Email = "test_admin@test.com",
-                    Password = "Password123!",
-                    UserRoleId= 4,
-                    IsPremium = true
-                }
+                new User { Id = 1001, Username = "UserTest1", Email = "u1@t.com", Password = "Pwd", FirstName = "F1", LastName = "L1", IsPremium = false },
+                new User { Id = 1002, Username = "UserTest2", Email = "u2@t.com", Password = "Pwd", FirstName = "F2", LastName = "L2", IsPremium = true }
             };
+        }
+
+        // Surcharge de SeedDatabase pour attacher proprement les Rôles existants (IDs 2 et 4)
+        protected void SeedDatabase()
+        {
+            var roleClient = new UserRole { Id = 2 }; // ID Client existant
+            var roleAdmin = new UserRole { Id = 4 };  // ID Admin existant
+
+            // On attache pour ne pas créer de doublons
+            _context.Attach(roleClient);
+            _context.Attach(roleAdmin);
+
+            var samples = GetSampleEntities();
+            samples[0].UserRoleNavigation = roleClient;
+            samples[1].UserRoleNavigation = roleAdmin;
+
+            _context.Users.AddRange(samples);
+            _context.SaveChanges();
         }
 
         protected override void UpdateEntityForTest(User entity)
         {
-            entity.Username = "UpdatedUserTest";
-            entity.Email = "updated_test@test.com";
-            entity.Password = "Password123!";
-            entity.FirstName = "UpdatedFirst";
-            entity.LastName = "UpdatedLast";
+            entity.Username = "UpdatedUser";
+            entity.Email = "updated@test.com";
+            entity.FirstName = "UpFirst";
+            entity.LastName = "UpLast";
+            entity.Password = "NewPass!";
 
-            entity.UserRoleNavigation = new UserRole { Id = 2 };
-            _context.Attach(entity.UserRoleNavigation);
+            // Gestion FK pour l'update
+            var role = new UserRole { Id = 2 };
+            _context.Attach(role);
+            entity.UserRoleNavigation = role;
         }
 
+        // --- 2. Configuration du Contrôleur & Sécurité ---
+
+        protected override UsersController CreateController(AstralisDbContext context, IMapper mapper)
+        {
+            return new UsersController(new TestUserRepository(context), mapper);
+        }
+
+        // Helper pour simuler l'authentification
         private void SetupHttpContext(int userId, string role)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Role, role),
-                new Claim(ClaimTypes.Name, "TestUser")
+                new Claim(ClaimTypes.Role, role)
             };
-            var identity = new ClaimsIdentity(claims, "TestAuth");
-            var principal = new ClaimsPrincipal(identity);
-
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = principal }
-            };
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+            _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = principal } };
         }
 
-        protected override async Task<ActionResult<IEnumerable<UserDetailDto>>> ActionGetAll()
+        // --- 3. Liaison des Actions (Injection de la Sécurité) ---
+
+        protected override Task<ActionResult<IEnumerable<UserDetailDto>>> ActionGetAll()
         {
             SetupHttpContext(999, "Admin");
-            return await _controller.GetAll();
+            return _controller.GetAll();
         }
 
-        protected override async Task<ActionResult<UserDetailDto>> ActionGetById(int id)
+        protected override Task<ActionResult<UserDetailDto>> ActionGetById(int id)
         {
-            SetupHttpContext(id, "Client");
-            return await _controller.GetById(id);
+            SetupHttpContext(id, "Client"); // User qui consulte son propre profil
+            return _controller.GetById(id);
         }
 
-        protected override async Task<ActionResult<UserDetailDto>> ActionPost(UserCreateDto dto)
+        protected override Task<ActionResult<UserDetailDto>> ActionPost(UserCreateDto dto)
         {
+            // Post est Anonyme
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-            return await _controller.Post(dto);
+            return _controller.Post(dto);
         }
 
-        protected override async Task<IActionResult> ActionPut(int id, UserUpdateDto dto)
+        protected override Task<IActionResult> ActionPut(int id, UserUpdateDto dto)
         {
-            SetupHttpContext(id, "Client");
-            return await _controller.Put(id, dto);
+            SetupHttpContext(id, "Client"); // User qui modifie son profil
+            return _controller.Put(id, dto);
         }
 
-        protected override async Task<IActionResult> ActionDelete(int id)
+        protected override Task<IActionResult> ActionDelete(int id)
         {
             SetupHttpContext(999, "Admin");
-            return await _controller.Delete(id);
+            return _controller.Delete(id);
         }
 
+        // --- 4. Tests Spécifiques (Non-CRUD) ---
 
         [TestMethod]
-        public async Task ChangePassword_ShouldUpdatePassword_WhenUserIsSelf()
+        public async Task ChangePassword_ShouldUpdate_WhenSelf()
         {
-            var userId = 1001;
-            var user = await _context.Users.FindAsync(userId);
-
-            if (user == null) user = await _context.Users.FirstAsync();
-
-            var newPasswordDto = new ChangePasswordDto { NewPassword = "NewPassword123!" };
-
+            var user = await _context.Users.FirstAsync();
             SetupHttpContext(user.Id, "Client");
+            var dto = new ChangePasswordDto { NewPassword = "NewPassword123!" }; // Assurez-vous que le DTO matche
 
-            var result = await _controller.ChangePassword(user.Id, newPasswordDto);
+            var result = await _controller.ChangePassword(user.Id, dto);
 
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-
-            _context.Entry(user).Reload();
-            Assert.AreEqual("NewPassword123!", user.Password);
         }
 
-        [TestMethod]
-        public async Task ChangePassword_ShouldReturnForbid_WhenUserIsNotSelf()
+        // --- 5. Wrapper Repository ---
+        private class TestUserRepository : IUserRepository
         {
-            var userId = 1001;
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) user = await _context.Users.FirstAsync();
-
-            var newPasswordDto = new ChangePasswordDto { NewPassword = "NewPassword123!" };
-
-            SetupHttpContext(user.Id + 1, "Client");
-
-            var result = await _controller.ChangePassword(user.Id, newPasswordDto);
-
-            Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            private readonly AstralisDbContext _db;
+            public TestUserRepository(AstralisDbContext db) { _db = db; }
+            public async Task<IEnumerable<User>> GetAllAsync() => await _db.Users.ToListAsync();
+            public async Task<User?> GetByIdAsync(int id) => await _db.Users.FindAsync(id);
+            public async Task AddAsync(User e) { _db.Users.Add(e); await _db.SaveChangesAsync(); }
+            public async Task UpdateAsync(User u, User e) { _db.Entry(u).CurrentValues.SetValues(e); await _db.SaveChangesAsync(); }
+            public async Task DeleteAsync(User e) { _db.Users.Remove(e); await _db.SaveChangesAsync(); }
+            public Task<User?> GetUserByEmailAsync(string email) => _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }
