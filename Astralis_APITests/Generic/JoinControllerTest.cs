@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Astralis_API.Tests.Controllers
+namespace Astralis_APITests.Controllers
 {
     public abstract class JoinControllerTests<TEntity, TController, TDto, TCreateDto, TKey1, TKey2>
         : BaseControllerTests<TEntity, TController>
