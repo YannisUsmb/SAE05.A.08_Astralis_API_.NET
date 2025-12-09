@@ -6,10 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Astralis_API.Tests.Controllers
 {
@@ -19,7 +16,10 @@ namespace Astralis_API.Tests.Controllers
         // --- 1. Configuration des Données ---
 
         protected override int GetEntityId(User entity) => entity.Id;
-
+        protected override int GetNonExistentId()
+        {
+            return 0;
+        }
         protected override List<User> GetSampleEntities()
         {
             // On prépare les users (IDs 1001+ pour éviter conflits)
@@ -98,14 +98,13 @@ namespace Astralis_API.Tests.Controllers
 
         protected override Task<ActionResult<UserDetailDto>> ActionPost(UserCreateDto dto)
         {
-            // Post est Anonyme
             _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             return _controller.Post(dto);
         }
 
         protected override Task<IActionResult> ActionPut(int id, UserUpdateDto dto)
         {
-            SetupHttpContext(id, "Client"); // User qui modifie son profil
+            SetupHttpContext(id, "Client");
             return _controller.Put(id, dto);
         }
 
@@ -115,7 +114,6 @@ namespace Astralis_API.Tests.Controllers
             return _controller.Delete(id);
         }
 
-        // --- 4. Tests Spécifiques (Non-CRUD) ---
 
         [TestMethod]
         public async Task ChangePassword_ShouldUpdate_WhenSelf()
@@ -129,7 +127,6 @@ namespace Astralis_API.Tests.Controllers
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
         }
 
-        // --- 5. Wrapper Repository ---
         private class TestUserRepository : IUserRepository
         {
             private readonly AstralisDbContext _db;
