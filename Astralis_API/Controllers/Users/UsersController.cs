@@ -97,6 +97,7 @@ namespace Astralis_API.Controllers
 
             User entity = _mapper.Map<User>(createDto);
 
+            entity.UserRoleId = 2;
             entity.InscriptionDate = DateOnly.FromDateTime(DateTime.Now);
             entity.IsPremium = false;
 
