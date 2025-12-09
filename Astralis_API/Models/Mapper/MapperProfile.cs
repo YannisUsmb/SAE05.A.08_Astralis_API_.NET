@@ -54,6 +54,7 @@ namespace Astralis_API.Models.Mapper
             ///// ArticleInterest.
             // Entity to DTO (Read).
             CreateMap<ArticleInterest, ArticleInterestDto>();
+            CreateMap<ArticleInterestDto, ArticleInterest>();
 
             ///// ArticleType.
             // Entity to DTO (Read).
@@ -197,6 +198,7 @@ namespace Astralis_API.Models.Mapper
             ///// EventInterest.
             // Entity to DTO (Read).
             CreateMap<EventInterest, EventInterestDto>();
+            CreateMap<EventInterestDto, EventInterest>();
 
             ///// EventType.
             // Entity to DTO (Read).
@@ -346,6 +348,7 @@ namespace Astralis_API.Models.Mapper
             ///// TypeOfArticle.
             // Entity to DTO (Read).
             CreateMap<TypeOfArticle, TypeOfArticleDto>();
+            CreateMap<TypeOfArticleDto, TypeOfArticle>();
 
             ///// User.
             // Entity to DTO (Read).
