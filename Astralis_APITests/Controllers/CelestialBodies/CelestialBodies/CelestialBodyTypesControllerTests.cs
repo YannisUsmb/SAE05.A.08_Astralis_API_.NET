@@ -7,7 +7,7 @@ using AutoMapper;
 namespace Astralis_APITests.Controllers
 {
     [TestClass]
-    public class CelestialBodyTypes : ReadableControllerTests<CelestialBodyTypesController, CelestialBodyType, CelestialBodyTypeDto, CelestialBodyTypeDto, int>
+    public class CelestialBodyTypesControllerTests : ReadableControllerTests<CelestialBodyTypesController, CelestialBodyType, CelestialBodyTypeDto, CelestialBodyTypeDto, int>
     {
         protected override CelestialBodyTypesController CreateController(AstralisDbContext context, IMapper mapper)
         {

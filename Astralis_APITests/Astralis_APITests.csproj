@@ -21,13 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\CelestialBodies\GalaxiesQuasars\" />
-    <Folder Include="Controllers\CelestialBodies\Stars\" />
     <Folder Include="Controllers\CelestialBodies\Satellites\" />
-    <Folder Include="Controllers\Events\" />
     <Folder Include="Controllers\Auth\" />
-    <Folder Include="Controllers\Comments\" />
-    <Folder Include="Controllers\Users\" />
   </ItemGroup>
 
 </Project>
