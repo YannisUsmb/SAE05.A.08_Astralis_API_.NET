@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="MSTest" Version="3.6.4" />
   </ItemGroup>
 
@@ -21,9 +20,5 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\Integration\Specific\CelestialBodies\Satellites\" />
-    <Folder Include="Controllers\Integration\Specific\Auth\" />
-  </ItemGroup>
 
 </Project>
