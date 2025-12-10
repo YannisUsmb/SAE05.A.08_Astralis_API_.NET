@@ -7,7 +7,7 @@ using AutoMapper;
 namespace Astralis_APITests.Controllers
 {
     [TestClass]
-    public class DiscoveryStatuss : ReadableControllerTests<DiscoveryStatusesController, DiscoveryStatus, DiscoveryStatusDto, DiscoveryStatusDto, int>
+    public class DiscoveryStatusesControllerTests : ReadableControllerTests<DiscoveryStatusesController, DiscoveryStatus, DiscoveryStatusDto, DiscoveryStatusDto, int>
     {
         protected override DiscoveryStatusesController CreateController(AstralisDbContext context, IMapper mapper)
         {
