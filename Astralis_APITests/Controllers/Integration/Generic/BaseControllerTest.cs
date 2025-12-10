@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Astralis_APITests.Controllers
 {
+    [TestCategory("integration")]
     public abstract class BaseControllerTests<TEntity, TController>
         where TEntity : class, new()
         where TController : class

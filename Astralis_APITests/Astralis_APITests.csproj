@@ -24,7 +24,6 @@
   <ItemGroup>
     <Folder Include="Controllers\Integration\Specific\CelestialBodies\Satellites\" />
     <Folder Include="Controllers\Integration\Specific\Auth\" />
-    <Folder Include="Controllers\Mock\Specific\" />
   </ItemGroup>
 
 </Project>
