@@ -21,4 +21,9 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Integration\Specific\CelestialBodies\Satellites\" />
+    <Folder Include="Controllers\Integration\Specific\Auth\" />
+  </ItemGroup>
+
 </Project>
