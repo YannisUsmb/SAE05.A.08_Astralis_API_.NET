@@ -21,8 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\CelestialBodies\Satellites\" />
-    <Folder Include="Controllers\Auth\" />
+    <Folder Include="Controllers\Integration\Specific\CelestialBodies\Satellites\" />
+    <Folder Include="Controllers\Integration\Specific\Auth\" />
+    <Folder Include="Controllers\Mock\Generic\" />
+    <Folder Include="Controllers\Mock\Specific\" />
   </ItemGroup>
 
 </Project>
