@@ -22,14 +22,14 @@ namespace Astralis_APITests.Controllers
 
         protected override List<EventInterest> GetSampleEntities()
         {
-            var role = new UserRole { Label = "UserTest" };
+            UserRole role = new UserRole { Label = "UserTest" };
             _context.UserRoles.Add(role);
 
-            var type = new EventType { Label = "Meeting" };
+            EventType type = new EventType { Label = "Meeting" };
             _context.EventTypes.Add(type);
             _context.SaveChanges();
 
-            var user = new User
+            User user = new User
             {
                 Username = "User1",
                 Email = "u1@test.com",
@@ -39,20 +39,21 @@ namespace Astralis_APITests.Controllers
                 UserRoleId = role.Id
             };
             _context.Users.Add(user);
+            _context.SaveChanges();
 
-            var evt1 = new Event
+            Event evt1 = new Event
             {
                 Title = "Event1",
                 Description = "Desc",
-                StartDate = DateTime.Now,
+                StartDate = DateTime.UtcNow,
                 EventTypeId = type.Id,
                 UserId = user.Id
             };
-            var evt2 = new Event
+            Event evt2 = new Event
             {
                 Title = "Event2",
                 Description = "Desc",
-                StartDate = DateTime.Now,
+                StartDate = DateTime.UtcNow,
                 EventTypeId = type.Id,
                 UserId = user.Id
             };
@@ -63,7 +64,7 @@ namespace Astralis_APITests.Controllers
             _eventId2 = evt2.Id;
             _userId1 = user.Id;
 
-            var user2 = new User
+            User user2 = new User
             {
                 Username = "User2",
                 Email = "u2@test.com",
@@ -82,17 +83,28 @@ namespace Astralis_APITests.Controllers
             };
         }
 
-        // --- Implémentation des Helpers ---
+        protected override int GetKey1(EventInterest entity)
+        {
+            return entity.EventId;
+        }
 
-        protected override int GetKey1(EventInterest entity) => entity.EventId;
-        protected override int GetKey2(EventInterest entity) => entity.UserId;
+        protected override int GetKey2(EventInterest entity)
+        {
+            return entity.UserId;
+        }
 
-        protected override int GetNonExistingKey1() => 99999;
-        protected override int GetNonExistingKey2() => 99999;
+        protected override int GetNonExistingKey1()
+        {
+            return 99999;
+        }
+
+        protected override int GetNonExistingKey2()
+        {
+            return 99999;
+        }
 
         protected override EventInterestDto GetValidCreateDto()
         {
-            // On crée une jointure entre l'Event 2 et le User 2 (qui n'existe pas encore dans SampleEntities)
             return new EventInterestDto
             {
                 EventId = _eventId2,
