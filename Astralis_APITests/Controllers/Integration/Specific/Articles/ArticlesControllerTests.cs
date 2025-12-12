@@ -17,22 +17,21 @@ namespace Astralis_APITests.Controllers
     {
         private const int TEST_EDITOR_ID = 90210;
         private const int TEST_CLIENT_ID = 90211;
+        private const int TEST_ARTICLE_TYPE1_ID = 258924;
+        private const int TEST_ARTICLE_TYPE2_ID = 258925;
 
         protected override ArticlesController CreateController(AstralisDbContext context, IMapper mapper)
         {
             var controller = new ArticlesController(new ArticleManager(context), mapper);
 
-            // --- SIMULATION DU JWT DÉCRYPTÉ ---
             var claims = new List<Claim>
             {
-                // L'ID doit matcher celui de l'auteur de l'article en BDD
                 new Claim(ClaimTypes.NameIdentifier, TEST_EDITOR_ID.ToString()),
                 new Claim(ClaimTypes.Role, "Rédacteur commercial"),
                 new Claim(ClaimTypes.Name, "UserTest"),
                 new Claim(ClaimTypes.Email, "email@usertest.com")
             };
 
-            // "TestAuth" permet de mettre IsAuthenticated = true
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var principal = new ClaimsPrincipal(identity);
 
@@ -103,8 +102,8 @@ namespace Astralis_APITests.Controllers
                     _context.SaveChanges();
                 }
             }
-            ArticleType articleType1 = new ArticleType { Id = 258924, Label = "T1" };
-            ArticleType articleType2 = new ArticleType { Id = 258925, Label = "T2" };
+            ArticleType articleType1 = new ArticleType { Id = TEST_ARTICLE_TYPE1_ID, Label = "T1" };
+            ArticleType articleType2 = new ArticleType { Id = TEST_ARTICLE_TYPE2_ID, Label = "T2" };
             _context.ArticleTypes.ToList();
             _context.ArticleTypes.AddRange(articleType1, articleType2);
             _context.SaveChanges();
@@ -168,27 +167,21 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Search_ByTitle_ShouldReturnMatchingArticle()
         {
-            // Arrange
-            // Dans GetSampleEntities, nous avons créé "Article 1 title" et "Article 2 title"
+            // Given
             var filter = new ArticleFilterDto
             {
                 SearchTerm = "Article 1"
             };
 
-            // Act
-            // Note: Search retourne ActionResult<IEnumerable<ArticleListDto>>
+            // When
             var actionResult = await _controller.Search(filter);
 
-            // Assert
+            // Then
             Assert.IsNotNull(actionResult, "Le résultat ne devrait pas être null.");
-
             var okResult = actionResult.Result as OkObjectResult;
             Assert.IsNotNull(okResult, "Devrait retourner un 200 OK.");
-
             var articles = okResult.Value as IEnumerable<ArticleListDto>;
             Assert.IsNotNull(articles, "La liste d'articles ne devrait pas être null.");
-
-            // On s'attend à trouver exactement 1 article correspondant
             Assert.AreEqual(1, articles.Count(), "Devrait trouver exactement 1 article contenant 'Article 1'.");
             Assert.AreEqual("Article 1 title", articles.First().Title);
         }
@@ -196,42 +189,21 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Search_ByTypeId_ShouldReturnSpecificArticle()
         {
-            var article1 = _context.Articles
-                .Include(a => a.TypesOfArticle)
-                .FirstOrDefault(a => a.Id == 902101);
-
-            var article2 = _context.Articles
-                .Include(a => a.TypesOfArticle)
-                .FirstOrDefault(a => a.Id == 902102);
-
-            Assert.IsNotNull(article1, "L'article 1 devrait exister via le Seed.");
-            Assert.IsNotNull(article2, "L'article 2 devrait exister via le Seed.");
-            var distinctTypeId = article1.TypesOfArticle
-                .Select(toa => toa.ArticleTypeId)
-                .Except(article2.TypesOfArticle.Select(toa => toa.ArticleTypeId))
-                .FirstOrDefault();
-            if (distinctTypeId == 0)
-            {
-                Assert.Inconclusive("Test ignoré : Pas assez de types différents en BDD pour distinguer l'article 1 de l'article 2.");
-                return;
-            }
-
+            // Given
             var filter = new ArticleFilterDto
             {
-                TypeIds = new List<int> { distinctTypeId }
+                TypeIds= new List<int> { TEST_ARTICLE_TYPE1_ID }
             };
 
-            // Act
+            // When
             var actionResult = await _controller.Search(filter);
 
-            // Assert
+            // Then
             var okResult = actionResult.Result as OkObjectResult;
             Assert.IsNotNull(okResult, "Le résultat devrait être 200 OK");
-
             var articles = okResult.Value as IEnumerable<ArticleListDto>;
             Assert.IsNotNull(articles, "La liste retournée ne doit pas être null");
-
-            Assert.AreEqual(1, articles.Count(), $"Le filtrage par le type ID {distinctTypeId} aurait dû retourner unique l'Article 1.");
+            Assert.AreEqual(1, articles.Count(), $"Le filtrage par le type ID {TEST_ARTICLE_TYPE1_ID} aurait dû retourner unique l'Article 1.");
             Assert.AreEqual("Article 1 title", articles.First().Title);
         }
     }
