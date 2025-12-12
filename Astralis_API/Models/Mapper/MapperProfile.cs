@@ -197,10 +197,12 @@ namespace Astralis_API.Models.Mapper
             ///// EventInterest.
             // Entity to DTO (Read).
             CreateMap<EventInterest, EventInterestDto>();
+            CreateMap<EventInterestDto, EventInterest>();
 
             ///// EventType.
             // Entity to DTO (Read).
             CreateMap<EventType, EventTypeDto>();
+            CreateMap<EventTypeDto, EventType>();
 
             ///// GalaxyQuasar.
             // Entity to DTO (Read).
