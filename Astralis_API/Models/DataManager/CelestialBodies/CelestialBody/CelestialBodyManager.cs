@@ -29,7 +29,6 @@ namespace Astralis_API.Models.DataManager
                 .Include(cb => cb.CometNavigation);
         }
 
-
         public async override Task<IEnumerable<CelestialBody>> GetByKeyAsync(string name)
         {
             return await WithIncludes(_entities.Where(cb =>
@@ -38,13 +37,17 @@ namespace Astralis_API.Models.DataManager
             )).ToListAsync();
         }
 
+        // --- C'EST ICI QUE TOUT SE JOUE ---
         public async Task<IEnumerable<CelestialBody>> SearchAsync(
             string? searchText = null,
             IEnumerable<int>? celestialBodyTypeIds = null,
-            bool? isDiscovery = null)
+            bool? isDiscovery = null,
+            int pageNumber = 1,  // <--- Ajouté
+            int pageSize = 30)  // <--- Ajouté
         {
             var query = _entities.AsQueryable();
 
+            // 1. Filtres
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 string lower = searchText.ToLower();
@@ -68,7 +71,15 @@ namespace Astralis_API.Models.DataManager
                     query = query.Where(cb => cb.DiscoveryNavigation == null);
                 }
             }
-            return await WithIncludes(query).ToListAsync();
+
+            // 2. Pagination
+            // On applique WithIncludes pour avoir les données liées
+            // IMPORTANT : On ajoute OrderBy, sinon le Skip peut planter ou être aléatoire
+            return await WithIncludes(query)
+                .OrderBy(cb => cb.Name)            // Tri alphabétique par défaut
+                .Skip((pageNumber - 1) * pageSize) // On saute les pages précédentes
+                .Take(pageSize)                    // On prend le paquet demandé
+                .ToListAsync();
         }
     }
 }

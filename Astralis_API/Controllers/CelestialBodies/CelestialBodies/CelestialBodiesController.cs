@@ -66,12 +66,18 @@ namespace Astralis_API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<CelestialBodyListDto>>> Search([FromQuery] CelestialBodyFilterDto filter)
+        public async Task<ActionResult<IEnumerable<CelestialBodyListDto>>> Search(
+            [FromQuery] CelestialBodyFilterDto filter,
+            [FromQuery] int pageNumber = 1,   // <--- Nouveau par défaut
+            [FromQuery] int pageSize = 30)   // <--- Nouveau par défaut
         {
+            // On passe les nouveaux paramètres au Repository
             IEnumerable<CelestialBody> results = await _celestialBodyRepository.SearchAsync(
                 filter.SearchText,
                 filter.CelestialBodyTypeIds,
-                filter.IsDiscovery
+                filter.IsDiscovery,
+                pageNumber, // <--- Nouveau
+                pageSize    // <--- Nouveau
             );
 
             return Ok(_mapper.Map<IEnumerable<CelestialBodyListDto>>(results));

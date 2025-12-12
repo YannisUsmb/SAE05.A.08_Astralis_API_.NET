@@ -66,7 +66,7 @@ builder.Services.AddDbContext<AstralisDbContext>(options =>
 
 // Configuration JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-// Important : s'assurer que la clé est encodée pareil
+// Important : s'assurer que la clï¿½ est encodï¿½e pareil
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
 builder.Services.AddAuthentication(options =>
@@ -171,7 +171,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazor",
         policy => policy
-            .WithOrigins("https://localhost:7200") // à modifier
+            .WithOrigins("https://localhost:7036") // ï¿½ modifier
             .AllowAnyHeader()
             .AllowAnyMethod());
 });

@@ -7,7 +7,9 @@ namespace Astralis_API.Models.Repository
         Task<IEnumerable<CelestialBody>> SearchAsync(
             string? searchText = null,
             IEnumerable<int>? celestialBodyTypeIds = null,
-            bool? isDiscovery = null
+            bool? isDiscovery = null,
+            int pageNumber = 1,
+            int pageSize = 30
         );
     }
 }
