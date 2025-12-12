@@ -5,8 +5,6 @@ using Astralis_API.Models.EntityFramework;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 using System.Security.Claims;
 
 namespace Astralis_APITests.Controllers
