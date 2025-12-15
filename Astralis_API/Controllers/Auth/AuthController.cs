@@ -29,7 +29,7 @@ namespace Astralis_API.Controllers
         /// <returns>An AuthResponseDto containing the token and user info.</returns>
         /// <response code="200">Authentication successful.</response>
         /// <response code="401">Invalid credentials.</response>
-        [HttpPost("login")]
+        [HttpPost("Login")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] UserLoginDto loginDto)
@@ -81,6 +81,16 @@ namespace Astralis_API.Controllers
 
             string jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = expiresAt
+            };
+
+            Response.Cookies.Append("authToken", jwt, cookieOptions);
+
             AuthResponseDto response = new AuthResponseDto
             {
                 Token = jwt,
@@ -91,6 +101,13 @@ namespace Astralis_API.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpPost("Logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("authToken");
+            return Ok(new { message = "Déconnexion réussie" });
         }
     }
 }
