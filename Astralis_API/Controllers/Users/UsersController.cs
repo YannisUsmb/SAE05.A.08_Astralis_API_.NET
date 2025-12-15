@@ -149,7 +149,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User is not authorized to change this password.</response>
         /// <response code="404">User not found.</response>
         /// <response code="500">Internal server error.</response>
-        [HttpPut("{id}/Password")]
+        [HttpPut("{id}/ChangePassword")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
