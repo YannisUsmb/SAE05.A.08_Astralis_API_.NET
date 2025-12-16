@@ -54,6 +54,30 @@ namespace Astralis_API.Controllers
         {
             return base.GetById(id);
         }
+        
+        /// <summary>
+        /// Retrieves the subtypes associated with a specific main celestial body type.
+        /// </summary>
+        /// <param name="mainTypeId">The ID of the main type (e.g., 1 for Planet, 2 for Star).</param>
+        /// <returns>A list of subtypes (ID and Label).</returns>
+        /// <response code="200">The subtypes were retrieved successfully.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpGet("Subtypes/{mainTypeId}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<CelestialBodySubtypeDto>>> GetSubtypes(int mainTypeId)
+        {
+            IDictionary<int, string> subtypesDict = await _celestialBodyRepository.GetSubtypesByMainTypeAsync(mainTypeId);
+            
+            List<CelestialBodySubtypeDto> subtypesDto = subtypesDict.Select(kvp => new CelestialBodySubtypeDto
+            {
+                Id = kvp.Key,
+                Label = kvp.Value
+            }).ToList();
+
+            return Ok(subtypesDto);
+        }
 
         /// <summary>
         /// Searches for celestial bodies based on name, specific types, or discovery status.
@@ -68,16 +92,16 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<CelestialBodyListDto>>> Search(
             [FromQuery] CelestialBodyFilterDto filter,
-            [FromQuery] int pageNumber = 1,   // <--- Nouveau par défaut
-            [FromQuery] int pageSize = 30)   // <--- Nouveau par défaut
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 30) 
         {
-            // On passe les nouveaux paramètres au Repository
             IEnumerable<CelestialBody> results = await _celestialBodyRepository.SearchAsync(
                 filter.SearchText,
                 filter.CelestialBodyTypeIds,
                 filter.IsDiscovery,
-                pageNumber, // <--- Nouveau
-                pageSize    // <--- Nouveau
+                filter.SubtypeId,
+                pageNumber,
+                pageSize   
             );
 
             return Ok(_mapper.Map<IEnumerable<CelestialBodyListDto>>(results));

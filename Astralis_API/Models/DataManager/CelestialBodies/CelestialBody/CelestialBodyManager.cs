@@ -6,11 +6,28 @@ namespace Astralis_API.Models.DataManager
 {
     public class CelestialBodyManager : DataManager<CelestialBody, int, string>, ICelestialBodyRepository
     {
+        private readonly Dictionary<int, Func<Task<IDictionary<int, string>>>> _subtypeStrategies;
         
         public CelestialBodyManager(AstralisDbContext context):base(context)
         {
+            _subtypeStrategies = new Dictionary<int, Func<Task<IDictionary<int, string>>>>
+            {
+                { 1, () => GetSubtypesFromDbSet(_context.SpectralClasses, x => x.Id, x => x.Label) },
+                { 2, () => GetSubtypesFromDbSet(_context.PlanetTypes, x => x.Id, x => x.Label) },
+                { 3, () => GetSubtypesFromDbSet(_context.OrbitalClasses, x => x.Id, x => x.Label) },
+                { 5, () => GetSubtypesFromDbSet(_context.GalaxyQuasarClasses, x => x.Id, x => x.Label) }
+            };
         }
-
+        
+        private async Task<IDictionary<int, string>> GetSubtypesFromDbSet<T>(
+            DbSet<T> dbSet, 
+            Func<T, int> keySelector, 
+            Func<T, string> valueSelector) where T : class
+        {
+             var list = await dbSet.ToListAsync();
+            return list.ToDictionary(keySelector, valueSelector);
+        }
+        
         public override async Task<CelestialBody?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities).FirstOrDefaultAsync(cb => cb.Id == id);
@@ -36,18 +53,27 @@ namespace Astralis_API.Models.DataManager
                 || (cb.Alias != null && cb.Alias.ToLower().Contains(name.ToLower()))
             )).ToListAsync();
         }
-
-        // --- C'EST ICI QUE TOUT SE JOUE ---
+        
+        public async Task<IDictionary<int, string>> GetSubtypesByMainTypeAsync(int mainTypeId)
+        {
+            if (_subtypeStrategies.TryGetValue(mainTypeId, out var strategy))
+            {
+                return await strategy();
+            }
+            
+            return new Dictionary<int, string>();
+        }
+        
         public async Task<IEnumerable<CelestialBody>> SearchAsync(
             string? searchText = null,
             IEnumerable<int>? celestialBodyTypeIds = null,
             bool? isDiscovery = null,
-            int pageNumber = 1,  // <--- Ajouté
-            int pageSize = 30)  // <--- Ajouté
+            int? subtypeId = null,
+            int pageNumber = 1,
+            int pageSize = 30)
         {
             var query = _entities.AsQueryable();
-
-            // 1. Filtres
+            
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 string lower = searchText.ToLower();
@@ -72,13 +98,20 @@ namespace Astralis_API.Models.DataManager
                 }
             }
 
-            // 2. Pagination
-            // On applique WithIncludes pour avoir les données liées
-            // IMPORTANT : On ajoute OrderBy, sinon le Skip peut planter ou être aléatoire
+            if (subtypeId.HasValue && subtypeId.Value > 0)
+            {
+                query = query.Where(cb => 
+                    (cb.PlanetNavigation != null && cb.PlanetNavigation.PlanetTypeId == subtypeId) ||
+                    (cb.GalaxyQuasarNavigation != null && cb.GalaxyQuasarNavigation.GalaxyQuasarClassId == subtypeId) ||
+                    (cb.AsteroidNavigation != null && cb.AsteroidNavigation.OrbitalClassId == subtypeId) ||
+                    (cb.StarNavigation != null && cb.StarNavigation.SpectralClassId == subtypeId)
+                );
+            }
+            
             return await WithIncludes(query)
-                .OrderBy(cb => cb.Name)            // Tri alphabétique par défaut
-                .Skip((pageNumber - 1) * pageSize) // On saute les pages précédentes
-                .Take(pageSize)                    // On prend le paquet demandé
+                .OrderBy(cb => cb.Name)     
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)                    
                 .ToListAsync();
         }
     }
