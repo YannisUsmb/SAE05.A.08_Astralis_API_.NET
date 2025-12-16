@@ -57,14 +57,13 @@ namespace Astralis_API.Controllers
                 return Unauthorized("Invalid identifier or password.");
             }
 
-            // AJOUT : Gestion de l'avatar dans les claims pour le récupérer dans le endpoint /Me
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.UserRoleNavigation.Label),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim("AvatarPath", user.AvatarUrl ?? "") // Claim personnalisée
+                new Claim("AvatarPath", user.AvatarUrl ?? "")
             };
 
             string? keyString = _configuration["JwtSettings:Key"];
