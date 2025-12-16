@@ -1,336 +1,308 @@
-﻿//using Astralis_API.Controllers;
-//using Astralis.Shared.DTOs;
-//using Astralis_API.Models.EntityFramework;
-//using Astralis_API.Models.Repository;
-//using AutoMapper;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.VisualStudio.TestTools.UnitTesting;
-//using Moq;
-//using System.Collections.Generic;
-//using System.Security.Claims;
-//using System.Threading.Tasks;
-//using System.Linq;
-
-//namespace Astralis_APITests.Controllers
-//{
-//    [TestClass]
-//    public class PlanetsControllerTests
-//    {
-//        private Mock<IGalaxyQuasarRepository> _mockRepo;
-//        private Mock<IDiscoveryRepository> _mockDiscoveryRepo;
-//        private Mock<IMapper> _mockMapper;
-//        private PlanetsController _controller;
-
-//        [TestInitialize]
-//        public void Init()
-//        {
-//            _mockRepo = new Mock<IGalaxyQuasarRepository>();
-//            _mockDiscoveryRepo = new Mock<IDiscoveryRepository>();
-//            _mockMapper = new Mock<IMapper>();
-
-            
-//        }
-
-//        // Helper pour configurer l'utilisateur (Admin ou Standard)
-//        private void SetupUser(int userId, string role)
-//        {
-//            var claims = new List<Claim>
-//            {
-//                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-//                new Claim(ClaimTypes.Role, role)
-//            };
-//            var identity = new ClaimsIdentity(claims, "TestAuth");
-//            var principal = new ClaimsPrincipal(identity);
-
-//            _controller.ControllerContext = new ControllerContext
-//            {
-//                HttpContext = new DefaultHttpContext { User = principal }
-//            };
-//        }
-
-//        // ==========================================
-//        // TESTS GET (Read)
-//        // ==========================================
-
-//        [TestMethod]
-//        public async Task GetAll_ShouldReturnOkWithList()
-//        {
-//            // GIVEN
-//            var entities = new List<GalaxyQuasar> { new GalaxyQuasar { Id = 1 }, new GalaxyQuasar { Id = 2 } };
-//            var dtos = new List<GalaxyQuasarDto> { new GalaxyQuasarDto { Id = 1 }, new GalaxyQuasarDto { Id = 2 } };
-
-//            _mockRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(entities);
-//            _mockMapper.Setup(m => m.Map<IEnumerable<GalaxyQuasarDto>>(entities)).Returns(dtos);
-
-//            // WHEN
-//            var result = await _controller.GetAll();
-
-//            // THEN
-//            var okResult = result.Result as OkObjectResult;
-//            Assert.IsNotNull(okResult);
-//            var returnDtos = okResult.Value as IEnumerable<GalaxyQuasarDto>;
-//            Assert.AreEqual(2, returnDtos.Count());
-//        }
-
-//        [TestMethod]
-//        public async Task GetById_ExistingId_ShouldReturnOk()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            var entity = new GalaxyQuasar { Id = id };
-//            var dto = new GalaxyQuasarDto { Id = id };
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockMapper.Setup(m => m.Map<GalaxyQuasarDto>(entity)).Returns(dto);
-
-//            // WHEN
-//            var result = await _controller.GetById(id);
-
-//            // THEN
-//            var okResult = result.Result as OkObjectResult;
-//            Assert.IsNotNull(okResult);
-//            Assert.AreEqual(id, ((GalaxyQuasarDto)okResult.Value).Id);
-//        }
-
-//        [TestMethod]
-//        public async Task GetById_UnknownId_ShouldReturnNotFound()
-//        {
-//            // GIVEN
-//            int id = 99;
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((GalaxyQuasar?)null);
-
-//            // WHEN
-//            var result = await _controller.GetById(id);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
-//        }
-
-//        [TestMethod]
-//        public async Task Search_ShouldReturnOkWithResults()
-//        {
-//            // GIVEN
-//            var filter = new GalaxyQuasarFilterDto { Reference = "Test" };
-//            var entities = new List<GalaxyQuasar> { new GalaxyQuasar { Reference = "Test1" } };
-//            var dtos = new List<GalaxyQuasarDto> { new GalaxyQuasarDto { Reference = "Test1" } };
-
-//            _mockRepo.Setup(r => r.SearchAsync(
-//                filter.Reference, filter.GalaxyQuasarClassIds,
-//                null, null, null, null, null, null, null, null, null, null
-//            )).ReturnsAsync(entities);
-
-
-//            // WHEN
-//            var result = await _controller.Search(filter);
-
-//            // THEN
-//            var okResult = result.Result as OkObjectResult;
-//            Assert.IsNotNull(okResult);
-//        }
-
-//        // ==========================================
-//        // TESTS POST (Create) - Doit être bloqué
-//        // ==========================================
-
-//        [TestMethod]
-//        public async Task Post_ShouldAlwaysReturnBadRequest()
-//        {
-//            // GIVEN
-//            var createDto = new GalaxyQuasarCreateDto();
-//            SetupUser(1, "User");
-
-//            // WHEN
-//            var result = await _controller.Post(createDto);
-
-//            // THEN
-//            // Le contrôleur renvoie explicitement BadRequest pour empêcher la création directe
-//            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
-//        }
-
-//        // ==========================================
-//        // TESTS PUT (Update) - Avec Sécurité
-//        // ==========================================
-
-//        [TestMethod]
-//        public async Task Put_Admin_ShouldUpdateAndReturnNoContent()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            var updateDto = new GalaxyQuasarUpdateDto { Reference = "Updated" };
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 100 };
-
-//            SetupUser(99, "Admin");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockMapper.Setup(m => m.Map(updateDto, entity)).Returns(entity);
-
-//            // Mock UpdateAsync avec 2 arguments
-//            _mockRepo.Setup(r => r.UpdateAsync(entity, It.IsAny<GalaxyQuasar>())).Returns(Task.CompletedTask);
-
-//            // WHEN
-//            var result = await _controller.Put(id, updateDto);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-//            _mockRepo.Verify(r => r.UpdateAsync(entity, It.IsAny<GalaxyQuasar>()), Times.Once);
-//        }
-
-//        [TestMethod]
-//        public async Task Put_Owner_DraftDiscovery_ShouldUpdate()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            int userId = 10;
-//            var updateDto = new GalaxyQuasarUpdateDto();
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 50 };
-
-//            // Discovery en Draft (Status 1) appartenant au user
-//            var discovery = new Discovery { UserId = userId, CelestialBodyId = 50, DiscoveryStatusId = 1 };
-
-//            SetupUser(userId, "User");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockDiscoveryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Discovery> { discovery });
-//            _mockMapper.Setup(m => m.Map(updateDto, entity)).Returns(entity);
-//            _mockRepo.Setup(r => r.UpdateAsync(entity, It.IsAny<GalaxyQuasar>())).Returns(Task.CompletedTask);
-
-//            // WHEN
-//            var result = await _controller.Put(id, updateDto);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-//        }
-
-//        [TestMethod]
-//        public async Task Put_Owner_ValidatedDiscovery_ShouldReturnForbidden()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            int userId = 10;
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 50 };
-
-//            // Discovery Validée (Status 2) -> Modification Interdite
-//            var discovery = new Discovery { UserId = userId, CelestialBodyId = 50, DiscoveryStatusId = 2 };
-
-//            SetupUser(userId, "User");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockDiscoveryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Discovery> { discovery });
-
-//            // WHEN
-//            var result = await _controller.Put(id, new GalaxyQuasarUpdateDto());
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(ForbidResult));
-//            _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<GalaxyQuasar>(), It.IsAny<GalaxyQuasar>()), Times.Never);
-//        }
-
-//        [TestMethod]
-//        public async Task Put_OtherUser_ShouldReturnForbidden()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            int ownerId = 10;
-//            int hackerId = 666;
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 50 };
-
-//            var discovery = new Discovery { UserId = ownerId, CelestialBodyId = 50, DiscoveryStatusId = 1 };
-
-//            SetupUser(hackerId, "User"); // Ce n'est pas le propriétaire
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockDiscoveryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Discovery> { discovery });
-
-//            // WHEN
-//            var result = await _controller.Put(id, new GalaxyQuasarUpdateDto());
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(ForbidResult));
-//        }
-
-//        // ==========================================
-//        // TESTS DELETE - Avec Sécurité
-//        // ==========================================
-
-//        [TestMethod]
-//        public async Task Delete_Admin_ShouldDeleteAndReturnNoContent()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 100 };
-
-//            SetupUser(99, "Admin");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockRepo.Setup(r => r.DeleteAsync(entity)).Returns(Task.CompletedTask);
-
-//            // WHEN
-//            var result = await _controller.Delete(id);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-//            _mockRepo.Verify(r => r.DeleteAsync(entity), Times.Once);
-//        }
-
-//        [TestMethod]
-//        public async Task Delete_Owner_DraftDiscovery_ShouldDelete()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            int userId = 10;
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 50 };
-//            var discovery = new Discovery { UserId = userId, CelestialBodyId = 50, DiscoveryStatusId = 1 };
-
-//            SetupUser(userId, "User");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockDiscoveryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Discovery> { discovery });
-//            _mockRepo.Setup(r => r.DeleteAsync(entity)).Returns(Task.CompletedTask);
-
-//            // WHEN
-//            var result = await _controller.Delete(id);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-//        }
-
-//        [TestMethod]
-//        public async Task Delete_Owner_ValidatedDiscovery_ShouldReturnForbidden()
-//        {
-//            // GIVEN
-//            int id = 1;
-//            int userId = 10;
-//            var entity = new GalaxyQuasar { Id = id, CelestialBodyId = 50 };
-//            // Validée -> Suppression interdite
-//            var discovery = new Discovery { UserId = userId, CelestialBodyId = 50, DiscoveryStatusId = 2 };
-
-//            SetupUser(userId, "User");
-
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(entity);
-//            _mockDiscoveryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Discovery> { discovery });
-
-//            // WHEN
-//            var result = await _controller.Delete(id);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(ForbidResult));
-//            _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<GalaxyQuasar>()), Times.Never);
-//        }
-
-//        [TestMethod]
-//        public async Task Delete_UnknownId_ShouldReturnNotFound()
-//        {
-//            // GIVEN
-//            int id = 999;
-//            SetupUser(1, "Admin");
-//            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((GalaxyQuasar?)null);
-
-//            // WHEN
-//            var result = await _controller.Delete(id);
-
-//            // THEN
-//            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-//        }
-//    }
-//}
+﻿using Astralis.Shared.DTOs;
+using Astralis_API.Controllers;
+using Astralis_API.Models.DataManager;
+using Astralis_API.Models.EntityFramework;
+using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace Astralis_APITests.Controllers
+{
+    [TestClass]
+    public class PlanetControllerTests
+        : CrudControllerTests<PlanetsController, Planet, PlanetDto, PlanetDto, PlanetCreateDto, PlanetUpdateDto, int>
+    {
+        private const int USER_OWNER_ID = 5001;
+        private const int USER_ADMIN_ID = 5002;
+        private const int USER_HACKER_ID = 6666;
+
+        private const string REF_DRAFT = "Planet-Draft";
+        private const string REF_ACCEPTED = "Planet-Accepted";
+        private const string REF_OTHER = "Planet-Other";
+
+        private int _planetDraftId;
+        private int _planetAcceptedId;
+        private int _planetOtherUserId;
+
+        private DiscoveriesController _discoveryController;
+
+        protected override PlanetsController CreateController(AstralisDbContext context, IMapper mapper)
+        {
+            var planetRepo = new PlanetManager(context);
+            var discoveryRepo = new DiscoveryManager(context);
+            var asteroidRepo = new AsteroidManager(context);
+            var starRepo = new StarManager(context);
+            var cometRepo = new CometManager(context);
+            var galaxyRepo = new GalaxyQuasarManager(context);
+            var celestialBodyRepo = new CelestialBodyManager(context);
+
+            var planetController = new PlanetsController(planetRepo, discoveryRepo, mapper);
+            SetupUserContext(planetController, USER_OWNER_ID, "Client");
+
+            _discoveryController = new DiscoveriesController(
+                discoveryRepo,
+                asteroidRepo,
+                planetRepo,
+                starRepo,
+                cometRepo,
+                galaxyRepo,
+                celestialBodyRepo,
+                mapper
+            );
+            SetupUserContext(_discoveryController, USER_OWNER_ID, "Client");
+
+            return planetController;
+        }
+
+        private void SetupUserContext(ControllerBase controller, int userId, string role)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Name, "TestUser")
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var principal = new ClaimsPrincipal(identity);
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+        }
+
+        protected override List<Planet> GetSampleEntities()
+        {
+            var roleClient = GetOrCreateRole("Client");
+            var roleAdmin = GetOrCreateRole("Admin");
+
+            CreateUserIfNotExist(USER_OWNER_ID, "Owner", roleClient.Id);
+            CreateUserIfNotExist(USER_ADMIN_ID, "Admin", roleAdmin.Id);
+            CreateUserIfNotExist(USER_HACKER_ID, "Hacker", roleClient.Id);
+
+            var statusDraft = GetOrCreateStatus(1, "Draft");
+            var statusAccepted = GetOrCreateStatus(3, "Accepted");
+
+            var typeBodyPlanet = GetOrCreateBodyType("Planet");
+            var typeGasGiant = GetOrCreatePlanetType("Gas Giant");
+            var methodTransit = GetOrCreateDetectionMethod("Transit");
+
+            _context.SaveChanges();
+
+            var list = new List<Planet>();
+
+            list.Add(PreparePlanetWithDiscovery(REF_DRAFT, "Body_P_Draft", typeBodyPlanet.Id, USER_OWNER_ID, statusDraft.Id, typeGasGiant.Id, methodTransit.Id));
+            list.Add(PreparePlanetWithDiscovery(REF_ACCEPTED, "Body_P_Accepted", typeBodyPlanet.Id, USER_OWNER_ID, statusAccepted.Id, typeGasGiant.Id, methodTransit.Id));
+            list.Add(PreparePlanetWithDiscovery(REF_OTHER, "Body_P_Other", typeBodyPlanet.Id, USER_HACKER_ID, statusDraft.Id, typeGasGiant.Id, methodTransit.Id));
+
+            return list;
+        }
+
+        private Planet PreparePlanetWithDiscovery(string reference, string bodyName, int bodyTypeId, int userId, int statusId, int planetTypeId, int methodId)
+        {
+            var body = _context.CelestialBodies.FirstOrDefault(b => b.Name == bodyName);
+            if (body == null)
+            {
+                body = new CelestialBody { Name = bodyName, CelestialBodyTypeId = bodyTypeId, Alias = reference };
+                _context.CelestialBodies.Add(body);
+                _context.SaveChanges();
+            }
+
+            if (!_context.Discoveries.Any(d => d.CelestialBodyId == body.Id))
+            {
+                var disc = new Discovery
+                {
+                    Title = $"Disc {reference}",
+                    UserId = userId,
+                    CelestialBodyId = body.Id,
+                    DiscoveryStatusId = statusId
+                };
+                _context.Discoveries.Add(disc);
+                _context.SaveChanges();
+            }
+
+            return new Planet
+            {
+                CelestialBodyId = body.Id,
+                PlanetTypeId = planetTypeId,
+                DetectionMethodId = methodId,
+                Mass = 1.5m,
+                Distance = 100.0m
+            };
+        }
+
+        private UserRole GetOrCreateRole(string label)
+        {
+            var r = _context.UserRoles.FirstOrDefault(x => x.Label == label);
+            if (r == null) { r = new UserRole { Label = label }; _context.UserRoles.Add(r); }
+            return r;
+        }
+        private void CreateUserIfNotExist(int id, string name, int roleId)
+        {
+            if (!_context.Users.Any(u => u.Id == id))
+                _context.Users.Add(new User { Id = id, Username = name, UserRoleId = roleId, Email = $"{name}@test.com", FirstName = name, LastName = "T", Password = "pwd", IsPremium = false });
+        }
+        private DiscoveryStatus GetOrCreateStatus(int id, string label)
+        {
+            var s = _context.DiscoveryStatuses.FirstOrDefault(x => x.Id == id);
+            if (s == null) { s = new DiscoveryStatus { Id = id, Label = label }; _context.DiscoveryStatuses.Add(s); }
+            return s;
+        }
+        private CelestialBodyType GetOrCreateBodyType(string label)
+        {
+            var t = _context.CelestialBodyTypes.FirstOrDefault(x => x.Label == label);
+            if (t == null) { t = new CelestialBodyType { Label = label }; _context.CelestialBodyTypes.Add(t); }
+            return t;
+        }
+        private PlanetType GetOrCreatePlanetType(string label)
+        {
+            var t = _context.PlanetTypes.FirstOrDefault(x => x.Label == label);
+            if (t == null) { t = new PlanetType { Label = label, Description = "Test" }; _context.PlanetTypes.Add(t); }
+            return t;
+        }
+        private DetectionMethod GetOrCreateDetectionMethod(string label)
+        {
+            var m = _context.DetectionMethods.FirstOrDefault(x => x.Label == label);
+            if (m == null) { m = new DetectionMethod { Label = label, Description = "Test" }; _context.DetectionMethods.Add(m); }
+            return m;
+        }
+
+        protected override int GetIdFromEntity(Planet entity) => entity.Id;
+        protected override int GetIdFromDto(PlanetDto dto) => dto.Id;
+        protected override int GetNonExistingId() => 9999999;
+
+        protected override PlanetCreateDto GetValidCreateDto() => new PlanetCreateDto();
+
+        protected override void SetIdInUpdateDto(PlanetUpdateDto dto, int id) { }
+
+        protected override PlanetUpdateDto GetValidUpdateDto(Planet entityToUpdate)
+        {
+            return new PlanetUpdateDto
+            {
+                PlanetTypeId = entityToUpdate.PlanetTypeId,
+                DetectionMethodId = entityToUpdate.DetectionMethodId,
+                Mass = 999.9m,
+                Remark = "Updated via Test"
+            };
+        }
+
+
+        [TestMethod]
+        public async Task Post_ValidObject_ShouldCreateAndReturn200()
+        {
+            var typePlanet = _context.PlanetTypes.First();
+            var method = _context.DetectionMethods.First();
+            var bodyType = _context.CelestialBodyTypes.First(x => x.Label == "Planet");
+
+            var createDto = new PlanetCreateDto
+            {
+                Name = "Kepler-Test-Override",
+                Alias = "KP-OVER-1",
+                CelestialBodyTypeId = bodyType.Id,
+                PlanetTypeId = typePlanet.Id,
+                DetectionMethodId = method.Id,
+                Distance = 150.5m,
+                Mass = 12.0m,
+                Radius = 2.5m,
+                DiscoveryYear = 2023,
+                Eccentricity = 0.05m,
+                Temperature = "300K",
+                Remark = "Created via Discovery Controller"
+            };
+
+            var submission = new DiscoveryPlanetSubmissionDto
+            {
+                Title = "Nouvelle découverte de planète",
+                Details = createDto
+            };
+
+            var actionResult = await _discoveryController.PostPlanet(submission);
+
+            Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
+
+            var okResult = actionResult.Result as OkObjectResult;
+            var discoveryDto = okResult?.Value as DiscoveryDto;
+
+            Assert.IsNotNull(discoveryDto);
+            Assert.IsTrue(discoveryDto.Id > 0);
+        }
+
+        [TestMethod]
+        public async Task Delete_ExistingId_ShouldDeleteAndReturn204()
+        {
+            await RefreshIds();
+            await base.Delete_ExistingId_ShouldDeleteAndReturn204();
+        }
+
+        private async Task RefreshIds()
+        {
+            var draft = await _context.Planets.Include(p => p.CelestialBodyNavigation).FirstOrDefaultAsync(p => p.CelestialBodyNavigation.Alias == REF_DRAFT);
+            if (draft != null) _planetDraftId = draft.Id;
+
+            var accepted = await _context.Planets.Include(p => p.CelestialBodyNavigation).FirstOrDefaultAsync(p => p.CelestialBodyNavigation.Alias == REF_ACCEPTED);
+            if (accepted != null) _planetAcceptedId = accepted.Id;
+
+            var other = await _context.Planets.Include(p => p.CelestialBodyNavigation).FirstOrDefaultAsync(p => p.CelestialBodyNavigation.Alias == REF_OTHER);
+            if (other != null) _planetOtherUserId = other.Id;
+        }
+
+        [TestMethod]
+        public async Task Put_Owner_AcceptedDiscovery_ShouldReturnForbidden()
+        {
+            await RefreshIds();
+            var updateDto = new PlanetUpdateDto { Mass = 500m, PlanetTypeId = 1, DetectionMethodId = 1 };
+            var actionResult = await _controller.Put(_planetAcceptedId, updateDto);
+            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
+        }
+
+        [TestMethod]
+        public async Task Put_OtherUser_ShouldReturnForbidden()
+        {
+            await RefreshIds();
+            var updateDto = new PlanetUpdateDto { Mass = 500m, PlanetTypeId = 1, DetectionMethodId = 1 };
+            var actionResult = await _controller.Put(_planetOtherUserId, updateDto);
+            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
+        }
+
+        [TestMethod]
+        public async Task Put_Admin_ShouldAlwaysSuccess()
+        {
+            await RefreshIds();
+            SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
+
+            var currentEntity = await _context.Planets.AsNoTracking().FirstOrDefaultAsync(x => x.Id == _planetAcceptedId);
+
+            var updateDto = new PlanetUpdateDto
+            {
+                PlanetTypeId = currentEntity.PlanetTypeId,
+                DetectionMethodId = currentEntity.DetectionMethodId,
+                Remark = "Admin Override Remark"
+            };
+
+            var actionResult = await _controller.Put(_planetAcceptedId, updateDto);
+
+            Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
+
+            _context.ChangeTracker.Clear();
+            var updatedEntity = await _context.Planets.FindAsync(_planetAcceptedId);
+            Assert.AreEqual("Admin Override Remark", updatedEntity.Remark);
+        }
+
+        [TestMethod]
+        public async Task Delete_Owner_AcceptedDiscovery_ShouldReturnForbidden()
+        {
+            await RefreshIds();
+            var actionResult = await _controller.Delete(_planetAcceptedId);
+            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
+        }
+
+        [TestMethod]
+        public async Task Search_ShouldReturnOk()
+        {
+            var result = await _controller.Search(new PlanetFilterDto { Name = "Draft" });
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        }
+    }
+}

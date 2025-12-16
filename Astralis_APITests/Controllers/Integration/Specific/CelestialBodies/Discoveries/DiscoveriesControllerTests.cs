@@ -16,11 +16,9 @@ namespace Astralis_APITests.Controllers
         private const int USER_OWNER_ID = 5001;
         private const int USER_ADMIN_ID = 5002;
 
-        // Stockage des IDs dynamiques pour les tests
         private int _orbitalClassId;
         private int _asteroidTypeId;
 
-        // --- 1. CONFIGURATION ---
 
         protected override DiscoveriesController CreateController(AstralisDbContext context, IMapper mapper)
         {
@@ -57,13 +55,8 @@ namespace Astralis_APITests.Controllers
             };
         }
 
-        // --- 2. DONNÉES DE TEST (SEED) ---
-
         protected override List<Discovery> GetSampleEntities()
         {
-            // A. DÉPENDANCES
-
-            // 1. Status
             var statusDraft = _context.DiscoveryStatuses.FirstOrDefault(s => s.Id == 1);
             if (statusDraft == null) { statusDraft = new DiscoveryStatus { Id = 1, Label = "Draft" }; _context.DiscoveryStatuses.Add(statusDraft); }
 
@@ -72,7 +65,6 @@ namespace Astralis_APITests.Controllers
 
             if (!_context.DiscoveryStatuses.Any(s => s.Id == 4)) _context.DiscoveryStatuses.Add(new DiscoveryStatus { Id = 4, Label = "Declined" });
 
-            // 2. Celestial Body Types (RECUPERATION ID DYNAMIQUE)
             var typeAsteroid = _context.CelestialBodyTypes.FirstOrDefault(t => t.Label == "Asteroid");
             if (typeAsteroid == null)
             {
@@ -80,7 +72,6 @@ namespace Astralis_APITests.Controllers
                 _context.CelestialBodyTypes.Add(typeAsteroid);
             }
 
-            // 3. Orbital Classes
             var orbClass = _context.OrbitalClasses.FirstOrDefault(o => o.Label == "TST");
             if (orbClass == null)
             {
@@ -88,21 +79,17 @@ namespace Astralis_APITests.Controllers
                 _context.OrbitalClasses.Add(orbClass);
             }
 
-            // 4. Users
             var roleClient = _context.UserRoles.FirstOrDefault(r => r.Label == "Client");
             if (roleClient == null) { roleClient = new UserRole { Label = "Client" }; _context.UserRoles.Add(roleClient); }
 
             var roleAdmin = _context.UserRoles.FirstOrDefault(r => r.Label == "Admin");
             if (roleAdmin == null) { roleAdmin = new UserRole { Label = "Admin" }; _context.UserRoles.Add(roleAdmin); }
 
-            // Sauvegarde intermédiaire pour générer les IDs
             _context.SaveChanges();
 
-            // STOCKAGE DES IDS pour utilisation dans les tests
             _orbitalClassId = orbClass.Id;
             _asteroidTypeId = typeAsteroid.Id;
 
-            // Création Users
             var userOwner = _context.Users.FirstOrDefault(u => u.Id == USER_OWNER_ID);
             if (userOwner == null)
             {
@@ -118,7 +105,6 @@ namespace Astralis_APITests.Controllers
             }
             _context.SaveChanges();
 
-            // 5. Corps Célestes Parents (si nécessaire pour les découvertes existantes)
             var bodyDraft = _context.CelestialBodies.FirstOrDefault(c => c.Name == "Body_Draft_Discovery");
             if (bodyDraft == null)
             {
@@ -134,8 +120,6 @@ namespace Astralis_APITests.Controllers
             }
             _context.SaveChanges();
 
-            // B. DÉCOUVERTES (SEED)
-            // On lie manuellement les objets de navigation pour que le Mapper fonctionne bien dans les tests
             var list = new List<Discovery>();
 
             var draft = _context.Discoveries.FirstOrDefault(d => d.Title == "Draft Discovery Title");
@@ -148,7 +132,6 @@ namespace Astralis_APITests.Controllers
                     CelestialBodyId = bodyDraft.Id,
                     DiscoveryStatusId = 1,
 
-                    // Liaisons manuelles pour les tests GetAll
                     DiscoveryStatusNavigation = statusDraft,
                     UserNavigation = userOwner,
                     CelestialBodyNavigation = bodyDraft
@@ -176,7 +159,6 @@ namespace Astralis_APITests.Controllers
             return list;
         }
 
-        // --- 3. CONFIG CRUD ---
         protected override int GetIdFromEntity(Discovery entity) => entity.Id;
         protected override int GetIdFromDto(DiscoveryDto dto) => dto.Id;
         protected override int GetNonExistingId() => 9999999;
@@ -184,9 +166,6 @@ namespace Astralis_APITests.Controllers
         protected override DiscoveryUpdateDto GetValidUpdateDto(Discovery entityToUpdate) => new DiscoveryUpdateDto { Title = entityToUpdate.Title + " Updated" };
         protected override void SetIdInUpdateDto(DiscoveryUpdateDto dto, int id) { }
 
-        // --- 4. SURCHARGES OBLIGATOIRES (Pour corriger les erreurs d'assertion) ---
-
-        // Le POST générique doit échouer (BadRequest)
         [TestMethod]
         public async Task Post_ValidObject_ShouldCreateAndReturn200()
         {
@@ -195,13 +174,11 @@ namespace Astralis_APITests.Controllers
             Assert.IsInstanceOfType(actionResult.Result, typeof(BadRequestObjectResult));
         }
 
-        // --- 5. TESTS SPÉCIFIQUES ---
 
         [TestMethod]
         public async Task PostAsteroid_ValidSubmission_ShouldCreateDiscoveryAndReturn200()
         {
             // Given
-            // On génère une référence unique pour éviter les conflits d'unicité si on relance le test
             string uniqueRef = $"AST-{Guid.NewGuid().ToString().Substring(0, 8)}";
 
             var submission = new DiscoveryAsteroidSubmissionDto
@@ -211,14 +188,8 @@ namespace Astralis_APITests.Controllers
                 {
                     Name = "New Found Asteroid",
                     Reference = uniqueRef,
-
-                    // --- CORRECTION ICI ---
-                    // On utilise les IDs récupérés dynamiquement dans le Seed (GetSampleEntities)
-                    // au lieu de mettre "1" en dur.
                     CelestialBodyTypeId = _asteroidTypeId,
                     OrbitalClassId = _orbitalClassId,
-                    // ----------------------
-
                     IsPotentiallyHazardous = false,
                     DiameterMinKm = 1,
                     DiameterMaxKm = 2,
@@ -234,19 +205,15 @@ namespace Astralis_APITests.Controllers
             // Then
             var okResult = actionResult.Result as OkObjectResult;
 
-            // Aide au débogage : si ce n'est pas OK, on fait échouer le test avec le message d'erreur du BadRequest
             if (okResult == null && actionResult.Result is BadRequestObjectResult badRequest)
             {
                 Assert.Fail($"Le test a échoué avec une erreur 400 : {badRequest.Value}");
             }
 
             Assert.IsNotNull(okResult, "Devrait retourner 200 OK");
-
             var dto = okResult.Value as DiscoveryDto;
             Assert.IsNotNull(dto);
             Assert.AreEqual("New Asteroid Discovery", dto.Title);
-
-            // Vérification en base
             var dbDiscovery = _context.Discoveries.Find(dto.Id);
             Assert.IsNotNull(dbDiscovery);
             Assert.AreEqual(1, dbDiscovery.DiscoveryStatusId);

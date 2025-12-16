@@ -18,17 +18,14 @@ namespace Astralis_APITests.Controllers
         private const int USER_ADMIN_ID = 5002;
         private const int USER_HACKER_ID = 6666;
 
-        // Références constantes
         private const string REF_DRAFT = "GQ-Draft";
         private const string REF_ACCEPTED = "GQ-Accepted";
         private const string REF_OTHER = "GQ-Other";
 
-        // IDs stockés
         private int _galaxyDraftId;
         private int _galaxyAcceptedId;
         private int _galaxyOtherUserId;
 
-        // --- 1. CONFIGURATION ---
 
         protected override GalaxyQuasarsController CreateController(AstralisDbContext context, IMapper mapper)
         {
@@ -57,12 +54,9 @@ namespace Astralis_APITests.Controllers
             };
         }
 
-        // --- 2. DONNÉES DE TEST (SEED) ---
 
         protected override List<GalaxyQuasar> GetSampleEntities()
         {
-            CleanupTestData();
-
             var roleClient = GetOrCreateRole("Client");
             var roleAdmin = GetOrCreateRole("Admin");
 
@@ -80,37 +74,16 @@ namespace Astralis_APITests.Controllers
 
             var list = new List<GalaxyQuasar>();
 
-            // 1. Nominal (Draft + Owner)
             var gqDraft = PrepareGalaxyWithDiscovery(REF_DRAFT, "Body_GQ_Draft", typeGalaxy.Id, USER_OWNER_ID, statusDraft.Id, classSpiral.Id);
             list.Add(gqDraft);
 
-            // 2. Accepted (ReadOnly Owner)
             var gqAccepted = PrepareGalaxyWithDiscovery(REF_ACCEPTED, "Body_GQ_Accepted", typeGalaxy.Id, USER_OWNER_ID, statusAccepted.Id, classSpiral.Id);
             list.Add(gqAccepted);
 
-            // 3. Other User (ReadOnly Hacker)
             var gqOther = PrepareGalaxyWithDiscovery(REF_OTHER, "Body_GQ_Other", typeGalaxy.Id, USER_HACKER_ID, statusDraft.Id, classSpiral.Id);
             list.Add(gqOther);
 
             return list;
-        }
-
-        // --- HELPERS SEED ---
-
-        private void CleanupTestData()
-        {
-            var refsToDelete = new[] { REF_DRAFT, REF_ACCEPTED, REF_OTHER };
-            var existingGalaxies = _context.GalaxiesQuasars.Where(g => refsToDelete.Contains(g.Reference)).ToList();
-
-            if (existingGalaxies.Any())
-            {
-                var bodyIds = existingGalaxies.Select(g => g.CelestialBodyId).ToList();
-                var discoveries = _context.Discoveries.Where(d => bodyIds.Contains(d.CelestialBodyId)).ToList();
-
-                _context.Discoveries.RemoveRange(discoveries);
-                _context.GalaxiesQuasars.RemoveRange(existingGalaxies);
-                _context.SaveChanges();
-            }
         }
 
         private GalaxyQuasar PrepareGalaxyWithDiscovery(string reference, string bodyName, int typeId, int userId, int statusId, int classId)
@@ -178,15 +151,12 @@ namespace Astralis_APITests.Controllers
             return c;
         }
 
-        // --- 3. CONFIG CRUD ---
-
         protected override int GetIdFromEntity(GalaxyQuasar entity) => entity.Id;
         protected override int GetIdFromDto(GalaxyQuasarDto dto) => dto.Id;
         protected override int GetNonExistingId() => 9999999;
         protected override GalaxyQuasarCreateDto GetValidCreateDto() => new GalaxyQuasarCreateDto { Reference = "Should Fail" };
         protected override void SetIdInUpdateDto(GalaxyQuasarUpdateDto dto, int id) { }
 
-        // --- CORRECTION MAJEURE ICI : DTO COMPLET ---
         protected override GalaxyQuasarUpdateDto GetValidUpdateDto(GalaxyQuasar entityToUpdate)
         {
             return new GalaxyQuasarUpdateDto
@@ -249,13 +219,11 @@ namespace Astralis_APITests.Controllers
             await RefreshIds();
             SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
 
-            // On récupère l'entité actuelle pour avoir son ClassId valide
             var currentEntity = await _context.GalaxiesQuasars.AsNoTracking().FirstOrDefaultAsync(x => x.Id == _galaxyAcceptedId);
 
             var updateDto = new GalaxyQuasarUpdateDto
             {
                 Reference = "Admin Override",
-                // CORRECTION : On renseigne la FK pour éviter l'erreur 23503
                 GalaxyQuasarClassId = currentEntity.GalaxyQuasarClassId
             };
 
