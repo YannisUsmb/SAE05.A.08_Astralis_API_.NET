@@ -5,6 +5,7 @@ using Astralis_API.Models.EntityFramework;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Astralis_APITests.Controllers
@@ -14,20 +15,31 @@ namespace Astralis_APITests.Controllers
         : CrudControllerTests<ArticlesController, Article, ArticleListDto, ArticleDetailDto, ArticleCreateDto, ArticleUpdateDto, int>
     {
         private const int TEST_EDITOR_ID = 90210;
+        private const int TEST_OTHER_EDITOR_ID = 90299;
         private const int TEST_CLIENT_ID = 90211;
         private const int TEST_ARTICLE_TYPE1_ID = 258924;
         private const int TEST_ARTICLE_TYPE2_ID = 258925;
+
+        private int _article1Id;
+        private int _article2Id;
 
         protected override ArticlesController CreateController(AstralisDbContext context, IMapper mapper)
         {
             var controller = new ArticlesController(new ArticleManager(context), mapper);
 
+            SetupUserContext(controller, TEST_EDITOR_ID, "Rédacteur commercial");
+
+            return controller;
+        }
+
+        private void SetupUserContext(ControllerBase controller, int userId, string role)
+        {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, TEST_EDITOR_ID.ToString()),
-                new Claim(ClaimTypes.Role, "Rédacteur commercial"),
-                new Claim(ClaimTypes.Name, "UserTest"),
-                new Claim(ClaimTypes.Email, "email@usertest.com")
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Name, "TestUser_" + userId),
+                new Claim(ClaimTypes.Email, $"test{userId}@test.com")
             };
 
             var identity = new ClaimsIdentity(claims, "TestAuth");
@@ -37,108 +49,96 @@ namespace Astralis_APITests.Controllers
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
-
-            return controller;
         }
 
         protected override List<Article> GetSampleEntities()
         {
-            var roleEditor = _context.UserRoles.FirstOrDefault(ur => ur.Label == "Rédacteur commercial");
-            if (roleEditor == null)
-            {
-                roleEditor = new UserRole { Label = "Rédacteur commercial" };
-                _context.UserRoles.Add(roleEditor);
-                _context.SaveChanges();
-            }
+            var roleEditor = GetOrCreateRole("Rédacteur commercial");
+            var roleClient = GetOrCreateRole("Client");
 
-            var roleClient = _context.UserRoles.FirstOrDefault(ur => ur.Label == "Client");
-            if (roleClient == null)
-            {
-                roleClient = new UserRole { Label = "Client" };
-                _context.UserRoles.Add(roleClient);
-                _context.SaveChanges();
-            }
+            CreateUserIfNotExist(TEST_EDITOR_ID, "EditorUser", roleEditor.Id);
+            CreateUserIfNotExist(TEST_OTHER_EDITOR_ID, "OtherEditor", roleEditor.Id);
+            CreateUserIfNotExist(TEST_CLIENT_ID, "ClientUser", roleClient.Id);
 
-            var userEditor = _context.Users.FirstOrDefault(u => u.Id == TEST_EDITOR_ID);
-            if (userEditor == null)
-            {
-                userEditor = new User
-                {
-                    Id = TEST_EDITOR_ID,
-                    Username = "usertest",
-                    UserRoleNavigation = roleEditor,
-                    Email = "email@usertest.com",
-                    FirstName = "User",
-                    LastName = "Test",
-                    Password = "Pwd",
-                    IsPremium = false
-                };
-                if (!_context.Users.Any(u => u.Id == TEST_EDITOR_ID))
-                {
-                    _context.Users.Add(userEditor);
-                    _context.SaveChanges();
-                }
-            }
+            var t1 = GetOrCreateType(TEST_ARTICLE_TYPE1_ID, "T1");
+            var t2 = GetOrCreateType(TEST_ARTICLE_TYPE2_ID, "T2");
 
-            var userClient = _context.Users.FirstOrDefault(u => u.Id == TEST_CLIENT_ID);
-            if (userClient == null)
-            {
-                userClient = new User
-                {
-                    Id = TEST_CLIENT_ID,
-                    Username = "clienttest",
-                    UserRoleNavigation = roleClient,
-                    Email = "client@test.com",
-                    FirstName = "Client",
-                    LastName = "Test",
-                    Password = "Pwd",
-                    IsPremium = false
-                };
-                if (!_context.Users.Any(u => u.Id == TEST_CLIENT_ID))
-                {
-                    _context.Users.Add(userClient);
-                    _context.SaveChanges();
-                }
-            }
-            ArticleType articleType1 = new ArticleType { Id = TEST_ARTICLE_TYPE1_ID, Label = "T1" };
-            ArticleType articleType2 = new ArticleType { Id = TEST_ARTICLE_TYPE2_ID, Label = "T2" };
-            _context.ArticleTypes.ToList();
-            _context.ArticleTypes.AddRange(articleType1, articleType2);
             _context.SaveChanges();
 
-            var availableTypes = _context.ArticleTypes.Take(2).ToList();
-            var type1 = availableTypes[0];
-            var type2 = availableTypes.Count > 1 ? availableTypes[1] : availableTypes[0];
+            var articles = new List<Article>();
 
-            // 6. Création des articles
-            var articles = new List<Article>
+            var a1 = new Article
             {
-                new Article { Id = 902101, Title = "Article 1 title", Content = "Content Article 1", IsPremium = false, UserId = TEST_EDITOR_ID },
-                new Article { Id = 902102, Title = "Article 2 title", Content = "Content Article 2", IsPremium = false, UserId = TEST_EDITOR_ID },
+                Id = 902101,
+                Title = "Article 1 title",
+                Content = "Content Article 1",
+                IsPremium = false,
+                UserId = TEST_EDITOR_ID
             };
+            a1.TypesOfArticle = new List<TypeOfArticle> { new TypeOfArticle { ArticleTypeId = t1.Id } };
+            a1.ArticleInterests = new List<ArticleInterest> { new ArticleInterest { UserId = TEST_CLIENT_ID } };
 
-            // Ajout Types
-            articles[0].TypesOfArticle = new List<TypeOfArticle> { new TypeOfArticle { ArticleId = articles[0].Id, ArticleTypeId = articleType1.Id } };
-            articles[1].TypesOfArticle = new List<TypeOfArticle> { new TypeOfArticle { ArticleId = articles[1].Id, ArticleTypeId = articleType2.Id } };
+            if (!_context.Articles.Any(a => a.Id == a1.Id)) articles.Add(a1);
+            _article1Id = a1.Id;
 
-            // Ajout Intérêts
-            articles[0].ArticleInterests = new List<ArticleInterest> { new ArticleInterest { ArticleId = articles[0].Id, UserId = TEST_CLIENT_ID } };
-            articles[1].ArticleInterests = new List<ArticleInterest> { new ArticleInterest { ArticleId = articles[1].Id, UserId = TEST_CLIENT_ID } };
+            var a2 = new Article
+            {
+                Id = 902102,
+                Title = "Article 2 title",
+                Content = "Content Article 2",
+                IsPremium = false,
+                UserId = TEST_EDITOR_ID
+            };
+            a2.TypesOfArticle = new List<TypeOfArticle> { new TypeOfArticle { ArticleTypeId = t2.Id } };
+            a2.ArticleInterests = new List<ArticleInterest> { new ArticleInterest { UserId = TEST_CLIENT_ID } };
+
+            if (!_context.Articles.Any(a => a.Id == a2.Id)) articles.Add(a2);
+            _article2Id = a2.Id;
 
             return articles;
         }
 
+        private UserRole GetOrCreateRole(string label)
+        {
+            var r = _context.UserRoles.FirstOrDefault(x => x.Label == label);
+            if (r == null) { r = new UserRole { Label = label }; _context.UserRoles.Add(r); _context.SaveChanges(); }
+            return r;
+        }
+
+        private void CreateUserIfNotExist(int id, string username, int roleId)
+        {
+            if (!_context.Users.Any(u => u.Id == id))
+            {
+                var role = _context.UserRoles.Find(roleId);
+                _context.Users.Add(new User
+                {
+                    Id = id,
+                    Username = username,
+                    UserRoleNavigation = role!,
+                    Email = $"{username}@test.com",
+                    FirstName = username,
+                    LastName = "Test",
+                    Password = "Pwd",
+                    IsPremium = false
+                });
+                _context.SaveChanges();
+            }
+        }
+
+        private ArticleType GetOrCreateType(int id, string label)
+        {
+            var t = _context.ArticleTypes.FirstOrDefault(x => x.Id == id);
+            if (t == null) { t = new ArticleType { Id = id, Label = label }; _context.ArticleTypes.Add(t); _context.SaveChanges(); }
+            return t;
+        }
+
+
         protected override int GetIdFromEntity(Article entity) => entity.Id;
         protected override int GetIdFromDto(ArticleDetailDto dto) => dto.Id;
-
-        // Ajout pour ReadableControllerTests (si ta classe parente l'exige)
-        // protected override int GetDtoId(ArticleListDto dto) => dto.Id;
-
         protected override int GetNonExistingId() => 9999999;
 
         protected override ArticleCreateDto GetValidCreateDto()
         {
-
             return new ArticleCreateDto
             {
                 Title = "New Article Title",
@@ -159,28 +159,23 @@ namespace Astralis_APITests.Controllers
 
         protected override void SetIdInUpdateDto(ArticleUpdateDto dto, int id)
         {
-            // Vide car pas d'ID dans l'UpdateDto
         }
 
         [TestMethod]
         public async Task Search_ByTitle_ShouldReturnMatchingArticle()
         {
             // Given
-            var filter = new ArticleFilterDto
-            {
-                SearchTerm = "Article 1"
-            };
+            var filter = new ArticleFilterDto { SearchTerm = "Article 1" };
 
             // When
             var actionResult = await _controller.Search(filter);
 
             // Then
-            Assert.IsNotNull(actionResult, "Le résultat ne devrait pas être null.");
             var okResult = actionResult.Result as OkObjectResult;
-            Assert.IsNotNull(okResult, "Devrait retourner un 200 OK.");
+            Assert.IsNotNull(okResult);
             var articles = okResult.Value as IEnumerable<ArticleListDto>;
-            Assert.IsNotNull(articles, "La liste d'articles ne devrait pas être null.");
-            Assert.AreEqual(1, articles.Count(), "Devrait trouver exactement 1 article contenant 'Article 1'.");
+            Assert.IsNotNull(articles);
+            Assert.AreEqual(1, articles.Count());
             Assert.AreEqual("Article 1 title", articles.First().Title);
         }
 
@@ -188,21 +183,124 @@ namespace Astralis_APITests.Controllers
         public async Task Search_ByTypeId_ShouldReturnSpecificArticle()
         {
             // Given
-            var filter = new ArticleFilterDto
-            {
-                TypeIds= new List<int> { TEST_ARTICLE_TYPE1_ID }
-            };
+            var filter = new ArticleFilterDto { TypeIds = new List<int> { TEST_ARTICLE_TYPE1_ID } };
 
             // When
             var actionResult = await _controller.Search(filter);
 
             // Then
             var okResult = actionResult.Result as OkObjectResult;
-            Assert.IsNotNull(okResult, "Le résultat devrait être 200 OK");
+            Assert.IsNotNull(okResult);
             var articles = okResult.Value as IEnumerable<ArticleListDto>;
-            Assert.IsNotNull(articles, "La liste retournée ne doit pas être null");
-            Assert.AreEqual(1, articles.Count(), $"Le filtrage par le type ID {TEST_ARTICLE_TYPE1_ID} aurait dû retourner unique l'Article 1.");
+            Assert.IsNotNull(articles);
+            Assert.AreEqual(1, articles.Count());
             Assert.AreEqual("Article 1 title", articles.First().Title);
+        }
+
+
+        [TestMethod]
+        public async Task Post_ValidObject_ShouldCreate_AndAssignCorrectUserId()
+        {
+            // Given
+            var createDto = GetValidCreateDto();
+
+            // When
+            var actionResult = await _controller.Post(createDto);
+
+            // Then
+            var okResult = actionResult.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            var resultDto = okResult.Value as ArticleDetailDto;
+            Assert.IsNotNull(resultDto);
+
+            _context.ChangeTracker.Clear();
+            var createdEntity = await _context.Articles.FirstOrDefaultAsync(a => a.Title == createDto.Title);
+
+            Assert.IsNotNull(createdEntity);
+            Assert.AreEqual(TEST_EDITOR_ID, createdEntity.UserId, "L'article doit être lié à l'utilisateur connecté");
+        }
+
+
+        [TestMethod]
+        public async Task Put_UpdateContent_AsOwner_ShouldSuccess()
+        {
+            // Given
+            SetupUserContext(_controller, TEST_EDITOR_ID, "Rédacteur commercial");
+            var updateDto = new ArticleUpdateDto
+            {
+                Title = "Updated Title By Owner",
+                Content = "Updated Content",
+                IsPremium = true
+            };
+
+            // When
+            var actionResult = await _controller.Put(_article1Id, updateDto);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
+
+            _context.ChangeTracker.Clear();
+            var updatedEntity = await _context.Articles.FindAsync(_article1Id);
+            Assert.AreEqual("Updated Title By Owner", updatedEntity!.Title);
+            Assert.IsTrue(updatedEntity.IsPremium);
+        }
+
+        [TestMethod]
+        public async Task Put_AsOtherEditor_ShouldReturnForbidden()
+        {
+            // Given
+            SetupUserContext(_controller, TEST_OTHER_EDITOR_ID, "Rédacteur commercial");
+            var updateDto = new ArticleUpdateDto
+            {
+                Title = "Hacked Title",
+                Content = "Hacked Content",
+                IsPremium = false
+            };
+
+            // When
+            var actionResult = await _controller.Put(_article1Id, updateDto);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
+
+            _context.ChangeTracker.Clear();
+            var entity = await _context.Articles.FindAsync(_article1Id);
+            Assert.AreNotEqual("Hacked Title", entity!.Title, "Le titre ne doit pas avoir changé");
+        }
+
+
+        [TestMethod]
+        public async Task Delete_AsOwner_ShouldSuccess()
+        {
+            // Given
+            SetupUserContext(_controller, TEST_EDITOR_ID, "Rédacteur commercial");
+
+            // When
+            var actionResult = await _controller.Delete(_article1Id);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
+
+            _context.ChangeTracker.Clear();
+            var deletedEntity = await _context.Articles.FindAsync(_article1Id);
+            Assert.IsNull(deletedEntity, "L'article devrait avoir été supprimé de la BDD");
+        }
+
+        [TestMethod]
+        public async Task Delete_AsOtherEditor_ShouldReturnForbidden()
+        {
+            // Given
+            SetupUserContext(_controller, TEST_OTHER_EDITOR_ID, "Rédacteur commercial");
+
+            // When
+            var actionResult = await _controller.Delete(_article2Id);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
+
+            _context.ChangeTracker.Clear();
+            var entity = await _context.Articles.FindAsync(_article2Id);
+            Assert.IsNotNull(entity, "L'article ne devrait PAS avoir été supprimé");
         }
     }
 }
