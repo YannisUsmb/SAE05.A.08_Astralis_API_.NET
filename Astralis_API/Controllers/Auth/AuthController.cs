@@ -24,14 +24,14 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Authentifie un utilisateur et initialise une session sécurisée via HttpOnly Cookie.
+        /// Authenticates a user and initializes a secure session via an HttpOnly Cookie.
         /// </summary>
-        /// <param name="loginDto">Les informations de connexion (Email/Pseudo/Tel et Mot de passe).</param>
-        /// <returns>Un objet AuthResponseDto contenant les infos utilisateur (sans le token, car stocké dans le cookie).</returns>
-        /// <response code="200">Authentification réussie, cookie défini.</response>
-        /// <response code="400">Données d'entrée invalides.</response>
-        /// <response code="401">Identifiant ou mot de passe incorrect.</response>
-        /// <response code="500">Erreur serveur (clé JWT manquante).</response>
+        /// <param name="loginDto">The login credentials (Email/Username/Phone and Password).</param>
+        /// <returns>An AuthResponseDto containing user info (excluding the token, stored in the cookie).</returns>
+        /// <response code="200">Authentication successful, cookie set.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">Invalid identifier or password.</response>
+        /// <response code="500">Server error (JWT Key missing).</response>
         [HttpPost("Login")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,7 +63,8 @@ namespace Astralis_API.Controllers
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.UserRoleNavigation.Label),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim("AvatarPath", user.AvatarUrl ?? "")
+                new Claim("AvatarPath", user.AvatarUrl ?? ""),
+                new Claim("IsPremium", user.IsPremium ? "true" : "false")
             };
 
             string? keyString = _configuration["JwtSettings:Key"];
@@ -103,31 +104,32 @@ namespace Astralis_API.Controllers
                 Expiration = expiresAt,
                 Username = user.Username,
                 Role = user.UserRoleNavigation.Label,
-                AvatarPath = user.AvatarUrl
+                AvatarPath = user.AvatarUrl,
+                IsPremium = user.IsPremium
             };
 
             return Ok(response);
         }
 
         /// <summary>
-        /// Déconnecte l'utilisateur en supprimant le cookie d'authentification.
+        /// Logs the user out by deleting the authentication cookie.
         /// </summary>
-        /// <returns>Un message de confirmation.</returns>
-        /// <response code="200">Déconnexion réussie.</response>
+        /// <returns>A confirmation message.</returns>
+        /// <response code="200">Logout successful.</response>
         [HttpPost("Logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Logout()
         {
             Response.Cookies.Delete("authToken");
-            return Ok(new { message = "Déconnexion réussie" });
+            return Ok(new { message = "Logout successful" });
         }
 
         /// <summary>
-        /// Récupère les informations de l'utilisateur actuellement connecté via le cookie de session.
+        /// Retrieves the currently authenticated user's information via the session cookie.
         /// </summary>
-        /// <returns>Les informations de l'utilisateur courant.</returns>
-        /// <response code="200">Utilisateur authentifié trouvé.</response>
-        /// <response code="401">Utilisateur non authentifié.</response>
+        /// <returns>The current user's details.</returns>
+        /// <response code="200">Authenticated user found.</response>
+        /// <response code="401">User not authenticated.</response>
         [HttpGet("Me")]
         [Authorize]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
@@ -144,7 +146,8 @@ namespace Astralis_API.Controllers
                 Role = role,
                 Token = "",
                 Expiration = DateTime.Now.AddHours(1),
-                AvatarPath = avatarUrl
+                AvatarPath = avatarUrl,
+                IsPremium = User.FindFirst("IsPremium")?.Value == "true"
             });
         }
     }
