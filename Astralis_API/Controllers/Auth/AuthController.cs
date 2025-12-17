@@ -50,7 +50,7 @@ namespace Astralis_API.Controllers
                     (u.Email == loginDto.Identifier ||
                      u.Username == loginDto.Identifier ||
                      u.Phone == loginDto.Identifier)
-                    && u.Password == loginDto.Password);
+                    && u.Password == BCrypt.Net.BCrypt.HashPassword(loginDto.Password));
 
             if (user == null)
             {

@@ -15,9 +15,12 @@ namespace Astralis_API.Controllers
     [DisplayName("User")]
     public class UsersController : CrudController<User, UserDetailDto, UserDetailDto, UserCreateDto, UserUpdateDto, int>
     {
-        public UsersController(IUserRepository repository, IMapper mapper)
+        private readonly ICountryRepository _countryRepository;
+
+        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper)
             : base(repository, mapper)
         {
+            _countryRepository = countryRepository;
         }
 
         /// <summary>
@@ -100,6 +103,15 @@ namespace Astralis_API.Controllers
             entity.UserRoleId = 2;
             entity.InscriptionDate = DateOnly.FromDateTime(DateTime.Now);
             entity.IsPremium = false;
+
+            Country country = new Country();
+            if (createDto.CountryId.HasValue)
+                country = await _countryRepository.GetByIdAsync(createDto.CountryId.Value);
+            if (country != null)
+                entity.PhonePrefixId = country.PhonePrefixId;
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
+            entity.Password = passwordHash;
 
             await _repository.AddAsync(entity);
 
