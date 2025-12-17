@@ -22,7 +22,7 @@ namespace Astralis_API.Controllers
         private readonly ICometRepository _cometRepository;
         private readonly IGalaxyQuasarRepository _galaxyRepository;
         private readonly ICelestialBodyRepository _celestialBodyRepository;
-
+        private readonly ISatelliteRepository _satelliteRepository;
         public DiscoveriesController(
             IDiscoveryRepository repository,
             IAsteroidRepository asteroidRepository,
@@ -31,6 +31,7 @@ namespace Astralis_API.Controllers
             ICometRepository cometRepository,
             IGalaxyQuasarRepository galaxyRepository,
             ICelestialBodyRepository celestialBodyRepository,
+            ISatelliteRepository satelliteRepository,
             IMapper mapper)
             : base(repository, mapper)
         {
@@ -41,6 +42,7 @@ namespace Astralis_API.Controllers
             _cometRepository = cometRepository;
             _galaxyRepository = galaxyRepository;
             _celestialBodyRepository = celestialBodyRepository;
+            _satelliteRepository = satelliteRepository;
         }
 
         /// <summary>
@@ -202,7 +204,25 @@ namespace Astralis_API.Controllers
             return await ProcessDiscoverySubmission<GalaxyQuasar, GalaxyQuasarCreateDto>(
                 submission.Title, submission.Details, _galaxyRepository.AddAsync);
         }
-
+        /// <summary>
+        /// Submits a new Satellite discovery.
+        /// </summary>
+        /// <param name="submission">The discovery title and Satellite details.</param>
+        /// <returns>The created discovery.</returns>
+        /// <response code="200">Discovery submitted successfully.</response>
+        /// <response code="400">Invalid input data.</response>
+        /// <response code="401">User not authenticated.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpPost("Satellites")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<DiscoveryDto>> PostSatellite(DiscoverySatelliteSubmissionDto submission)
+        {
+            return await ProcessDiscoverySubmission<Satellite, SatelliteCreateDto>(
+                submission.Title, submission.Details, _satelliteRepository.AddAsync);
+        }
 
         /// <summary>
         /// Generic creation endpoint (Disabled).
