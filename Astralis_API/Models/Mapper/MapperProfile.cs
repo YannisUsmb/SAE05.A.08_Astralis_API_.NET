@@ -153,7 +153,8 @@ namespace Astralis_API.Models.Mapper
 
             ///// Country.
             // Entity to DTO (Read).
-            CreateMap<Country, CountryDto>();
+            CreateMap<Country, CountryDto>()
+                .ForMember(dest => dest.PhonePrefix, opt => opt.MapFrom(src => src.PhonePrefixNavigation.Label));
 
             ///// CreditCard.
             // Entity to DTO (Read).
