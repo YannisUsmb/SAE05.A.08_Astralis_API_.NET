@@ -1,4 +1,5 @@
 ﻿using Astralis_API.Models.EntityFramework;
+using Astralis.Shared.DTOs;
 
 namespace Astralis_API.Models.Repository
 {
@@ -7,10 +8,7 @@ namespace Astralis_API.Models.Repository
         Task<IDictionary<int, string>> GetSubtypesByMainTypeAsync(int mainTypeId);
         
         Task<IEnumerable<CelestialBody>> SearchAsync(
-            string? searchText = null,
-            IEnumerable<int>? celestialBodyTypeIds = null,
-            bool? isDiscovery = null,
-            int? subtypeId = null,
+            CelestialBodyFilterDto filter,
             int pageNumber = 1,
             int pageSize = 30
         );
