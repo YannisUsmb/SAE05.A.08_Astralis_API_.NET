@@ -37,7 +37,7 @@ namespace Astralis_APITests.Controllers
             var cometRepo = new CometManager(context);
             var galaxyRepo = new GalaxyQuasarManager(context);
             var celestialBodyRepo = new CelestialBodyManager(context);
-
+            var satelliteRepo = new SatelliteManager(context);
             var planetController = new PlanetsController(planetRepo, discoveryRepo, mapper);
             SetupUserContext(planetController, USER_OWNER_ID, "Client");
 
@@ -49,6 +49,7 @@ namespace Astralis_APITests.Controllers
                 cometRepo,
                 galaxyRepo,
                 celestialBodyRepo,
+                satelliteRepo,
                 mapper
             );
             SetupUserContext(_discoveryController, USER_OWNER_ID, "Client");

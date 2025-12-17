@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Xml.Linq;
 
 namespace Astralis_APITests.Controllers
 {
@@ -26,12 +27,15 @@ namespace Astralis_APITests.Controllers
 
         private const int DISCOVERY_DRAFT_ID = 990001;
         private const int DISCOVERY_ACCEPTED_ID = 990002;
+        private const int PLANET_HOST_ID = 990110;
+
 
         // --- IDs TYPES CORPS CELESTES ---
         private const int CBT_ASTEROID = 1;
         private const int CBT_PLANET = 2;
         private const int CBT_STAR = 3;
         private const int CBT_GALAXY = 5;
+        private const int CBT_SATELLITE = 6; // Ajout du type Satellite
 
         // --- IDs CLASSES SPECIFIQUES ---
         private int _spectralClassId = 1;
@@ -45,6 +49,7 @@ namespace Astralis_APITests.Controllers
 
         protected override DiscoveriesController CreateController(AstralisDbContext context, IMapper mapper)
         {
+            // Instanciation des managers
             var discoveryManager = new DiscoveryManager(context);
             var asteroidManager = new AsteroidManager(context);
             var planetManager = new PlanetManager(context);
@@ -52,6 +57,7 @@ namespace Astralis_APITests.Controllers
             var cometManager = new CometManager(context);
             var galaxyManager = new GalaxyQuasarManager(context);
             var celestialBodyManager = new CelestialBodyManager(context);
+            var satelliteManager = new SatelliteManager(context); // Nouveau Manager
 
             var controller = new DiscoveriesController(
                 discoveryManager,
@@ -61,6 +67,7 @@ namespace Astralis_APITests.Controllers
                 cometManager,
                 galaxyManager,
                 celestialBodyManager,
+                satelliteManager, // Ajout au constructeur
                 mapper
             );
 
@@ -104,6 +111,7 @@ namespace Astralis_APITests.Controllers
             EnsureBodyTypeExists(CBT_PLANET, "Planet");
             EnsureBodyTypeExists(CBT_STAR, "Star");
             EnsureBodyTypeExists(CBT_GALAXY, "Galaxy");
+            EnsureBodyTypeExists(CBT_SATELLITE, "Satellite"); // Setup Satellite Type
 
             // 4. SETUP CLASSES SPECIFIQUES
             if (!_context.SpectralClasses.Any(sc => sc.Id == _spectralClassId))
@@ -233,6 +241,7 @@ namespace Astralis_APITests.Controllers
         {
             var createDto = GetValidCreateDto();
             var result = await _controller.Post(createDto);
+            // Le Post générique renvoie BadRequest dans DiscoveriesController
             Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
@@ -322,7 +331,8 @@ namespace Astralis_APITests.Controllers
 
             var resultDto = (actionResult.Result as OkObjectResult).Value as DiscoveryDto;
 
-            // FIX: Vérification robuste via la navigation (comme pour Planet)
+            _context.ChangeTracker.Clear();
+
             var dbDiscovery = await _context.Discoveries
                 .Include(d => d.CelestialBodyNavigation)
                 .FirstOrDefaultAsync(d => d.Id == resultDto.Id);
@@ -350,6 +360,53 @@ namespace Astralis_APITests.Controllers
             };
 
             var actionResult = await _controller.PostGalaxy(submissionDto);
+
+            Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public async Task PostSatellite_ValidObject_ShouldCreateDiscoveryAndSatellite()
+        {
+            // Given
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+
+            // 1. Création ou récupération du BODY parent
+            var hostBody = GetOrCreateBody(PLANET_HOST_ID, "Host Planet", CBT_PLANET);
+
+            // 2. Création de la PLANETE spécifique (si elle n'existe pas)
+            var existingPlanet = _context.Planets.AsNoTracking().FirstOrDefault(p => p.Id == PLANET_HOST_ID);
+
+            if (existingPlanet == null)
+            {
+                var hostPlanet = new Planet
+                {
+                    Id = PLANET_HOST_ID,
+                    CelestialBodyId = PLANET_HOST_ID,
+                    PlanetTypeId = _planetTypeId,
+                    DetectionMethodId = 1,
+                    Mass = 500
+                };
+                _context.Planets.Add(hostPlanet);
+                _context.SaveChanges();
+            }
+
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+
+            var submissionDto = new DiscoverySatelliteSubmissionDto
+            {
+                Title = "Andromeda Neighbor",                
+                Details = new SatelliteCreateDto
+                {                    
+                    PlanetId= PLANET_HOST_ID,
+                    Name = "Satellite test",
+                    Gravity = 1m,
+                    Radius = 1,
+                    Density = 1.5m,
+                    CelestialBodyTypeId =1
+                }
+            };
+
+            var actionResult = await _controller.PostSatellite(submissionDto);
 
             Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
         }
