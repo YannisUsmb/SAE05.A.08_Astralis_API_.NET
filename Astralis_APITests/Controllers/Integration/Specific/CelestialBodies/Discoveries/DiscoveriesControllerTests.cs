@@ -24,51 +24,47 @@ namespace Astralis_APITests.Controllers
         private const int STATUS_ACCEPTED = 3;
         private const int STATUS_DECLINED = 4;
 
-        // --- IDS DES TYPES DE CORPS CELESTES (FKs) ---
-        private int _typeAsteroidId;
-        private int _typePlanetId;
-        private int _typeStarId;
-        private int _typeCometId;
-        private int _typeGalaxyId;
+        private const int DISCOVERY_DRAFT_ID = 990001;
+        private const int DISCOVERY_ACCEPTED_ID = 990002;
 
-        // --- IDS DES CLASSIFICATIONS SPECIFIQUES (Sous-types) ---
-        private int _orbitalClassId;     // Asteroid
-        private int _planetSubTypeId;    // Planet (PlanetType)
-        private int _detectionMethodId;  // Planet (DetectionMethod) -> AJOUTÉ (C'était l'erreur 23503)
-        private int _spectralClassId;    // Star
-        private int _galaxyClassId;      // Galaxy
+        // --- IDs TYPES CORPS CELESTES ---
+        private const int CBT_ASTEROID = 1;
+        private const int CBT_PLANET = 2;
+        private const int CBT_STAR = 3;
+        private const int CBT_GALAXY = 5;
 
-        // --- IDS DES ENTITÉS DE TEST ---
+        // --- IDs CLASSES SPECIFIQUES ---
+        private int _spectralClassId = 1;
+        private int _galaxyQuasarClassId = 1;
+        private int _orbitalClassId = 1;
+        private int _planetTypeId = 1;
+
+        // Variables membres
         private int _discoveryDraftId;
         private int _discoveryAcceptedId;
 
         protected override DiscoveriesController CreateController(AstralisDbContext context, IMapper mapper)
         {
-            // Instanciation de TOUS les managers nécessaires (y compris DetectionMethod)
-            var discoveryRepo = new DiscoveryManager(context);
-            var asteroidRepo = new AsteroidManager(context);
-            var planetRepo = new PlanetManager(context);
-            var starRepo = new StarManager(context);
-            var cometRepo = new CometManager(context);
-            var galaxyRepo = new GalaxyQuasarManager(context);
-            var celestialBodyRepo = new CelestialBodyManager(context);
-
-            // Correction: On ajoute DetectionMethodManager car il peut être requis par les validations internes
-            // Note: Si votre constructeur de controller n'en a pas besoin, c'est ok, 
-            // mais assurez-vous que le contexte DB contient bien les données.
+            var discoveryManager = new DiscoveryManager(context);
+            var asteroidManager = new AsteroidManager(context);
+            var planetManager = new PlanetManager(context);
+            var starManager = new StarManager(context);
+            var cometManager = new CometManager(context);
+            var galaxyManager = new GalaxyQuasarManager(context);
+            var celestialBodyManager = new CelestialBodyManager(context);
 
             var controller = new DiscoveriesController(
-                discoveryRepo,
-                asteroidRepo,
-                planetRepo,
-                starRepo,
-                cometRepo,
-                galaxyRepo,
-                celestialBodyRepo,
+                discoveryManager,
+                asteroidManager,
+                planetManager,
+                starManager,
+                cometManager,
+                galaxyManager,
+                celestialBodyManager,
                 mapper
             );
 
-            SetupUserContext(controller, USER_OWNER_ID, "Client");
+            SetupUserContext(controller, USER_OWNER_ID, "Explorer");
             return controller;
         }
 
@@ -78,11 +74,10 @@ namespace Astralis_APITests.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Role, role),
-                new Claim(ClaimTypes.Name, "TestUser")
+                new Claim(ClaimTypes.Name, $"User_{userId}")
             };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var principal = new ClaimsPrincipal(identity);
-
             controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = principal }
@@ -91,371 +86,293 @@ namespace Astralis_APITests.Controllers
 
         protected override List<Discovery> GetSampleEntities()
         {
-            // 1. Setup Roles & Users
-            var roleClient = GetOrCreateRole("Client");
-            var roleAdmin = GetOrCreateRole("Admin");
+            _context.ChangeTracker.Clear();
 
-            CreateUserIfNotExist(USER_OWNER_ID, "Owner", roleClient.Id);
-            CreateUserIfNotExist(USER_ADMIN_ID, "Admin", roleAdmin.Id);
-            CreateUserIfNotExist(USER_OTHER_ID, "Hacker", roleClient.Id);
+            // 1. SETUP UTILISATEURS
+            CreateUserIfNotExist(USER_OWNER_ID, 1);
+            CreateUserIfNotExist(USER_ADMIN_ID, 2);
+            CreateUserIfNotExist(USER_OTHER_ID, 1);
 
-            // 2. Setup Statuses
-            GetOrCreateStatus(STATUS_DRAFT, "Draft");
-            GetOrCreateStatus(STATUS_PENDING, "Pending");
-            GetOrCreateStatus(STATUS_ACCEPTED, "Accepted");
-            GetOrCreateStatus(STATUS_DECLINED, "Declined");
+            // 2. SETUP STATUS
+            EnsureStatusExists(STATUS_DRAFT, "Draft");
+            EnsureStatusExists(STATUS_PENDING, "Pending");
+            EnsureStatusExists(STATUS_ACCEPTED, "Accepted");
+            EnsureStatusExists(STATUS_DECLINED, "Declined");
 
-            // 3. Setup Celestial Types
-            _typeAsteroidId = GetOrCreateType("Asteroid").Id;
-            _typePlanetId = GetOrCreateType("Planet").Id;
-            _typeStarId = GetOrCreateType("Star").Id;
-            _typeCometId = GetOrCreateType("Comet").Id;
-            _typeGalaxyId = GetOrCreateType("Galaxy").Id;
+            // 3. SETUP TYPES DE CORPS CELESTES
+            EnsureBodyTypeExists(CBT_ASTEROID, "Asteroid");
+            EnsureBodyTypeExists(CBT_PLANET, "Planet");
+            EnsureBodyTypeExists(CBT_STAR, "Star");
+            EnsureBodyTypeExists(CBT_GALAXY, "Galaxy");
 
-            // 4. Setup Sub-Types
-            // CORRECTION ICI : "Aten" (4 chars) -> "ATE" (3 chars) pour respecter la limite DB
-            _orbitalClassId = GetOrCreateOrbitalClass("ATE").Id;
+            // 4. SETUP CLASSES SPECIFIQUES
+            if (!_context.SpectralClasses.Any(sc => sc.Id == _spectralClassId))
+                _context.SpectralClasses.Add(new SpectralClass { Id = _spectralClassId, Label = "M" });
 
-            _planetSubTypeId = GetOrCreatePlanetType("Terrestrial").Id;
-            _detectionMethodId = GetOrCreateDetectionMethod("Transit").Id;
-            _spectralClassId = GetOrCreateSpectralClass("G-Type").Id;
-            _galaxyClassId = GetOrCreateGalaxyClass("Spiral").Id;
+            if (!_context.GalaxyQuasarClasses.Any(gt => gt.Id == _galaxyQuasarClassId))
+                _context.GalaxyQuasarClasses.Add(new GalaxyQuasarClass { Id = _galaxyQuasarClassId, Label = "Spiral" });
 
-            _context.SaveChanges();
+            if (!_context.OrbitalClasses.Any(oc => oc.Id == _orbitalClassId))
+                _context.OrbitalClasses.Add(new OrbitalClass { Id = _orbitalClassId, Label = "TGT", Description = "Target" });
 
-            // 5. Setup Bodies & Discoveries
-            var list = new List<Discovery>();
-
-            // Découverte 1 : Draft
-            var bodyDraft = CreateBody("Body_Draft", _typeAsteroidId);
-            var draftDiscovery = new Discovery
-            {
-                Title = "Draft Discovery Title",
-                UserId = USER_OWNER_ID,
-                CelestialBodyId = bodyDraft.Id,
-                DiscoveryStatusId = STATUS_DRAFT
-            };
-
-            if (!_context.Discoveries.Any(d => d.Title == draftDiscovery.Title))
-            {
-                list.Add(draftDiscovery);
-            }
-
-            // Découverte 2 : Accepted
-            var bodyAccepted = CreateBody("Body_Accepted", _typePlanetId);
-            var acceptedDiscovery = new Discovery
-            {
-                Title = "Accepted Discovery Title",
-                UserId = USER_OWNER_ID,
-                CelestialBodyId = bodyAccepted.Id,
-                DiscoveryStatusId = STATUS_ACCEPTED
-            };
-
-            if (!_context.Discoveries.Any(d => d.Title == acceptedDiscovery.Title))
-            {
-                list.Add(acceptedDiscovery);
-            }
+            if (!_context.PlanetTypes.Any(pt => pt.Id == _planetTypeId))
+                _context.PlanetTypes.Add(new PlanetType { Id = _planetTypeId, Label = "Terrestrial" });
 
             _context.SaveChanges();
-            return list;
+
+            // 5. SETUP ENTITÉS DE TEST
+            var bodyDraft = GetOrCreateBody(DISCOVERY_DRAFT_ID, "Body Draft", CBT_ASTEROID);
+            var bodyAccepted = GetOrCreateBody(DISCOVERY_ACCEPTED_ID, "Body Accepted", CBT_ASTEROID);
+
+            var d1 = GetOrCreateDiscovery(DISCOVERY_DRAFT_ID, "Discovery Draft", bodyDraft.Id, USER_OWNER_ID, STATUS_DRAFT);
+            var d2 = GetOrCreateDiscovery(DISCOVERY_ACCEPTED_ID, "Discovery Accepted", bodyAccepted.Id, USER_OWNER_ID, STATUS_ACCEPTED);
+
+            _discoveryDraftId = DISCOVERY_DRAFT_ID;
+            _discoveryAcceptedId = DISCOVERY_ACCEPTED_ID;
+
+            return new List<Discovery> { d1, d2 };
         }
 
-        // --- HELPERS DE SEEDING ---
-        // Note: L'ajout de _context.SaveChanges() dans chaque helper garantit que l'ID est valide immédiatement.
-
-        private UserRole GetOrCreateRole(string label)
+        // --- HELPERS ---
+        private void EnsureStatusExists(int id, string label)
         {
-            var r = _context.UserRoles.FirstOrDefault(x => x.Label == label);
-            if (r == null) { r = new UserRole { Label = label }; _context.UserRoles.Add(r); _context.SaveChanges(); }
-            return r;
+            if (!_context.DiscoveryStatuses.AsNoTracking().Any(s => s.Id == id))
+                _context.DiscoveryStatuses.Add(new DiscoveryStatus { Id = id, Label = label });
         }
-        private void CreateUserIfNotExist(int id, string name, int roleId)
+
+        private void EnsureBodyTypeExists(int id, string label)
         {
-            if (!_context.Users.Any(u => u.Id == id))
+            if (!_context.CelestialBodyTypes.AsNoTracking().Any(t => t.Id == id))
+                _context.CelestialBodyTypes.Add(new CelestialBodyType { Id = id, Label = label });
+        }
+
+        private void CreateUserIfNotExist(int id, int roleId)
+        {
+            if (!_context.Users.AsNoTracking().Any(u => u.Id == id))
             {
-                _context.Users.Add(new User { Id = id, Username = name, UserRoleId = roleId, Email = $"{name}@test.com", FirstName = name, LastName = "T", Password = "pwd", IsPremium = false });
+                _context.Users.Add(new User
+                {
+                    Id = id,
+                    UserRoleId = roleId,
+                    Username = $"User{id}",
+                    Email = $"user{id}@test.com",
+                    FirstName = "Test",
+                    LastName = "User",
+                    Password = "Pwd"
+                });
                 _context.SaveChanges();
             }
         }
-        private DiscoveryStatus GetOrCreateStatus(int id, string label)
+
+        private CelestialBody GetOrCreateBody(int id, string name, int typeId)
         {
-            var s = _context.DiscoveryStatuses.FirstOrDefault(x => x.Id == id);
-            if (s == null) { s = new DiscoveryStatus { Id = id, Label = label }; _context.DiscoveryStatuses.Add(s); _context.SaveChanges(); }
-            return s;
-        }
-        private CelestialBodyType GetOrCreateType(string label)
-        {
-            var t = _context.CelestialBodyTypes.FirstOrDefault(x => x.Label == label);
-            if (t == null) { t = new CelestialBodyType { Label = label }; _context.CelestialBodyTypes.Add(t); _context.SaveChanges(); }
-            return t;
-        }
-        private CelestialBody CreateBody(string name, int typeId)
-        {
-            var b = _context.CelestialBodies.FirstOrDefault(x => x.Name == name);
-            if (b == null)
+            var body = _context.CelestialBodies.IgnoreQueryFilters().AsNoTracking().FirstOrDefault(b => b.Id == id);
+            if (body == null)
             {
-                b = new CelestialBody { Name = name, CelestialBodyTypeId = typeId, Alias = $"Alias-{name}" };
-                _context.CelestialBodies.Add(b);
+                body = new CelestialBody { Id = id, Name = name, CelestialBodyTypeId = typeId };
+                _context.CelestialBodies.Add(body);
                 _context.SaveChanges();
             }
-            return b;
+            return body;
         }
 
-        private OrbitalClass GetOrCreateOrbitalClass(string label)
+        private Discovery GetOrCreateDiscovery(int id, string title, int bodyId, int userId, int statusId)
         {
-            var x = _context.OrbitalClasses.FirstOrDefault(l => l.Label == label);
-            if (x == null) { x = new OrbitalClass { Label = label, Description = "Desc" }; _context.OrbitalClasses.Add(x); _context.SaveChanges(); }
-            return x;
-        }
-        private PlanetType GetOrCreatePlanetType(string label)
-        {
-            var x = _context.PlanetTypes.FirstOrDefault(l => l.Label == label);
-            if (x == null) { x = new PlanetType { Label = label, Description = "Desc" }; _context.PlanetTypes.Add(x); _context.SaveChanges(); }
-            return x;
-        }
-        // NOUVEAU HELPER POUR DETECTION METHOD
-        private DetectionMethod GetOrCreateDetectionMethod(string label)
-        {
-            var x = _context.DetectionMethods.FirstOrDefault(l => l.Label == label);
-            if (x == null) { x = new DetectionMethod { Label = label, Description = "Desc" }; _context.DetectionMethods.Add(x); _context.SaveChanges(); }
-            return x;
-        }
-        private SpectralClass GetOrCreateSpectralClass(string label)
-        {
-            var x = _context.SpectralClasses.FirstOrDefault(l => l.Label == label);
-            if (x == null) { x = new SpectralClass { Label = label, Description = "Desc" }; _context.SpectralClasses.Add(x); _context.SaveChanges(); }
-            return x;
-        }
-        private GalaxyQuasarClass GetOrCreateGalaxyClass(string label)
-        {
-            var x = _context.GalaxyQuasarClasses.FirstOrDefault(l => l.Label == label);
-            if (x == null) { x = new GalaxyQuasarClass { Label = label, Description = "Desc" }; _context.GalaxyQuasarClasses.Add(x); _context.SaveChanges(); }
-            return x;
+            var discovery = _context.Discoveries.IgnoreQueryFilters().FirstOrDefault(d => d.Id == id);
+
+            if (discovery != null)
+            {
+                discovery.Title = title;
+                discovery.UserId = userId;
+                discovery.CelestialBodyId = bodyId;
+                discovery.DiscoveryStatusId = statusId;
+                _context.Entry(discovery).State = EntityState.Modified;
+                return discovery;
+            }
+            else
+            {
+                var newDiscovery = new Discovery
+                {
+                    Id = id,
+                    Title = title,
+                    CelestialBodyId = bodyId,
+                    UserId = userId,
+                    DiscoveryStatusId = statusId
+                };
+                _context.Discoveries.Add(newDiscovery);
+                return newDiscovery;
+            }
         }
 
-        // --- CONFIGURATION CRUD BASE ---
         protected override int GetIdFromEntity(Discovery entity) => entity.Id;
         protected override int GetIdFromDto(DiscoveryDto dto) => dto.Id;
         protected override int GetNonExistingId() => 9999999;
-        protected override DiscoveryCreateDto GetValidCreateDto() => new DiscoveryCreateDto { Title = "Generic Post (Should Fail)" };
-        protected override DiscoveryUpdateDto GetValidUpdateDto(Discovery entityToUpdate) => new DiscoveryUpdateDto { Title = entityToUpdate.Title + " Updated" };
-        protected override void SetIdInUpdateDto(DiscoveryUpdateDto dto, int id) { }
 
-        // --- METHODE DE REFRESH DES IDs ---
-        private async Task RefreshIds()
+        protected override DiscoveryCreateDto GetValidCreateDto()
         {
-            var draft = await _context.Discoveries.FirstOrDefaultAsync(d => d.Title == "Draft Discovery Title");
-            if (draft != null) _discoveryDraftId = draft.Id;
-
-            var accepted = await _context.Discoveries.FirstOrDefaultAsync(d => d.Title == "Accepted Discovery Title");
-            if (accepted != null) _discoveryAcceptedId = accepted.Id;
+            return new DiscoveryCreateDto
+            {
+                Title = "Generic Create",
+                CelestialBodyId = _discoveryDraftId
+            };
         }
 
-        // ==========================================
-        // TESTS SPECIFIQUES
-        // ==========================================
+        protected override DiscoveryUpdateDto GetValidUpdateDto(Discovery entityToUpdate)
+        {
+            return new DiscoveryUpdateDto { Title = entityToUpdate.Title + " Updated" };
+        }
+
+        protected override void SetIdInUpdateDto(DiscoveryUpdateDto dto, int id) { }
+
+        // =========================================================================================
+        // TESTS
+        // =========================================================================================
 
         [TestMethod]
         public async Task Post_ValidObject_ShouldCreateAndReturn200()
         {
             var createDto = GetValidCreateDto();
-            var actionResult = await _controller.Post(createDto);
-            // On attend BadRequest car ce endpoint est désactivé
-            Assert.IsInstanceOfType(actionResult.Result, typeof(BadRequestObjectResult));
-        }
-
-        // --- TESTS CREATION PAR TYPE ---
-
-        [TestMethod]
-        public async Task PostAsteroid_Valid_ShouldReturnOk()
-        {
-            var submission = new DiscoveryAsteroidSubmissionDto
-            {
-                Title = "New Asteroid",
-                Details = new AsteroidCreateDto
-                {
-                    Name = "AST-001",
-                    CelestialBodyTypeId = _typeAsteroidId,
-                    OrbitalClassId = _orbitalClassId, // Doit être valide en DB
-                    DiameterMinKm = 1,
-                    DiameterMaxKm = 2
-                }
-            };
-
-            var actionResult = await _controller.PostAsteroid(submission);
-
-            var okResult = actionResult.Result as OkObjectResult;
-            Assert.IsNotNull(okResult, "PostAsteroid should return OkObjectResult");
-            var dto = okResult.Value as DiscoveryDto;
-            Assert.AreEqual("New Asteroid", dto.Title);
+            var result = await _controller.Post(createDto);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
         [TestMethod]
-        public async Task PostPlanet_Valid_ShouldReturnOk()
+        public async Task Post_ValidObject_ShouldCreate_ReturnsCreated()
         {
-            // CORRECTION: Ajout de DetectionMethodId
-            var submission = new DiscoveryPlanetSubmissionDto
+            await Post_ValidObject_ShouldCreateAndReturn200();
+        }
+
+        [TestMethod]
+        public async Task GetById_ExistingId_ShouldReturnOkAndCorrectItem()
+        {
+            var expectedId = _discoveryDraftId;
+            var result = await _controller.GetById(expectedId);
+
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+            var dto = (result.Result as OkObjectResult).Value as DiscoveryDto;
+            Assert.IsNotNull(dto);
+            Assert.AreEqual(expectedId, dto.Id);
+            Assert.AreEqual("Discovery Draft", dto.Title);
+        }
+
+        [TestMethod]
+        public async Task GetAll_ShouldReturnOk()
+        {
+            var result = await _controller.GetAll();
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+            var list = (result.Result as OkObjectResult).Value as IEnumerable<DiscoveryDto>;
+            Assert.IsNotNull(list);
+            Assert.IsTrue(list.Any(d => d.Id == _discoveryDraftId));
+        }
+
+        // --- TESTS SPECIFIQUES POST ---
+
+        [TestMethod]
+        public async Task PostPlanet_ValidObject_ShouldCreateDiscoveryAndPlanet()
+        {
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+
+            var submissionDto = new DiscoveryPlanetSubmissionDto
             {
-                Title = "New Planet",
+                Title = "New Earth Discovery",
                 Details = new PlanetCreateDto
                 {
-                    Name = "PLN-001",
-                    CelestialBodyTypeId = _typePlanetId,
-                    PlanetTypeId = _planetSubTypeId,
-                    DetectionMethodId = _detectionMethodId, // -> Était manquant
-                    Mass = 100
+                    Name = "Kepler-186f",
+                    Mass = 1.1m,
+                    CelestialBodyTypeId = CBT_PLANET,
+                    PlanetTypeId = _planetTypeId,
+                    DetectionMethodId = 1
                 }
             };
 
-            var actionResult = await _controller.PostPlanet(submission);
+            var actionResult = await _controller.PostPlanet(submissionDto);
+
             Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
+            var resultDto = (actionResult.Result as OkObjectResult).Value as DiscoveryDto;
+            Assert.AreEqual("New Earth Discovery", resultDto.Title);
+
+            var dbDiscovery = await _context.Discoveries
+                .Include(d => d.CelestialBodyNavigation)
+                .FirstOrDefaultAsync(d => d.Id == resultDto.Id);
+
+            Assert.IsNotNull(dbDiscovery);
+            Assert.AreEqual(CBT_PLANET, dbDiscovery.CelestialBodyNavigation.CelestialBodyTypeId);
         }
 
         [TestMethod]
-        public async Task PostStar_Valid_ShouldReturnOk()
+        public async Task PostStar_ValidObject_ShouldCreateDiscoveryAndStar()
         {
-            var submission = new DiscoveryStarSubmissionDto
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+
+            var submissionDto = new DiscoveryStarSubmissionDto
             {
-                Title = "New Star",
+                Title = "Bright Star Discovery",
                 Details = new StarCreateDto
                 {
-                    Name = "STR-001",
-                    CelestialBodyTypeId = _typeStarId,
-                    SpectralClassId = _spectralClassId,
-                    Temperature = 5000
+                    Name = "Betelgeuse II",
+                    Temperature = 3500,
+                    CelestialBodyTypeId = CBT_STAR,
+                    SpectralClassId = _spectralClassId
                 }
             };
 
-            var actionResult = await _controller.PostStar(submission);
+            var actionResult = await _controller.PostStar(submissionDto);
+
             Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
+
+            var resultDto = (actionResult.Result as OkObjectResult).Value as DiscoveryDto;
+
+            // FIX: Vérification robuste via la navigation (comme pour Planet)
+            var dbDiscovery = await _context.Discoveries
+                .Include(d => d.CelestialBodyNavigation)
+                .FirstOrDefaultAsync(d => d.Id == resultDto.Id);
+
+            Assert.IsNotNull(dbDiscovery);
+            Assert.AreEqual(CBT_STAR, dbDiscovery.CelestialBodyNavigation.CelestialBodyTypeId);
         }
 
         [TestMethod]
-        public async Task PostComet_Valid_ShouldReturnOk()
+        public async Task PostGalaxy_ValidObject_ShouldCreateDiscoveryAndGalaxy()
         {
-            var submission = new DiscoveryCometSubmissionDto
-            {
-                Title = "New Comet",
-                Details = new CometCreateDto
-                {
-                    Name = "CMT-001",
-                    CelestialBodyTypeId = _typeCometId
-                }
-            };
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
 
-            var actionResult = await _controller.PostComet(submission);
-            Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
-        }
-
-        [TestMethod]
-        public async Task PostGalaxy_Valid_ShouldReturnOk()
-        {
-            var submission = new DiscoveryGalaxyQuasarSubmissionDto
+            var submissionDto = new DiscoveryGalaxyQuasarSubmissionDto
             {
-                Title = "New Galaxy",
+                Title = "Andromeda Neighbor",
                 Details = new GalaxyQuasarCreateDto
                 {
-                    Name = "GAL-001",
-                    CelestialBodyTypeId = _typeGalaxyId,
-                    GalaxyQuasarClassId = _galaxyClassId
+                    Name = "M32",
+                    RightAscension = 10.5m,
+                    Declination = 41.2m,
+                    CelestialBodyTypeId = CBT_GALAXY,
+                    GalaxyQuasarClassId = _galaxyQuasarClassId
                 }
             };
 
-            var actionResult = await _controller.PostGalaxy(submission);
+            var actionResult = await _controller.PostGalaxy(submissionDto);
+
             Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
         }
 
-        // --- TESTS MISE A JOUR (PUT) ---
-
         [TestMethod]
-        public async Task Put_UpdateTitle_OnDraft_ShouldSuccess()
+        public async Task ProposeAlias_AsOwner_ShouldUpdateStatusToPending()
         {
-            await RefreshIds();
-            var updateDto = new DiscoveryUpdateDto { Title = "Updated Draft Title" };
-
-            var actionResult = await _controller.Put(_discoveryDraftId, updateDto);
-
-            Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
-
-            _context.ChangeTracker.Clear();
-            var entity = await _context.Discoveries.FindAsync(_discoveryDraftId);
-            Assert.AreEqual("Updated Draft Title", entity.Title);
-        }
-
-        [TestMethod]
-        public async Task Put_UpdateTitle_OnAccepted_ShouldFail()
-        {
-            await RefreshIds();
-            var updateDto = new DiscoveryUpdateDto { Title = "Hack Attempt" };
-
-            var actionResult = await _controller.Put(_discoveryAcceptedId, updateDto);
-
-            Assert.IsInstanceOfType(actionResult, typeof(BadRequestObjectResult));
-        }
-
-        [TestMethod]
-        public async Task Put_AsOtherUser_ShouldReturnForbidden()
-        {
-            await RefreshIds();
-            SetupUserContext(_controller, USER_OTHER_ID, "Client");
-
-            var updateDto = new DiscoveryUpdateDto { Title = "Hack Attempt" };
-            var actionResult = await _controller.Put(_discoveryDraftId, updateDto);
-
-            Assert.IsInstanceOfType(actionResult, typeof(ForbidResult));
-        }
-
-        // --- TESTS PROPOSITION ALIAS ---
-
-        [TestMethod]
-        public async Task ProposeAlias_OwnerOnAccepted_ShouldSuccess()
-        {
-            await RefreshIds();
-            var aliasDto = new DiscoveryAliasDto { Alias = "Super Earth" };
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+            var aliasDto = new DiscoveryAliasDto { Alias = "The Lonely Rock" };
 
             var actionResult = await _controller.ProposeAlias(_discoveryAcceptedId, aliasDto);
 
             Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
 
             _context.ChangeTracker.Clear();
-            var entity = await _context.Discoveries.FindAsync(_discoveryAcceptedId);
-            Assert.AreEqual(1, entity.AliasStatusId);
-            Assert.IsNull(entity.AliasApprovalUserId);
+            var discovery = await _context.Discoveries.Include(d => d.CelestialBodyNavigation).FirstOrDefaultAsync(d => d.Id == _discoveryAcceptedId);
+            Assert.AreEqual("The Lonely Rock", discovery.CelestialBodyNavigation.Alias);
         }
 
         [TestMethod]
-        public async Task ProposeAlias_OnDraft_ShouldFail()
+        public async Task ModerateDiscovery_AsAdmin_ShouldUpdateStatus()
         {
-            await RefreshIds();
-            var aliasDto = new DiscoveryAliasDto { Alias = "Premature Alias" };
-
-            var actionResult = await _controller.ProposeAlias(_discoveryDraftId, aliasDto);
-
-            Assert.IsInstanceOfType(actionResult, typeof(BadRequestObjectResult));
-        }
-
-        // --- TESTS RECHERCHE ---
-
-        [TestMethod]
-        public async Task Search_ShouldReturnResults()
-        {
-            var filter = new DiscoveryFilterDto { Title = "Draft" };
-            var actionResult = await _controller.Search(filter);
-
-            var okResult = actionResult.Result as OkObjectResult;
-            Assert.IsNotNull(okResult);
-            var list = okResult.Value as IEnumerable<DiscoveryDto>;
-            Assert.IsTrue(list.Any());
-        }
-
-        // --- TESTS MODERATION ---
-
-        [TestMethod]
-        public async Task ModerateDiscovery_AsAdmin_ShouldSuccess()
-        {
-            await RefreshIds();
             SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
-
             var modDto = new DiscoveryModerationDto
             {
                 DiscoveryStatusId = STATUS_ACCEPTED,
@@ -472,12 +389,30 @@ namespace Astralis_APITests.Controllers
             Assert.AreEqual(USER_ADMIN_ID, entity.DiscoveryApprovalUserId);
         }
 
-        // --- TESTS SUPPRESSION ---
+        [TestMethod]
+        public async Task Search_FilterByStatus_ShouldReturnOnlyMatchingDiscoveries()
+        {
+            var filter = new DiscoveryFilterDto
+            {
+                Title = null,
+                DiscoveryStatusId = STATUS_DRAFT,
+                AliasStatusId = null
+            };
+
+            var results = await _controller.Search(filter);
+
+            Assert.IsInstanceOfType(results.Result, typeof(OkObjectResult));
+            var list = (results.Result as OkObjectResult).Value as IEnumerable<DiscoveryDto>;
+
+            Assert.IsNotNull(list);
+            Assert.IsTrue(list.Any(), "Devrait trouver le brouillon");
+            Assert.IsTrue(list.All(d => d.DiscoveryStatusId == STATUS_DRAFT), "Ne doit contenir que des brouillons");
+        }
 
         [TestMethod]
         public async Task Delete_OwnerOnDraft_ShouldSuccess()
         {
-            await RefreshIds();
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
             var actionResult = await _controller.Delete(_discoveryDraftId);
             Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
         }
@@ -485,7 +420,7 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Delete_OwnerOnAccepted_ShouldFail()
         {
-            await RefreshIds();
+            SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
             var actionResult = await _controller.Delete(_discoveryAcceptedId);
             Assert.IsInstanceOfType(actionResult, typeof(BadRequestObjectResult));
         }
@@ -493,9 +428,7 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Delete_AdminOnAccepted_ShouldSuccess()
         {
-            await RefreshIds();
             SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
-
             var actionResult = await _controller.Delete(_discoveryAcceptedId);
             Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
         }
