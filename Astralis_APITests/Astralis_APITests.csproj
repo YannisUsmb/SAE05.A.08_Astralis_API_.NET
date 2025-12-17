@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\Integration\Specific\Auth\**" />
+    <EmbeddedResource Remove="Controllers\Integration\Specific\Auth\**" />
+    <None Remove="Controllers\Integration\Specific\Auth\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="MSTest" Version="3.6.4" />
@@ -23,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Integration\Specific\CelestialBodies\Satellites\" />
-    <Folder Include="Controllers\Integration\Specific\Auth\" />
   </ItemGroup>
 
 </Project>

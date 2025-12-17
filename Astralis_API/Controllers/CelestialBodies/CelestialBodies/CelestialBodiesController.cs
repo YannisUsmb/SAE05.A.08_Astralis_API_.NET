@@ -86,20 +86,17 @@ namespace Astralis_API.Controllers
         /// <returns>A list of matching celestial bodies.</returns>
         /// <response code="200">The search results were retrieved successfully.</response>
         /// <response code="500">An internal server error occurred.</response>
-        [HttpGet("Search")]
+        [HttpPost("Search")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<CelestialBodyListDto>>> Search(
-            [FromQuery] CelestialBodyFilterDto filter,
+            [FromBody] CelestialBodyFilterDto filter,
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = 30) 
         {
             IEnumerable<CelestialBody> results = await _celestialBodyRepository.SearchAsync(
-                filter.SearchText,
-                filter.CelestialBodyTypeIds,
-                filter.IsDiscovery,
-                filter.SubtypeId,
+                filter,
                 pageNumber,
                 pageSize   
             );
