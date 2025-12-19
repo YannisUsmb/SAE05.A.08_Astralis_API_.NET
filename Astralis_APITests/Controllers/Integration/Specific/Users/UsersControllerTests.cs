@@ -3,6 +3,7 @@ using Astralis.Shared.Enums;
 using Astralis_API.Controllers;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
+using Astralis_API.Models.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,13 @@ namespace Astralis_APITests.Controllers
 
         private int _userAdminId;
         private int _userNormalId;
-
         protected override UsersController CreateController(AstralisDbContext context, IMapper mapper)
         {
             var userManager = new UserManager(context);
-
+            var countryRepository = new CountryManager(context);
             var controller = new UsersController(
                 userManager,
+                countryRepository,
                 mapper
             );
 
