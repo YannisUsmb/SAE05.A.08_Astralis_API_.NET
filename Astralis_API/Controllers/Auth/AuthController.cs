@@ -1,5 +1,7 @@
 ﻿using Astralis.Shared.DTOs;
+using Astralis.Shared.Enums;
 using Astralis_API.Models.EntityFramework;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,68 +49,87 @@ namespace Astralis_API.Controllers
             User? user = await _context.Users
                 .Include(u => u.UserRoleNavigation)
                 .FirstOrDefaultAsync(u =>
-                    (u.Email == loginDto.Identifier ||
-                     u.Username == loginDto.Identifier ||
-                     u.Phone == loginDto.Identifier)
-                    && u.Password == BCrypt.Net.BCrypt.HashPassword(loginDto.Password));
+                    u.Email == loginDto.Identifier ||
+                    u.Username == loginDto.Identifier ||
+                    u.Phone == loginDto.Identifier);
 
             if (user == null)
             {
-                return Unauthorized("Invalid identifier or password.");
+                return Unauthorized("Identifiant ou mot de passe incorrect.");
             }
 
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.UserRoleNavigation.Label),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim("AvatarPath", user.AvatarUrl ?? ""),
-                new Claim("IsPremium", user.IsPremium ? "true" : "false")
-            };
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password);
 
-            string? keyString = _configuration["JwtSettings:Key"];
-            if (string.IsNullOrEmpty(keyString))
+            if (!isPasswordValid)
             {
-                return StatusCode(500, "JWT Key is not configured.");
+                return Unauthorized("Identifiant ou mot de passe incorrect.");
             }
 
-            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
-            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            return GenerateSession(user);
+        }
 
-            DateTime expiresAt = DateTime.Now.AddHours(4);
-
-            JwtSecurityToken token = new JwtSecurityToken(
-                issuer: _configuration["JwtSettings:Issuer"],
-                audience: _configuration["JwtSettings:Audience"],
-                claims: claims,
-                expires: expiresAt,
-                signingCredentials: creds
-            );
-
-            string jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            var cookieOptions = new CookieOptions
+        /// <summary>
+        /// Authenticates a user via Google OAuth2 token. Creates a new account if the email doesn't exist.
+        /// </summary>
+        /// <param name="googleDto">The Google ID Token received from the client.</param>
+        /// <returns>An AuthResponseDto containing user info.</returns>
+        /// <response code="200">Authentication successful, cookie set.</response>
+        /// <response code="400">Invalid Google Token.</response>
+        /// <response code="500">Server error.</response>
+        [HttpPost("GoogleLogin")]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<AuthResponseDto>> GoogleLogin([FromBody] GoogleLoginDto googleDto)
+        {
+            try
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = expiresAt
-            };
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string> { _configuration["Google:ClientId"] }
+                };
 
-            Response.Cookies.Append("authToken", jwt, cookieOptions);
+                var payload = await GoogleJsonWebSignature.ValidateAsync(googleDto.IdToken, settings);
 
-            AuthResponseDto response = new AuthResponseDto
+                var user = await _context.Users
+                    .Include(u => u.UserRoleNavigation)
+                    .FirstOrDefaultAsync(u => u.Email == payload.Email);
+
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Email = payload.Email,
+                        FirstName = payload.GivenName ?? "Explorateur",
+                        LastName = payload.FamilyName ?? "Astralis",
+                        Username = (payload.GivenName ?? "User") + new Random().Next(1000, 9999),
+                        AvatarUrl = payload.Picture,
+                        Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                        UserRoleId = 1,
+                        InscriptionDate = DateOnly.FromDateTime(DateTime.Now),
+                        IsPremium = false,
+                        PhonePrefixId = null,
+                        MultiFactorAuthentification = false,
+                        Gender = GenderType.Unknown 
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    await _context.Entry(user).Reference(u => u.UserRoleNavigation).LoadAsync();
+                }
+
+                return GenerateSession(user);
+            }
+            catch (InvalidJwtException)
             {
-                Token = jwt,
-                Expiration = expiresAt,
-                Username = user.Username,
-                Role = user.UserRoleNavigation.Label,
-                AvatarPath = user.AvatarUrl,
-                IsPremium = user.IsPremium
-            };
-
-            return Ok(response);
+                return BadRequest("Token Google invalide.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "Erreur interne lors de la connexion Google.");
+            }
         }
 
         /// <summary>
@@ -148,6 +169,60 @@ namespace Astralis_API.Controllers
                 Expiration = DateTime.Now.AddHours(1),
                 AvatarPath = avatarUrl,
                 IsPremium = User.FindFirst("IsPremium")?.Value == "true"
+            });
+        }
+
+        // That method generates the JWT, creates the HttpOnly Cookie, and returns the DTO.
+        private ActionResult<AuthResponseDto> GenerateSession(User user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.UserRoleNavigation?.Label ?? "Membre"),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim("AvatarPath", user.AvatarUrl ?? ""),
+                new Claim("IsPremium", user.IsPremium ? "true" : "false")
+            };
+
+            string? keyString = _configuration["JwtSettings:Key"];
+            if (string.IsNullOrEmpty(keyString))
+            {
+                return StatusCode(500, "JWT Key is not configured.");
+            }
+
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            DateTime expiresAt = DateTime.Now.AddHours(4);
+
+            JwtSecurityToken token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: expiresAt,
+                signingCredentials: creds
+            );
+
+            string jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = expiresAt
+            };
+
+            Response.Cookies.Append("authToken", jwt, cookieOptions);
+
+            return Ok(new AuthResponseDto
+            {
+                Token = jwt,
+                Expiration = expiresAt,
+                Username = user.Username,
+                Role = user.UserRoleNavigation?.Label ?? "Membre",
+                AvatarPath = user.AvatarUrl,
+                IsPremium = user.IsPremium
             });
         }
     }
