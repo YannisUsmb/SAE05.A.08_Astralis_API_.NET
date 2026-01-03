@@ -35,6 +35,10 @@ namespace Astralis_API.Models.EntityFramework
         [Column("eve_enddate")]
         public DateTime? EndDate { get; set; }
 
+        [Column("eve_pictureurl", TypeName = "TEXT")]
+        [Url(ErrorMessage = "The picture URL must be a valid URL.")]
+        public string? PictureUrl { get; set; } 
+
         [Column("eve_location")]
         [StringLength(100, ErrorMessage = "The location cannot be longer than 100 characters.")]
         public string? Location { get; set; }
