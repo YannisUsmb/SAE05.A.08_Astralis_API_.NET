@@ -137,7 +137,23 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<IActionResult> Put(int id, EventUpdateDto updateDto)
         {
-            return await base.Put(id, updateDto);
+            var eventEntity = await _eventRepository.GetByIdAsync(id);
+            if (eventEntity == null)
+            {
+                return NotFound();
+            }
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId) || eventEntity.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            var newEvent = _mapper.Map(updateDto, eventEntity);
+
+            await _eventRepository.UpdateAsync(eventEntity, newEvent);
+
+            return NoContent();
         }
 
         /// <summary>
@@ -149,7 +165,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">The event does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
