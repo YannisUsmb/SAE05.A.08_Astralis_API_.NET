@@ -161,8 +161,12 @@ namespace Astralis_API.Controllers
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var avatarUrl = User.FindFirst("AvatarPath")?.Value;
 
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdString, out int userId);
+
             return Ok(new AuthResponseDto
             {
+                Id = userId,
                 Username = username,
                 Role = role,
                 Token = "",
