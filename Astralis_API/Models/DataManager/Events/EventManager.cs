@@ -31,24 +31,23 @@ namespace Astralis_API.Models.DataManager
         }
 
         public async Task<IEnumerable<Event>> SearchAsync(
-            string? searchText = null,
-            IEnumerable<int>? eventTypeIds = null,
-            DateTime? minStartDate = null,
-            DateTime? maxStartDate = null,
-            DateTime? minEndDate = null,
-            DateTime? maxEndDate = null)
+            string? searchText,
+            IEnumerable<int>? eventTypeIds,
+            DateTime? minStartDate,
+            DateTime? maxStartDate,
+            DateTime? minEndDate,
+            DateTime? maxEndDate,
+            int pageNumber,
+            int pageSize,
+            string sortBy)
         {
             var query = _entities.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                string textLower = searchText.ToLower();
-                query = query.Where(e =>
-                    e.Title.ToLower().Contains(textLower)
-                    || e.Description.ToLower().Contains(textLower)
-                    || (e.Location != null && e.Location.ToLower().Contains(textLower))
-                );
+                query = query.Where(e => e.Title.Contains(searchText) || (e.Description != null && e.Description.Contains(searchText)));
             }
+
             if (eventTypeIds != null && eventTypeIds.Any())
             {
                 query = query.Where(e => eventTypeIds.Contains(e.EventTypeId));
@@ -56,15 +55,25 @@ namespace Astralis_API.Models.DataManager
 
             if (minStartDate.HasValue)
                 query = query.Where(e => e.StartDate >= minStartDate.Value);
-
             if (maxStartDate.HasValue)
                 query = query.Where(e => e.StartDate <= maxStartDate.Value);
-
             if (minEndDate.HasValue)
                 query = query.Where(e => e.EndDate >= minEndDate.Value);
-
             if (maxEndDate.HasValue)
                 query = query.Where(e => e.EndDate <= maxEndDate.Value);
+
+            query = sortBy switch
+            {
+                "date_desc" => query.OrderByDescending(e => e.StartDate),
+                "alpha_asc" => query.OrderBy(e => e.Title),
+                "alpha_desc" => query.OrderByDescending(e => e.Title),
+                "type" => query.OrderBy(e => e.EventTypeNavigation.Label),
+                "date_asc" or _ => query.OrderBy(e => e.StartDate)
+            };
+
+            query = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
 
             return await WithIncludes(query).ToListAsync();
         }

@@ -5,12 +5,15 @@ namespace Astralis_API.Models.Repository
     public interface IEventRepository : IDataRepository<Event, int, string>
     {
         Task<IEnumerable<Event>> SearchAsync(
-            string? searchText = null,
-            IEnumerable<int>? eventTypeIds = null,
-            DateTime? minStartDate = null,
-            DateTime? maxStartDate = null,
-            DateTime? minEndDate = null,
-            DateTime? maxEndDate = null
+            string? searchText,
+            IEnumerable<int>? eventTypeIds,
+            DateTime? minStartDate,
+            DateTime? maxStartDate,
+            DateTime? minEndDate,
+            DateTime? maxEndDate,
+            int pageNumber,
+            int pageSize,
+            string sortBy
         );
     }
 }

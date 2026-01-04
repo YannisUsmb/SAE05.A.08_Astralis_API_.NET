@@ -75,7 +75,10 @@ namespace Astralis_API.Controllers
                 search.MinStartDate,
                 search.MaxStartDate,
                 search.MinEndDate,
-                search.MaxEndDate
+                search.MaxEndDate,
+                search.PageNumber,
+                search.PageSize,
+                search.SortBy
             );
 
             return Ok(_mapper.Map<IEnumerable<EventDto>>(events));
