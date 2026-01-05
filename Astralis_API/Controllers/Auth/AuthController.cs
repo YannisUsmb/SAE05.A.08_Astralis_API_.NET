@@ -1,6 +1,7 @@
 ﻿using Astralis.Shared.DTOs;
 using Astralis.Shared.Enums;
 using Astralis_API.Models.EntityFramework;
+using Astralis_API.Models.Repository;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,15 @@ namespace Astralis_API.Controllers
         private readonly AstralisDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthController(AstralisDbContext context, IConfiguration configuration)
+        private readonly IUserRepository _userRepository;
+        private readonly ICountryRepository _countryRepository;
+
+        public AuthController(AstralisDbContext context, IConfiguration configuration, IUserRepository userRepository, ICountryRepository countryRepository)
         {
             _context = context;
             _configuration = configuration;
+            _userRepository = userRepository;
+            _countryRepository = countryRepository;
         }
 
         /// <summary>
@@ -39,19 +45,25 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] UserLoginDto loginDto)
+        public async Task<ActionResult<AuthResponseDto>> Login(UserLoginDto loginDto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            User? user = await _context.Users
-                .Include(u => u.UserRoleNavigation)
-                .FirstOrDefaultAsync(u =>
-                    u.Email == loginDto.Identifier ||
-                    u.Username == loginDto.Identifier ||
-                    u.Phone == loginDto.Identifier);
+            User? user = null;
+
+            if (!string.IsNullOrWhiteSpace(loginDto.Phone) && loginDto.CountryId.HasValue)
+            {
+                var country = await _countryRepository.GetByIdAsync(loginDto.CountryId.Value);
+                if (country == null)
+                    return BadRequest("Pays invalide.");
+
+                user = await _userRepository.GetByPhoneAndPrefixAsync(loginDto.Phone, country.PhonePrefixId);
+            }
+            else if (!string.IsNullOrWhiteSpace(loginDto.Identifier))
+            {
+                user = await _userRepository.GetByEmailOrUsernameAsync(loginDto.Identifier);
+            }
 
             if (user == null)
             {

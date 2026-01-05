@@ -112,6 +112,10 @@ public partial class AstralisDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_user_invoicingaddress");
 
+            entity.HasIndex(u => u.Username).IsUnique().HasDatabaseName("uq_user_username");
+            entity.HasIndex(u => u.Email).IsUnique().HasDatabaseName("uq_user_email");
+            entity.HasIndex(u => u.Phone).IsUnique().HasFilter("usr_phone IS NOT NULL").HasDatabaseName("uq_user_phone");
+
             entity.Property(u => u.Gender)
                 .HasConversion(
                 v => v == GenderType.Male ? "M" :

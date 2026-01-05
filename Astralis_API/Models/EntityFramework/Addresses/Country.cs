@@ -19,6 +19,10 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(80, ErrorMessage = "The name cannot be longer than 80 caracters.")]
         public string Name { get; set; } = null!;
 
+        [Column("cou_isocode", TypeName = "CHAR(2)")]
+        [Required(ErrorMessage = "The iso code is required.")]
+        public string IsoCode { get; set; } = "FR";
+
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Countries))]
         public virtual PhonePrefix PhonePrefixNavigation { get; set; } = null!;

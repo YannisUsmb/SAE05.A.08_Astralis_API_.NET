@@ -4,5 +4,10 @@ namespace Astralis_API.Models.Repository
 {
     public interface IUserRepository : ICrudRepository<User, int>
     {
+        Task<bool> ExistsByEmailAsync(string email);
+        Task<bool> ExistsByUsernameAsync(string username);
+        Task<bool> ExistsByPhoneAsync(string phone);
+        Task<User?> GetByEmailOrUsernameAsync(string identifier);
+        Task<User?> GetByPhoneAndPrefixAsync(string phone, int? phonePrefixId);
     }
 }

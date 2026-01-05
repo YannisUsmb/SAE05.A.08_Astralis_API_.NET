@@ -3,6 +3,7 @@ using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Security.Claims;
@@ -15,11 +16,13 @@ namespace Astralis_API.Controllers
     [DisplayName("User")]
     public class UsersController : CrudController<User, UserDetailDto, UserDetailDto, UserCreateDto, UserUpdateDto, int>
     {
+        private readonly IUserRepository _userRepository;
         private readonly ICountryRepository _countryRepository;
 
         public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper)
             : base(repository, mapper)
         {
+            _userRepository = repository;
             _countryRepository = countryRepository;
         }
 
@@ -103,12 +106,21 @@ namespace Astralis_API.Controllers
             entity.UserRoleId = 2;
             entity.InscriptionDate = DateOnly.FromDateTime(DateTime.Now);
             entity.IsPremium = false;
+            entity.PhonePrefixId = null;
 
-            Country country = new Country();
             if (createDto.CountryId.HasValue)
-                country = await _countryRepository.GetByIdAsync(createDto.CountryId.Value);
-            if (country != null)
-                entity.PhonePrefixId = country.PhonePrefixId;
+            {
+                var country = await _countryRepository.GetByIdAsync(createDto.CountryId.Value);
+
+                if (country != null)
+                {
+                    entity.PhonePrefixId = country.PhonePrefixId;
+                }
+                else
+                {
+                    return BadRequest("Le pays sélectionné est invalide.");
+                }
+            }
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
             entity.Password = passwordHash;
@@ -116,6 +128,22 @@ namespace Astralis_API.Controllers
             await _repository.AddAsync(entity);
 
             return Ok(_mapper.Map<UserDetailDto>(entity));
+        }
+
+        [HttpGet("Check-availability")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckAvailability([FromQuery] string? email, [FromQuery] string? username, [FromQuery] string? phone)
+        {
+            if (!string.IsNullOrEmpty(email) && await _userRepository.ExistsByEmailAsync(email))
+                return Ok(new { isTaken = true, field = "email", message = "Cet email est déjà utilisé." });
+
+            if (!string.IsNullOrEmpty(username) && await _userRepository.ExistsByUsernameAsync(username))
+                return Ok(new { isTaken = true, field = "username", message = "Ce pseudo est déjà pris." });
+
+            if (!string.IsNullOrEmpty(phone) && await _userRepository.ExistsByPhoneAsync(phone))
+                return Ok(new { isTaken = true, field = "phone", message = "Ce numéro est déjà lié à un compte." });
+
+            return Ok(new { isTaken = false });
         }
 
         /// <summary>
