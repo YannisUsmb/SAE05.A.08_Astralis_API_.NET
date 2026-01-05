@@ -56,6 +56,33 @@ namespace Astralis_API.Controllers
         }
         
         /// <summary>
+        /// Retrieves detailed information about a specific celestial body by its unique identifier (public access).
+        /// Includes all type-specific properties (Planet, Star, Asteroid, etc.).
+        /// </summary>
+        /// <param name="id">The unique identifier of the celestial body.</param>
+        /// <returns>The complete celestial body details including type-specific information.</returns>
+        /// <response code="200">The celestial body was found.</response>
+        /// <response code="404">The celestial body does not exist.</response>
+        /// <response code="500">An internal server error occurred.</response>
+        [HttpGet("{id}/Details")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<CelestialBodyDetailDto>> GetDetails(int id)
+        {
+            CelestialBody? entity = await _celestialBodyRepository.GetByIdAsync(id);
+    
+            if (entity == null)
+            {
+                return NotFound($"Celestial body with ID {id} not found.");
+            }
+
+            CelestialBodyDetailDto detailDto = _mapper.Map<CelestialBodyDetailDto>(entity);
+            return Ok(detailDto);
+        }
+        
+        /// <summary>
         /// Retrieves the subtypes associated with a specific main celestial body type.
         /// </summary>
         /// <param name="mainTypeId">The ID of the main type (e.g., 1 for Planet, 2 for Star).</param>
