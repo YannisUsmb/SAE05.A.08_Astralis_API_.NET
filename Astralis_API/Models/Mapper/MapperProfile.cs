@@ -54,6 +54,7 @@ namespace Astralis_API.Models.Mapper
             ///// ArticleInterest.
             // Entity to DTO (Read).
             CreateMap<ArticleInterest, ArticleInterestDto>();
+            CreateMap<ArticleInterestDto, ArticleInterest>();
 
             ///// ArticleType.
             // Entity to DTO (Read).
@@ -253,7 +254,9 @@ namespace Astralis_API.Models.Mapper
                 // .Include(od => od.ProductNavigation)
                 .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
+            CreateMap<OrderDetailCreateDto, OrderDetail>();
 
+            CreateMap<OrderDetailUpdateDto, OrderDetail>();
             ///// PhonePrefix.
             // Entity to DTO (Read).
             CreateMap<PhonePrefix, PhonePrefixDto>();
@@ -362,6 +365,7 @@ namespace Astralis_API.Models.Mapper
             ///// TypeOfArticle.
             // Entity to DTO (Read).
             CreateMap<TypeOfArticle, TypeOfArticleDto>();
+            CreateMap<TypeOfArticleDto, TypeOfArticle>();
 
             ///// User.
             // Entity to DTO (Read).
