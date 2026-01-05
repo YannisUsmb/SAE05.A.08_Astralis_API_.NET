@@ -93,6 +93,10 @@ namespace Astralis_API.Models.Mapper
             // Entity to DTO (Read).
             CreateMap<CelestialBody, CelestialBodyListDto>()
                 .ForMember(dest => dest.CelestialBodyTypeName, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Label));
+            
+            CreateMap<CelestialBody, CelestialBodyDetailDto>()
+                .ForMember(dest => dest.CelestialBodyTypeName, opt => opt.MapFrom(src => src.CelestialBodyTypeNavigation.Label));
+            
             // DTO to Entity (Write).
             CreateMap<CelestialBodyCreateDto, CelestialBody>();
             CreateMap<CelestialBodyUpdateDto, CelestialBody>();
