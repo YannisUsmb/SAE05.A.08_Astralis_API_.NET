@@ -109,7 +109,7 @@ namespace Astralis_APITests.Controllers
                 FirstName = "User",
                 Email = "new.user@test.com",
                 Username = "NewUser123",
-                UserAvatarUrl = "http://test.com/img.png",
+                AvatarUrl = "http://test.com/img.png",
                 Password = "Password123!",
                 ConfirmPassword = "Password123!",
                 Gender = (GenderType)1,
@@ -125,7 +125,7 @@ namespace Astralis_APITests.Controllers
                 FirstName = "UpdatedFirst",
                 Email = "updated@test.com",
                 Username = "UpdatedUser",
-                UserAvatarUrl = "http://updated.com/img.png",
+                AvatarUrl = "http://updated.com/img.png",
                 Gender = (GenderType)1,
                 MultiFactorAuthentification = true
             };

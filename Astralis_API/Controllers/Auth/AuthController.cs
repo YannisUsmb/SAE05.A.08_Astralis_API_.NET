@@ -159,7 +159,7 @@ namespace Astralis_API.Controllers
         {
             var username = User.Identity?.Name;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var avatarUrl = User.FindFirst("AvatarPath")?.Value;
+            var AvatarPath = User.FindFirst("AvatarPath")?.Value;
 
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             int.TryParse(userIdString, out int userId);
@@ -171,7 +171,7 @@ namespace Astralis_API.Controllers
                 Role = role,
                 Token = "",
                 Expiration = DateTime.Now.AddHours(1),
-                AvatarPath = avatarUrl,
+                AvatarUrl = AvatarPath,
                 IsPremium = User.FindFirst("IsPremium")?.Value == "true"
             });
         }
@@ -225,7 +225,7 @@ namespace Astralis_API.Controllers
                 Expiration = expiresAt,
                 Username = user.Username,
                 Role = user.UserRoleNavigation?.Label ?? "Membre",
-                AvatarPath = user.AvatarUrl,
+                AvatarUrl = user.AvatarUrl,
                 IsPremium = user.IsPremium
             });
         }
