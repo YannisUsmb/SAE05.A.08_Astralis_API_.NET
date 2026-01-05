@@ -17,8 +17,8 @@ namespace Astralis_APITests.Controllers
         private const int USER_EDITOR_ID = 5001;
         private const int USER_NORMAL_ID = 5002;
 
-        private const int EVENT_TYPE_CONCERT = 1;
-        private const int EVENT_TYPE_WORKSHOP = 2;
+        private const int EVENT_TYPE_ECLIPSE = 1;
+        private const int EVENT_TYPE_ROCKET_LAUNCH = 2;
 
         private const int EVENT_ID_1 = 44001;
         private const int EVENT_ID_2 = 44002;
@@ -68,26 +68,26 @@ namespace Astralis_APITests.Controllers
             CreateUserIfNotExist(USER_EDITOR_ID, 10);
             CreateUserIfNotExist(USER_NORMAL_ID, 1);
 
-            if (!_context.EventTypes.AsNoTracking().Any(t => t.Id == EVENT_TYPE_CONCERT))
-                _context.EventTypes.Add(new EventType { Id = EVENT_TYPE_CONCERT, Label = "Concert" });
+            if (!_context.EventTypes.AsNoTracking().Any(t => t.Id == EVENT_TYPE_ECLIPSE))
+                _context.EventTypes.Add(new EventType { Id = EVENT_TYPE_ECLIPSE, Label = "Eclipse" });
 
-            if (!_context.EventTypes.AsNoTracking().Any(t => t.Id == EVENT_TYPE_WORKSHOP))
-                _context.EventTypes.Add(new EventType { Id = EVENT_TYPE_WORKSHOP, Label = "Workshop" });
+            if (!_context.EventTypes.AsNoTracking().Any(t => t.Id == EVENT_TYPE_ROCKET_LAUNCH))
+                _context.EventTypes.Add(new EventType { Id = EVENT_TYPE_ROCKET_LAUNCH, Label = "Rocket launch" });
 
             var e1 = CreateEventInMemory(
                 EVENT_ID_1,
-                "Star Gazing Night",
-                "Watching stars together",
+                "Solar eclipse",
+                "Watching an eclipse",
                 USER_EDITOR_ID,
-                EVENT_TYPE_CONCERT
+                EVENT_TYPE_ECLIPSE
             );
 
             var e2 = CreateEventInMemory(
                 EVENT_ID_2,
-                "Rocket Building",
-                "Build your own rocket",
+                "Rocket launch",
+                "Rocket launch",
                 USER_NORMAL_ID,
-                EVENT_TYPE_WORKSHOP
+                EVENT_TYPE_ROCKET_LAUNCH
             );
 
             _eventId1 = EVENT_ID_1;
@@ -139,7 +139,7 @@ namespace Astralis_APITests.Controllers
             {
                 Title = "New Event",
                 Description = "Description",
-                EventTypeId = EVENT_TYPE_CONCERT,
+                EventTypeId = EVENT_TYPE_ECLIPSE,
                 StartDate = DateTime.UtcNow.AddDays(20),
                 EndDate = DateTime.UtcNow.AddDays(21),
                 Location = "Lyon",
@@ -153,7 +153,7 @@ namespace Astralis_APITests.Controllers
             {
                 Title = "Updated Title",
                 Description = "Updated Description",
-                EventTypeId = EVENT_TYPE_WORKSHOP,
+                EventTypeId = EVENT_TYPE_ROCKET_LAUNCH,
                 StartDate = DateTime.UtcNow.AddDays(30),
                 EndDate = DateTime.UtcNow.AddDays(31)
             };
