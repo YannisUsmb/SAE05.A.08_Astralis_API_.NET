@@ -3,7 +3,6 @@ using Astralis.Shared.Enums;
 using Astralis_API.Controllers;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
-using Astralis_API.Models.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -109,7 +108,6 @@ namespace Astralis_APITests.Controllers
                 FirstName = "User",
                 Email = "new.user@test.com",
                 Username = "NewUser123",
-                AvatarUrl = "http://test.com/img.png",
                 Password = "Password123!",
                 ConfirmPassword = "Password123!",
                 Gender = (GenderType)1,
