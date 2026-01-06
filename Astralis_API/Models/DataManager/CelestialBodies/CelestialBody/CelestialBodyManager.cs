@@ -82,14 +82,22 @@ namespace Astralis_API.Models.DataManager
         protected override IQueryable<CelestialBody> WithIncludes(IQueryable<CelestialBody> query)
         {
             return query
-                .Include(cb => cb.PlanetNavigation)
-                .Include(cb => cb.GalaxyQuasarNavigation)
-                .Include(cb => cb.StarNavigation)
-                .Include(cb => cb.SatelliteNavigation)
-                .Include(cb => cb.DiscoveryNavigation)
                 .Include(cb => cb.CelestialBodyTypeNavigation)
+                .Include(cb => cb.StarNavigation)
+                .ThenInclude(s => s.SpectralClassNavigation) 
+                .Include(cb => cb.PlanetNavigation)
+                .ThenInclude(p => p.PlanetTypeNavigation)
+                .Include(cb => cb.PlanetNavigation)
+                .ThenInclude(p => p.DetectionMethodNavigation)
                 .Include(cb => cb.AsteroidNavigation)
-                .Include(cb => cb.CometNavigation);
+                .ThenInclude(a => a.OrbitalClassNavigation)
+                .Include(cb => cb.SatelliteNavigation)
+                .ThenInclude(s => s.PlanetNavigation)
+                .ThenInclude(p => p.CelestialBodyNavigation)
+                .Include(cb => cb.GalaxyQuasarNavigation)
+                .ThenInclude(g => g.GalaxyQuasarClassNavigation)
+                .Include(cb => cb.CometNavigation)
+                .Include(cb => cb.DiscoveryNavigation);
         }
 
         public async override Task<IEnumerable<CelestialBody>> GetByKeyAsync(string name)
