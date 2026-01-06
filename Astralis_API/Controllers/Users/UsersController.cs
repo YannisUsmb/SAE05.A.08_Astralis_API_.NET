@@ -130,9 +130,26 @@ namespace Astralis_API.Controllers
             return Ok(_mapper.Map<UserDetailDto>(entity));
         }
 
+        /// <summary>
+        /// Checks if specific user information (email, username, or phone number) is already taken.
+        /// </summary>
+        /// <remarks>
+        /// Checks are performed in the following order: Email > Username > Phone.
+        /// The first match found returns a "taken" response.
+        /// For phone verification, the country ID is required to determine the associated prefix.
+        /// </remarks>
+        /// <param name="email">The email address to check.</param>
+        /// <param name="username">The username to check.</param>
+        /// <param name="phone">The phone number to check (digits only).</param>
+        /// <param name="countryId">The ID of the country associated with the phone number (required for phone check).</param>
+        /// <returns>A JSON object indicating availability and the specific field causing the conflict.</returns>
+        /// <response code="200">Returns the availability status ({ isTaken: bool, field: string, message: string }).</response>
+        /// <response code="500">Internal server error.</response>
         [HttpGet("Check-availability")]
         [AllowAnonymous]
-        public async Task<IActionResult> CheckAvailability([FromQuery] string? email, [FromQuery] string? username, [FromQuery] string? phone)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CheckAvailability([FromQuery] string? email, [FromQuery] string? username, [FromQuery] string? phone, [FromQuery] int? countryId)
         {
             if (!string.IsNullOrEmpty(email) && await _userRepository.ExistsByEmailAsync(email))
                 return Ok(new { isTaken = true, field = "email", message = "Cet email est déjà utilisé." });
@@ -140,8 +157,18 @@ namespace Astralis_API.Controllers
             if (!string.IsNullOrEmpty(username) && await _userRepository.ExistsByUsernameAsync(username))
                 return Ok(new { isTaken = true, field = "username", message = "Ce pseudo est déjà pris." });
 
-            if (!string.IsNullOrEmpty(phone) && await _userRepository.ExistsByPhoneAsync(phone))
-                return Ok(new { isTaken = true, field = "phone", message = "Ce numéro est déjà lié à un compte." });
+            if (!string.IsNullOrEmpty(phone))
+            {
+                int? prefixId = null;
+                if (countryId.HasValue)
+                {
+                    var country = await _countryRepository.GetByIdAsync(countryId.Value);
+                    prefixId = country?.PhonePrefixId;
+                }
+
+                if (await _userRepository.ExistsByPhoneAsync(phone, prefixId))
+                    return Ok(new { isTaken = true, field = "phone", message = "Ce numéro est déjà lié à un compte." });
+            }
 
             return Ok(new { isTaken = false });
         }

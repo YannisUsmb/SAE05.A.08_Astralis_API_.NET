@@ -174,11 +174,13 @@
                 ///// Country.
                 // Entity to DTO (Read).
                 CreateMap<Country, CountryDto>()
-                    .ForMember(dest => dest.PhonePrefix, opt => opt.MapFrom(src => src.PhonePrefixNavigation.Label));
+                    .ForMember(dest => dest.PhonePrefix, opt => opt.MapFrom(src => src.PhonePrefixNavigation.Label))
+                    .ForMember(dest => dest.PhoneExample, opt => opt.MapFrom(src => src.PhonePrefixNavigation.Example))
+                    .ForMember(dest => dest.PhoneRegex, opt => opt.MapFrom(src => src.PhonePrefixNavigation.RegexPattern));
 
-                ///// CreditCard.
-                // Entity to DTO (Read).
-                CreateMap<CreditCard, CreditCardDto>();
+            ///// CreditCard.
+            // Entity to DTO (Read).
+            CreateMap<CreditCard, CreditCardDto>();
 
                 ///// DetectionMethod.
                 // Entity to DTO (Read).

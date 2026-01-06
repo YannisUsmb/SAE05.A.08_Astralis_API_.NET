@@ -6,7 +6,7 @@ namespace Astralis_API.Models.Repository
     {
         Task<bool> ExistsByEmailAsync(string email);
         Task<bool> ExistsByUsernameAsync(string username);
-        Task<bool> ExistsByPhoneAsync(string phone);
+        Task<bool> ExistsByPhoneAsync(string phone, int? prefixId);
         Task<User?> GetByEmailOrUsernameAsync(string identifier);
         Task<User?> GetByPhoneAndPrefixAsync(string phone, int? phonePrefixId);
     }

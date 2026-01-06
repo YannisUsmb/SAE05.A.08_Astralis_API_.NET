@@ -15,6 +15,14 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(7, ErrorMessage = "The label cannot be longer than 7 caracters.")]
         public string Label { get; set; } = null!;
 
+        [Column("php_example")]
+        [StringLength(50)]
+        public string? Example { get; set; }
+
+        [Column("php_regex")]
+        [StringLength(100)]
+        public string? RegexPattern { get; set; }
+
         [InverseProperty(nameof(Country.PhonePrefixNavigation))]
         public virtual ICollection<Country> Countries { get; set; } = new List<Country>();
 

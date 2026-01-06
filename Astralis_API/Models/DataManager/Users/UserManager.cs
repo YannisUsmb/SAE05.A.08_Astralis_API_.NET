@@ -26,9 +26,9 @@ namespace Astralis_API.Models.DataManager
             return await _entities.AnyAsync(e => e.Username == username);
         }
 
-        public async Task<bool> ExistsByPhoneAsync(string phone)
+        public async Task<bool> ExistsByPhoneAsync(string phone, int? prefixId)
         {
-            return await _entities.AnyAsync(e => e.Phone != null && e.Phone == phone);
+            return await _entities.AnyAsync(e => e.Phone == phone && e.PhonePrefixId == prefixId);
         }
 
         public async Task<User?> GetByEmailOrUsernameAsync(string identifier)
