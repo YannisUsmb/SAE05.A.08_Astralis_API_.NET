@@ -90,7 +90,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User not authorized (requires Commercial Editor role).</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

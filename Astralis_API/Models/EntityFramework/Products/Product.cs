@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
@@ -26,6 +27,10 @@ namespace Astralis_API.Models.EntityFramework
         [Column("pro_description")]
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
+
+        [Column("pro_productpictureurl", TypeName = "TEXT")]
+        [Url(ErrorMessage = "The product picture url must be a valid URL.")]
+        public string? ProductPictureUrl { get; set; }
 
         [Column("pro_price", TypeName = "NUMERIC(6,2)")]
         [Required(ErrorMessage = "The price is required.")]
