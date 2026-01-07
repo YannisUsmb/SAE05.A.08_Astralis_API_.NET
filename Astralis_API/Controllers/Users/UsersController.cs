@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Astralis_API.Controllers
 {
@@ -18,12 +19,14 @@ namespace Astralis_API.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly ICountryRepository _countryRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper)
+        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
             : base(repository, mapper)
         {
             _userRepository = repository;
             _countryRepository = countryRepository;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -201,6 +204,18 @@ namespace Astralis_API.Controllers
                 return Forbid();
             }
 
+            var oldUserEntity = await _repository.GetByIdAsync(id);
+            string? oldAvatarUrl = oldUserEntity?.AvatarUrl;
+
+            var result = await base.Put(id, updateDto);
+
+            if (result is NoContentResult &&
+                !string.IsNullOrEmpty(oldAvatarUrl) &&
+                oldAvatarUrl != updateDto.AvatarUrl)
+            {
+                DeleteOldAvatarFile(oldAvatarUrl);
+            }
+
             return await base.Put(id, updateDto);
         }
 
@@ -251,6 +266,30 @@ namespace Astralis_API.Controllers
             await _repository.UpdateAsync(user, user);
 
             return NoContent();
+        }
+
+        // Method to delete the old avatar file
+        private void DeleteOldAvatarFile(string avatarUrl)
+        {
+            try
+            {
+                var uri = new Uri(avatarUrl);
+                string path = uri.AbsolutePath;
+
+                if (path.StartsWith("/")) path = path.Substring(1);
+
+                string webRootPath = _webHostEnvironment.WebRootPath ?? Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
+                string fullPath = Path.Combine(webRootPath, path);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur suppression image : {ex.Message}");
+            }
         }
     }
 }

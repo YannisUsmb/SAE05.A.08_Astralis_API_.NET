@@ -383,11 +383,15 @@
             // Entity to DTO (Read).
             CreateMap<TypeOfArticle, TypeOfArticleDto>();
 
-                ///// User.
-                // Entity to DTO (Read).
-                CreateMap<User, UserDetailDto>();
-                // DTO to Entity (Write).
-                CreateMap<UserCreateDto, User>()
+            ///// User.
+            // Entity to DTO (Read).
+            CreateMap<User, UserDetailDto>()
+                .ForMember(dest => dest.CountryId, opt => opt.MapFrom(src =>
+                    src.PhonePrefixNavigation != null && src.PhonePrefixNavigation.Countries.Any()
+                    ? src.PhonePrefixNavigation.Countries.First().Id
+                    : (int?)null));
+            // DTO to Entity (Write).
+            CreateMap<UserCreateDto, User>()
                     .ForMember(dest => dest.Password, opt => opt.Ignore())
                     .ForMember(dest => dest.PhonePrefixId, opt => opt.Ignore());
                 CreateMap<UserUpdateDto, User>();

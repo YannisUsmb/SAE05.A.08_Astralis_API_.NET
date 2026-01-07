@@ -48,6 +48,7 @@ namespace Astralis_API.Models.DataManager
             return query.Include(u => u.DeliveryAddressNavigation)
                             .Include(u => u.InvoicingAddressNavigation)
                             .Include(u => u.PhonePrefixNavigation)
+                                .ThenInclude(p => p.Countries)
                             .Include(u => u.UserRoleNavigation)
                             .Include(u => u.CreditCards)
                             .Include(u => u.Events)

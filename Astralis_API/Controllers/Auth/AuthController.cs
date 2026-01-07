@@ -167,25 +167,30 @@ namespace Astralis_API.Controllers
         [Authorize]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult<AuthResponseDto> GetCurrentUser()
+        public async Task<ActionResult<AuthResponseDto>> GetCurrentUser()
         {
-            var username = User.Identity?.Name;
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var AvatarPath = User.FindFirst("AvatarPath")?.Value;
-
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int.TryParse(userIdString, out int userId);
 
-            return Ok(new AuthResponseDto
+            if (int.TryParse(userIdString, out int userId))
             {
-                Id = userId,
-                Username = username,
-                Role = role,
-                Token = "",
-                Expiration = DateTime.Now.AddHours(1),
-                AvatarUrl = AvatarPath,
-                IsPremium = User.FindFirst("IsPremium")?.Value == "true"
-            });
+                var user = await _userRepository.GetByIdAsync(userId);
+
+                if (user != null)
+                {
+                    return Ok(new AuthResponseDto
+                    {
+                        Id = user.Id,
+                        Username = user.Username,
+                        Role = User.FindFirst(ClaimTypes.Role)?.Value ?? user.UserRoleNavigation?.Label ?? "Membre",
+                        Token = "",
+                        Expiration = DateTime.Now.AddHours(1),
+                        AvatarUrl = user.AvatarUrl,
+                        IsPremium = user.IsPremium
+                    });
+                }
+            }
+
+            return Unauthorized();
         }
 
         // That method generates the JWT, creates the HttpOnly Cookie, and returns the DTO.
@@ -233,6 +238,7 @@ namespace Astralis_API.Controllers
 
             return Ok(new AuthResponseDto
             {
+                Id = user.Id,
                 Token = jwt,
                 Expiration = expiresAt,
                 Username = user.Username,
