@@ -246,7 +246,10 @@
 
                 ///// GalaxyQuasarClass.
                 // Entity to DTO (Read).
-                CreateMap<GalaxyQuasarClass, GalaxyQuasarClassDto>();
+                CreateMap<GalaxyQuasarClass, CelestialBodySubtypeDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
+                    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => (string?)null));
 
                 ///// Notification.
                 // Entity to DTO (Read).
@@ -264,6 +267,10 @@
                 ///// OrbitalClass.
                 // Entity to DTO (Read).
                 CreateMap<OrbitalClass, OrbitalClassDto>();
+                CreateMap<OrbitalClass, CelestialBodySubtypeDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
+                    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
             ///// OrderDetail.
             // Entity to DTO (Read).
@@ -300,7 +307,10 @@
 
                 ///// PlanetType.
                 // Entity to DTO (Read).
-                CreateMap<PlanetType, PlanetTypeDto>();
+                CreateMap<PlanetType, CelestialBodySubtypeDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
+                    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => (string?)null));
 
                 ///// Product.
                 // Entity to DTO (Read).
@@ -361,6 +371,10 @@
                 ///// SpectralClass.
                 // Entity to DTO (Read).
                 CreateMap<SpectralClass, SpectralClassDto>();
+                CreateMap<SpectralClass, CelestialBodySubtypeDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                    .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
+                    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
                 ///// Star.
                 // Entity to DTO (Read).
