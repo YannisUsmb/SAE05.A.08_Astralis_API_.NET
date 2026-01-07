@@ -2,6 +2,7 @@
 using Astralis.Shared.Enums;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Services.Interfaces;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +23,15 @@ namespace Astralis_API.Controllers
 
         private readonly IUserRepository _userRepository;
         private readonly ICountryRepository _countryRepository;
+        private readonly IEmailService _emailService;
 
-        public AuthController(AstralisDbContext context, IConfiguration configuration, IUserRepository userRepository, ICountryRepository countryRepository)
+        public AuthController(AstralisDbContext context, IConfiguration configuration, IUserRepository userRepository, ICountryRepository countryRepository, IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _userRepository = userRepository;
             _countryRepository = countryRepository;
+            this._emailService = emailService;
         }
 
         /// <summary>
@@ -221,6 +224,72 @@ namespace Astralis_API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Email vérifié avec succès !");
+        }
+
+        /// <summary>
+        /// Sends a password reset link to the user's email if it exists.
+        /// </summary>
+        [HttpPost("Forgot-Password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var user = await _userRepository.GetByEmailOrUsernameAsync(dto.Email);
+
+            if (user == null)
+            {
+                return Ok(new { message = "Si cet email existe, un lien a été envoyé." });
+            }
+
+            user.VerificationToken = Guid.NewGuid().ToString();
+            user.TokenExpiration = DateTime.UtcNow.AddHours(1);
+
+            await _context.SaveChangesAsync();
+
+            var resetLink = $"https://localhost:7036/reset-password?token={user.VerificationToken}";
+
+            try
+            {
+                string subject = "Réinitialisation de votre mot de passe";
+                string message = $@"
+                    <div style='background: #0f0c29; color: white; padding: 20px; font-family: sans-serif;'>
+                        <h2>Besoin d'un nouveau mot de passe ?</h2>
+                        <p>Une demande de réinitialisation a été faite pour votre compte Astralis.</p>
+                        <p>Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe :</p>
+                        <a href='{resetLink}' style='color: #a29bfe; font-size: 18px;'>Réinitialiser mon mot de passe</a>
+                        <p>Ce lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>
+                    </div>";
+
+                await _emailService.SendEmailAsync(user.Email, subject, message);
+            }
+            catch
+            {
+            }
+
+            return Ok(new { message = "Si cet email existe, un lien a été envoyé." });
+        }
+
+        /// <summary>
+        /// Resets the user's password using a valid token.
+        /// </summary>
+        [HttpPost("Reset-Password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == dto.Token);
+
+            if (user == null || user.TokenExpiration < DateTime.UtcNow)
+            {
+                return BadRequest("Le lien est invalide ou a expiré.");
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.VerificationToken = null;
+            user.TokenExpiration = null;
+            user.IsEmailVerified = true;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Mot de passe modifié avec succès." });
         }
 
         // That method generates the JWT, creates the HttpOnly Cookie, and returns the DTO.
