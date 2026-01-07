@@ -75,6 +75,16 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The multi-factor authentication status is required.")]
         public bool MultiFactorAuthentification { get; set; }
 
+        [Column("usr_is_verified")]
+        public bool IsEmailVerified { get; set; } = false;
+
+        [Column("usr_verification_token")]
+        [StringLength(100)]
+        public string? VerificationToken { get; set; }
+
+        [Column("usr_token_expiration")]
+        public DateTime? TokenExpiration { get; set; }
+
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Users))]
         public virtual PhonePrefix? PhonePrefixNavigation { get; set; }

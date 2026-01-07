@@ -1,13 +1,12 @@
 ﻿using Astralis.Shared.DTOs;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Astralis_API.Controllers
 {
@@ -20,13 +19,15 @@ namespace Astralis_API.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ICountryRepository _countryRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IEmailService _emailService;
 
-        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IEmailService emailService)
             : base(repository, mapper)
         {
             _userRepository = repository;
             _countryRepository = countryRepository;
             _webHostEnvironment = webHostEnvironment;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -110,6 +111,9 @@ namespace Astralis_API.Controllers
             entity.InscriptionDate = DateOnly.FromDateTime(DateTime.Now);
             entity.IsPremium = false;
             entity.PhonePrefixId = null;
+            entity.VerificationToken = Guid.NewGuid().ToString();
+            entity.TokenExpiration = DateTime.UtcNow.AddHours(24);
+            entity.IsEmailVerified = false;
 
             if (createDto.CountryId.HasValue)
             {
@@ -130,50 +134,27 @@ namespace Astralis_API.Controllers
 
             await _repository.AddAsync(entity);
 
-            return Ok(_mapper.Map<UserDetailDto>(entity));
-        }
+            var verificationLink = $"https://localhost:7036/verifier-email?token={entity.VerificationToken}";
 
-        /// <summary>
-        /// Checks if specific user information (email, username, or phone number) is already taken.
-        /// </summary>
-        /// <remarks>
-        /// Checks are performed in the following order: Email > Username > Phone.
-        /// The first match found returns a "taken" response.
-        /// For phone verification, the country ID is required to determine the associated prefix.
-        /// </remarks>
-        /// <param name="email">The email address to check.</param>
-        /// <param name="username">The username to check.</param>
-        /// <param name="phone">The phone number to check (digits only).</param>
-        /// <param name="countryId">The ID of the country associated with the phone number (required for phone check).</param>
-        /// <returns>A JSON object indicating availability and the specific field causing the conflict.</returns>
-        /// <response code="200">Returns the availability status ({ isTaken: bool, field: string, message: string }).</response>
-        /// <response code="500">Internal server error.</response>
-        [HttpGet("Check-availability")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CheckAvailability([FromQuery] string? email, [FromQuery] string? username, [FromQuery] string? phone, [FromQuery] int? countryId)
-        {
-            if (!string.IsNullOrEmpty(email) && await _userRepository.ExistsByEmailAsync(email))
-                return Ok(new { isTaken = true, field = "email", message = "Cet email est déjà utilisé." });
-
-            if (!string.IsNullOrEmpty(username) && await _userRepository.ExistsByUsernameAsync(username))
-                return Ok(new { isTaken = true, field = "username", message = "Ce pseudo est déjà pris." });
-
-            if (!string.IsNullOrEmpty(phone))
+            try
             {
-                int? prefixId = null;
-                if (countryId.HasValue)
-                {
-                    var country = await _countryRepository.GetByIdAsync(countryId.Value);
-                    prefixId = country?.PhonePrefixId;
-                }
+                string subject = "Activez votre compte Astralis";
+                string message = $@"
+                <div style='background: #0f0c29; color: white; padding: 20px; font-family: sans-serif;'>
+                    <h2>Bienvenue Explorateur !</h2>
+                    <p>Cliquez sur le lien ci-dessous pour vérifier votre email :</p>
+                    <a href='{verificationLink}' style='color: #a29bfe; font-size: 18px;'>Activer mon compte</a>
+                    <p>Ce lien expire dans 24 heures.</p>
+                </div>";
 
-                if (await _userRepository.ExistsByPhoneAsync(phone, prefixId))
-                    return Ok(new { isTaken = true, field = "phone", message = "Ce numéro est déjà lié à un compte." });
+                await _emailService.SendEmailAsync(entity.Email, subject, message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur Mail: {ex.Message}");
             }
 
-            return Ok(new { isTaken = false });
+            return Ok(_mapper.Map<UserDetailDto>(entity));
         }
 
         /// <summary>
@@ -217,6 +198,49 @@ namespace Astralis_API.Controllers
             }
 
             return await base.Put(id, updateDto);
+        }
+
+        /// <summary>
+        /// Checks if specific user information (email, username, or phone number) is already taken.
+        /// </summary>
+        /// <remarks>
+        /// Checks are performed in the following order: Email > Username > Phone.
+        /// The first match found returns a "taken" response.
+        /// For phone verification, the country ID is required to determine the associated prefix.
+        /// </remarks>
+        /// <param name="email">The email address to check.</param>
+        /// <param name="username">The username to check.</param>
+        /// <param name="phone">The phone number to check (digits only).</param>
+        /// <param name="countryId">The ID of the country associated with the phone number (required for phone check).</param>
+        /// <returns>A JSON object indicating availability and the specific field causing the conflict.</returns>
+        /// <response code="200">Returns the availability status ({ isTaken: bool, field: string, message: string }).</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpGet("Check-availability")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CheckAvailability([FromQuery] string? email, [FromQuery] string? username, [FromQuery] string? phone, [FromQuery] int? countryId)
+        {
+            if (!string.IsNullOrEmpty(email) && await _userRepository.ExistsByEmailAsync(email))
+                return Ok(new { isTaken = true, field = "email", message = "Cet email est déjà utilisé." });
+
+            if (!string.IsNullOrEmpty(username) && await _userRepository.ExistsByUsernameAsync(username))
+                return Ok(new { isTaken = true, field = "username", message = "Ce pseudo est déjà pris." });
+
+            if (!string.IsNullOrEmpty(phone))
+            {
+                int? prefixId = null;
+                if (countryId.HasValue)
+                {
+                    var country = await _countryRepository.GetByIdAsync(countryId.Value);
+                    prefixId = country?.PhonePrefixId;
+                }
+
+                if (await _userRepository.ExistsByPhoneAsync(phone, prefixId))
+                    return Ok(new { isTaken = true, field = "phone", message = "Ce numéro est déjà lié à un compte." });
+            }
+
+            return Ok(new { isTaken = false });
         }
 
         /// <summary>

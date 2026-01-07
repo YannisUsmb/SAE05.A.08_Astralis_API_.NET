@@ -2,6 +2,8 @@ using Astralis_API.Configuration;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Services.Implementations;
+using Astralis_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -174,6 +176,9 @@ builder.Services.AddScoped<INotificationRepository, NotificationManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<IUserNotificationRepository, UserNotificationManager>();
 builder.Services.AddScoped<IUserRoleRepository,UserRoleManager>();
+
+// Services
+builder.Services.AddScoped<IEmailService, GmailEmailService>();
 
 // automapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

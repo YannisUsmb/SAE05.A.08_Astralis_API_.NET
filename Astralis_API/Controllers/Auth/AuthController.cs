@@ -77,6 +77,11 @@ namespace Astralis_API.Controllers
                 return Unauthorized("Identifiant ou mot de passe incorrect.");
             }
 
+            if (!user.IsEmailVerified)
+            {
+                return Unauthorized("Votre compte n'est pas activé. Veuillez vérifier vos emails.");
+            }
+
             return GenerateSession(user);
         }
 
@@ -191,6 +196,31 @@ namespace Astralis_API.Controllers
             }
 
             return Unauthorized();
+        }
+
+        [HttpPost("Verify-Email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyEmail([FromBody] string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+            if (user == null)
+            {
+                return BadRequest("Jeton invalide.");
+            }
+
+            if (user.TokenExpiration < DateTime.Now)
+            {
+                return BadRequest("Le lien a expiré.");
+            }
+
+            user.IsEmailVerified = true;
+            user.VerificationToken = null;
+            user.TokenExpiration = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Email vérifié avec succès !");
         }
 
         // That method generates the JWT, creates the HttpOnly Cookie, and returns the DTO.
