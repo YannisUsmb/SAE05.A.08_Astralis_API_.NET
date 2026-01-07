@@ -235,7 +235,10 @@
                     .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Name))
                     .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
                     // .Include(gq => gq.GalaxyQuasarClassNavigation)
-                    .ForMember(dest => dest.GalaxyQuasarClassName, opt => opt.MapFrom(src => src.GalaxyQuasarClassNavigation.Label));
+                    .ForMember(dest => dest.GalaxyQuasarClassName, opt => opt.MapFrom(src => src.GalaxyQuasarClassNavigation.Label))
+                    .ForMember(dest => dest.GalaxyClassDescription, opt => opt.MapFrom(src => 
+                    src.GalaxyQuasarClassNavigation.Description));
+                
                 // DTO to Entity (Write).
                 CreateMap<GalaxyQuasarUpdateDto, GalaxyQuasar>();
                 CreateMap<GalaxyQuasarCreateDto, CelestialBody>(); // DTO to Parent Entity.
@@ -293,6 +296,7 @@
                     .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
                     // .Include(p => p.PlanetTypeNavigation)
                     .ForMember(dest => dest.PlanetTypeName, opt => opt.MapFrom(src => src.PlanetTypeNavigation.Label))
+                    .ForMember(dest => dest.PlanetTypeDescription, opt => opt.MapFrom(src => src.PlanetTypeNavigation.Description))
                     // .Include(p => p.DetectionMethodNavigation)
                     .ForMember(dest => dest.DetectionMethodName, opt => opt.MapFrom(src => src.DetectionMethodNavigation.Label))
                     // Computed Property.
@@ -384,7 +388,9 @@
                     .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.CelestialBodyNavigation.Alias))
                     // .Include(s => s.SpectralClassNavigation)
                     .ForMember(dest => dest.SpectralClassName, opt => opt.MapFrom(src => 
-                        src.SpectralClassNavigation != null ? src.SpectralClassNavigation.Label : null));
+                        src.SpectralClassNavigation != null ? src.SpectralClassNavigation.Label : null))
+                    .ForMember(dest => dest.SpectralClassDescription, opt => opt.MapFrom(src => 
+                    src.SpectralClassNavigation != null ? src.SpectralClassNavigation.Description : null));
                 // DTO to Entity (Write).
                 CreateMap<StarCreateDto, CelestialBody>(); // DTO to Parent Entity.
                 CreateMap<StarCreateDto, Star>() // DTO to Child Entity.
