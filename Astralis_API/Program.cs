@@ -179,6 +179,7 @@ builder.Services.AddScoped<IUserRoleRepository,UserRoleManager>();
 
 // Services
 builder.Services.AddScoped<IEmailService, GmailEmailService>();
+builder.Services.AddScoped<IUploadService, BlobStorageService>();
 
 // automapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

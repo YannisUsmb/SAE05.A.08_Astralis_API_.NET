@@ -20,14 +20,16 @@ namespace Astralis_API.Controllers
         private readonly ICountryRepository _countryRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IEmailService _emailService;
+        private readonly IUploadService _uploadService;
 
-        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IEmailService emailService)
+        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IEmailService emailService, IUploadService uploadService)
             : base(repository, mapper)
         {
             _userRepository = repository;
             _countryRepository = countryRepository;
             _webHostEnvironment = webHostEnvironment;
             _emailService = emailService;
+            _uploadService = uploadService;
         }
 
         /// <summary>
@@ -194,10 +196,10 @@ namespace Astralis_API.Controllers
                 !string.IsNullOrEmpty(oldAvatarUrl) &&
                 oldAvatarUrl != updateDto.AvatarUrl)
             {
-                DeleteOldAvatarFile(oldAvatarUrl);
+                await _uploadService.DeleteFileAsync(oldAvatarUrl, "avatars");
             }
 
-            return await base.Put(id, updateDto);
+            return result; 
         }
 
         /// <summary>
@@ -215,7 +217,7 @@ namespace Astralis_API.Controllers
         /// <returns>A JSON object indicating availability and the specific field causing the conflict.</returns>
         /// <response code="200">Returns the availability status ({ isTaken: bool, field: string, message: string }).</response>
         /// <response code="500">Internal server error.</response>
-        [HttpGet("Check-availability")]
+        [HttpGet("CheckAvailability")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -290,30 +292,6 @@ namespace Astralis_API.Controllers
             await _repository.UpdateAsync(user, user);
 
             return NoContent();
-        }
-
-        // Method to delete the old avatar file
-        private void DeleteOldAvatarFile(string avatarUrl)
-        {
-            try
-            {
-                var uri = new Uri(avatarUrl);
-                string path = uri.AbsolutePath;
-
-                if (path.StartsWith("/")) path = path.Substring(1);
-
-                string webRootPath = _webHostEnvironment.WebRootPath ?? Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
-                string fullPath = Path.Combine(webRootPath, path);
-
-                if (System.IO.File.Exists(fullPath))
-                {
-                    System.IO.File.Delete(fullPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur suppression image : {ex.Message}");
-            }
         }
     }
 }
