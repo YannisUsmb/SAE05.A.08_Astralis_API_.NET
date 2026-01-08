@@ -217,8 +217,6 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazor");
 
-app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();
