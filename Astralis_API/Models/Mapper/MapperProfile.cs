@@ -85,6 +85,7 @@
                 CreateMap<CartItem, CartItemDto>()
                     // .Include(ci => ci.ProductNavigation)
                     .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
+                    .ForMember(dest => dest.ProductPictureUrl, opt => opt.MapFrom(src => src.ProductNavigation.ProductPictureUrl))
                     .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
                 // DTO to Entity (Write).
                 CreateMap<CartItemCreateDto, CartItem>();
