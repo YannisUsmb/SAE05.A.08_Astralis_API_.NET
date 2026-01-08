@@ -5,6 +5,7 @@ using Astralis_API.Models.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.Checkout; // --- AJOUT POUR STRIPE ---
 using System.ComponentModel;
 using System.Security.Claims;
 
@@ -20,15 +21,21 @@ namespace Astralis_API.Controllers
         private readonly ICartItemRepository _cartItemRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
 
+        // --- AJOUT : Configuration pour lire la clé Stripe ---
+        private readonly IConfiguration _configuration;
+
+        // --- MODIFICATION DU CONSTRUCTEUR ---
         public CommandsController(ICommandRepository commandRepository,
             ICartItemRepository cartItemRepository,
             IOrderDetailRepository orderDetailRepository,
-            IMapper mapper)
+            IMapper mapper,
+            IConfiguration configuration) // On injecte la configuration ici
             : base(commandRepository, mapper)
         {
             _commandRepository = commandRepository;
             _cartItemRepository = cartItemRepository;
             _orderDetailRepository = orderDetailRepository;
+            _configuration = configuration; // On stocke la configuration
         }
 
         /// <summary>
@@ -102,8 +109,70 @@ namespace Astralis_API.Controllers
             return Ok(_mapper.Map<CommandDetailDto>(entity));
         }
 
+        // --- AJOUT : Méthode de validation post-paiement Stripe ---
+        [HttpPost("validate-payment")]
+        public async Task<IActionResult> ValidatePayment([FromQuery] string sessionId)
+        {
+            // 1. Récupération User
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            try
+            {
+                // 2. Vérification Stripe
+                Stripe.StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+                var service = new SessionService();
+                var session = await service.GetAsync(sessionId);
+
+                if (session.PaymentStatus != "paid")
+                {
+                    return BadRequest("Le paiement n'a pas été validé par la banque.");
+                }
+
+                // 3. Récupération du panier
+                IEnumerable<CartItem> cartItems = await _cartItemRepository.GetByUserIdAsync(userId);
+                if (!cartItems.Any())
+                {
+                    // Si le panier est déjà vide, la commande a probablement déjà été traitée
+                    return Ok(new { message = "Commande déjà traitée." });
+                }
+
+                // 4. Création de la Commande (Status 2 = Payée)
+                Command command = new Command
+                {
+                    UserId = userId,
+                    CommandStatusId = 2, // 2 = Payé/Validé
+                    Date = DateTime.UtcNow,
+                    Total = (decimal)(session.AmountTotal ?? 0) / 100m, // On prend le montant réel payé chez Stripe
+                    PdfName = $"Facture_{DateTime.Now:yyyyMMdd}_{userId}.pdf",
+                    PdfPath = "/content/invoices/placeholder.pdf"
+                };
+
+                await _repository.AddAsync(command);
+
+                // 5. Création des lignes (OrderDetails)
+                List<OrderDetail> orderDetails = cartItems.Select(item => new OrderDetail
+                {
+                    CommandId = command.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity
+                }).ToList();
+
+                await _orderDetailRepository.AddRangeAsync(orderDetails);
+
+                // 6. Vider le panier
+                await _cartItemRepository.ClearCartAsync(userId);
+
+                return Ok(new { commandId = command.Id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erreur serveur : {ex.Message}");
+            }
+        }
+
         /// <summary>
-        /// Validates a checkout and creates a new command.
+        /// Validates a checkout and creates a new command (Manual Checkout).
         /// </summary>
         /// <param name="checkoutDto">Checkout details (Addresses, Payment).</param>
         /// <returns>The created command.</returns>
