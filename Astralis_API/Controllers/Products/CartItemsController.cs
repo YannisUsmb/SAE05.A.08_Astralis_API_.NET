@@ -53,7 +53,8 @@ namespace Astralis_API.Controllers
         /// <returns>The cart summary.</returns>
         /// <response code="200">Returns the cart summary.</response>
         /// <response code="401">User is not authenticated.</response>
-        [HttpGet("Summary")]
+        // --- MODIFICATION 1 : Renommé pour correspondre au Frontend (LoadCartAsync) ---
+        [HttpGet("my-cart")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<CartDto>> GetMyCart()
@@ -105,7 +106,7 @@ namespace Astralis_API.Controllers
         /// Adds an item to the cart or updates quantity if it already exists.
         /// </summary>
         /// <param name="createDto">Item details.</param>
-        /// <returns>Status 200 OK.</returns>
+        /// <returns>Status 200 OK with the object.</returns>
         /// <response code="200">Item added or updated successfully.</response>
         /// <response code="400">Invalid input.</response>
         /// <response code="401">User is not authenticated.</response>
@@ -129,19 +130,26 @@ namespace Astralis_API.Controllers
 
             CartItem? existingItem = await _cartItemRepository.GetByIdAsync(userId, createDto.ProductId);
 
+            // --- MODIFICATION 2 : On capture l'item final pour le renvoyer ---
+            CartItem itemResult;
+
             if (existingItem != null)
             {
                 existingItem.Quantity += createDto.Quantity;
                 await _cartItemRepository.UpdateAsync(existingItem, existingItem);
+                itemResult = existingItem;
             }
             else
             {
                 CartItem newItem = _mapper.Map<CartItem>(createDto);
                 newItem.UserId = userId;
                 await _cartItemRepository.AddAsync(newItem);
+                itemResult = newItem;
             }
 
-            return Ok();
+            // CORRECTION CRITIQUE : On retourne l'objet mappé pour que Blazor ne plante pas
+            // (Erreur "input does not contain JSON tokens")
+            return Ok(_mapper.Map<CartItemDto>(itemResult));
         }
 
         /// <summary>
@@ -221,6 +229,38 @@ namespace Astralis_API.Controllers
             }
 
             return await base.Delete(userId, productId);
+        }
+
+        // --- MODIFICATION 3 : Ajout de la méthode manquante pour vider le panier ---
+        /// <summary>
+        /// Clears all items from the user's cart.
+        /// </summary>
+        /// <param name="userId">User ID.</param>
+        /// <returns>No content.</returns>
+        [HttpDelete("user/{userId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> ClearCart(int userId)
+        {
+            string? currentUserIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(currentUserIdString, out int currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (userId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var items = await _cartItemRepository.GetByUserIdAsync(userId);
+            foreach (var item in items)
+            {
+                await _cartItemRepository.DeleteAsync(item);
+            }
+
+            return NoContent();
         }
     }
 }
