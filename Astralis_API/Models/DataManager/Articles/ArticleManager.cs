@@ -33,31 +33,48 @@ namespace Astralis_API.Models.DataManager
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Article>> SearchAsync(
-            string? searchTerm = null,
-            IEnumerable<int>? typeIds = null,
-            bool? isPremium = null)
+        public async Task<(IEnumerable<Article> Items, int TotalCount)> SearchAsync(
+            string? searchTerm,
+            IEnumerable<int>? typeIds,
+            bool? isPremium,
+            string sortBy,
+            int page,
+            int pageSize)
         {
             var query = _entities.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                string searchTermLower = searchTerm.ToLower();
-                query = query.Where(a =>
-                    a.Title.ToLower().Contains(searchTermLower) || a.Content.ToLower().Contains(searchTermLower)
-                );
+                string term = searchTerm.ToLower();
+                query = query.Where(a => a.Title.ToLower().Contains(term) || a.Content.ToLower().Contains(term));
             }
 
             if (isPremium.HasValue)
+            {
                 query = query.Where(a => a.IsPremium == isPremium.Value);
+            }
 
             if (typeIds != null && typeIds.Any())
             {
                 query = query.Where(a => a.TypesOfArticle.Any(toa => typeIds.Contains(toa.ArticleTypeId)));
             }
 
+            query = sortBy switch
+            {
+                "date_asc" => query.OrderBy(a => a.PublicationDate),
+                "title_asc" => query.OrderBy(a => a.Title),
+                "title_desc" => query.OrderByDescending(a => a.Title),
+                _ => query.OrderByDescending(a => a.PublicationDate)
+            };
 
-            return await WithIncludes(query)
+            int totalCount = await query.CountAsync();
+
+            var items = await WithIncludes(query)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

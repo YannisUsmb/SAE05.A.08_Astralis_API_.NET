@@ -27,6 +27,17 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The premium status of the article is required.")]
         public bool IsPremium { get; set; } = false;
 
+        [Column("art_cover_url")]
+        [StringLength(250, ErrorMessage = "The url cover cannot be longer than 250 characters.")]
+        public string? CoverImageUrl { get; set; }
+
+        [Column("art_description")]
+        [StringLength(500, ErrorMessage = "The description cannot be longer than 500 characters.")]
+        public string? Description { get; set; }
+
+        [Column("art_date")]
+        public DateTime PublicationDate { get; set; } = DateTime.Now;
+
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Articles))]
         public virtual User UserNavigation { get; set; } = null!;

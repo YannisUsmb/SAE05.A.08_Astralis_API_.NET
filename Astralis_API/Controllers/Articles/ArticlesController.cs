@@ -66,10 +66,53 @@ namespace Astralis_API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<ArticleListDto>>> Search([FromQuery] ArticleFilterDto filter)
+        public async Task<ActionResult<PagedResultDto<ArticleListDto>>> Search([FromQuery] ArticleFilterDto filter)
         {
-            IEnumerable<Article?> articles = await _articleRepository.SearchAsync(filter.SearchTerm, filter.TypeIds, filter.IsPremium);
-            return Ok(_mapper.Map<IEnumerable<ArticleListDto>>(articles));
+            int page = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
+            int pageSize = filter.PageSize <= 0 ? 9 : filter.PageSize;
+            string sort = filter.SortBy ?? "date_desc";
+
+            var (articles, totalCount) = await _articleRepository.SearchAsync(
+                filter.SearchTerm,
+                filter.TypeIds,
+                filter.IsPremium,
+                sort,
+                page,
+                pageSize
+            );
+
+            var dtos = new List<ArticleListDto>();
+
+            foreach (var article in articles)
+            {
+                var dto = _mapper.Map<ArticleListDto>(article);
+
+                dto.CategoryNames = article.TypesOfArticle
+                    .Select(t => t.ArticleTypeNavigation.Label)
+                    .ToList();
+
+                if (string.IsNullOrEmpty(dto.Description))
+                {
+                    string plainText = System.Text.RegularExpressions.Regex.Replace(article.Content ?? "", "<.*?>", String.Empty);
+                    dto.Preview = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                }
+                else
+                {
+                    dto.Preview = dto.Description;
+                }
+
+                dtos.Add(dto);
+            }
+
+            var result = new PagedResultDto<ArticleListDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -82,7 +125,7 @@ namespace Astralis_API.Controllers
         /// <response code="401">User not authenticated.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -115,7 +158,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User is not the author of this article.</response>
         /// <response code="404">Article not found.</response>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

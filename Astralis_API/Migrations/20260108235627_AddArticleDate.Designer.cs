@@ -3,6 +3,7 @@ using System;
 using Astralis_API.Models.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Astralis_API.Migrations
 {
     [DbContext(typeof(AstralisDbContext))]
-    partial class AstralisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260108235627_AddArticleDate")]
+    partial class AddArticleDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,15 +93,6 @@ namespace Astralis_API.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("art_content");
-
-                    b.Property<string>("CoverImageUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("art_cover_url");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("art_description");
 
                     b.Property<bool>("IsPremium")
                         .HasColumnType("boolean")
