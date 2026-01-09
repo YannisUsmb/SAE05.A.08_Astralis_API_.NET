@@ -16,7 +16,7 @@ namespace Astralis_API.Models.EntityFramework
 
         [Column("art_title")]
         [Required(ErrorMessage = "The title is required.")]
-        [StringLength(50, ErrorMessage = "The title cannot be longer than 50 characters.")]
+        [StringLength(100, ErrorMessage = "The title cannot be longer than 100 characters.")]
         public string Title { get; set; } = null!;
 
         [Column("art_content", TypeName = "TEXT")]
