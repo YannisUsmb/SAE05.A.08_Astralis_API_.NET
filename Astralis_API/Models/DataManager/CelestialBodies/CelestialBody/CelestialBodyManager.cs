@@ -8,18 +8,18 @@ namespace Astralis_API.Models.DataManager
 {
     public class CelestialBodyManager : DataManager<CelestialBody, int, string>, ICelestialBodyRepository
     {
-        private readonly Dictionary<int, Func<Task<IDictionary<int, string>>>> _subtypeStrategies;
+        private readonly Dictionary<int, Func<Task<List<CelestialBodySubtypeDto>>>> _subtypeStrategies;
         private readonly Dictionary<int, Func<IQueryable<CelestialBody>, CelestialBodyFilterDto, IQueryable<CelestialBody>>> _specificFilterStrategies;
         private readonly Dictionary<string, Func<IQueryable<CelestialBody>, bool, IQueryable<CelestialBody>>> _sortingStrategies;
         
         public CelestialBodyManager(AstralisDbContext context):base(context)
         {
-            _subtypeStrategies = new Dictionary<int, Func<Task<IDictionary<int, string>>>>
+            _subtypeStrategies = new Dictionary<int, Func<Task<List<CelestialBodySubtypeDto>>>>
             {
-                { 1, () => GetSubtypesFromDbSet(_context.SpectralClasses, x => x.Id, x => x.Label) },
-                { 2, () => GetSubtypesFromDbSet(_context.PlanetTypes, x => x.Id, x => x.Label) },
-                { 3, () => GetSubtypesFromDbSet(_context.OrbitalClasses, x => x.Id, x => x.Label) },
-                { 5, () => GetSubtypesFromDbSet(_context.GalaxyQuasarClasses, x => x.Id, x => x.Label) }
+                { 1, () => GetSubtypesFromDbSet(_context.SpectralClasses, x => x.Id, x => x.Label, x => x.Description) },
+                { 2, () => GetSubtypesFromDbSet(_context.PlanetTypes, x => x.Id, x => x.Label, x => x.Description) },
+                { 3, () => GetSubtypesFromDbSet(_context.OrbitalClasses, x => x.Id, x => x.Label, x => x.Description) },
+                { 5, () => GetSubtypesFromDbSet(_context.GalaxyQuasarClasses, x => x.Id, x => x.Label, x => x.Description) }
             };
             
             _specificFilterStrategies = new Dictionary<int, Func<IQueryable<CelestialBody>, CelestialBodyFilterDto, IQueryable<CelestialBody>>>
@@ -65,13 +65,19 @@ namespace Astralis_API.Models.DataManager
             };
         }
         
-        private async Task<IDictionary<int, string>> GetSubtypesFromDbSet<T>(
+        private async Task<List<CelestialBodySubtypeDto>> GetSubtypesFromDbSet<T>(
             DbSet<T> dbSet, 
-            Func<T, int> keySelector, 
-            Func<T, string> valueSelector) where T : class
+            Func<T, int> idSelector, 
+            Func<T, string> labelSelector,
+            Func<T, string?> descriptionSelector) where T : class
         {
-             var list = await dbSet.ToListAsync();
-            return list.ToDictionary(keySelector, valueSelector);
+            var list = await dbSet.ToListAsync();
+            return list.Select(item => new CelestialBodySubtypeDto
+            {
+                Id = idSelector(item),
+                Label = labelSelector(item),
+                Description = descriptionSelector(item)
+            }).ToList();
         }
         
         public override async Task<CelestialBody?> GetByIdAsync(int id)
@@ -108,14 +114,14 @@ namespace Astralis_API.Models.DataManager
             )).ToListAsync();
         }
         
-        public async Task<IDictionary<int, string>> GetSubtypesByMainTypeAsync(int mainTypeId)
+        public async Task<List<CelestialBodySubtypeDto>> GetSubtypesByMainTypeAsync(int mainTypeId)
         {
             if (_subtypeStrategies.TryGetValue(mainTypeId, out var strategy))
             {
                 return await strategy();
             }
-            
-            return new Dictionary<int, string>();
+    
+            return new List<CelestialBodySubtypeDto>();
         }
         
         public async Task<IEnumerable<CelestialBody>> SearchAsync(

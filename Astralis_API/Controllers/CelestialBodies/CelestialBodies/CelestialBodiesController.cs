@@ -95,14 +95,7 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<CelestialBodySubtypeDto>>> GetSubtypes(int mainTypeId)
         {
-            IDictionary<int, string> subtypesDict = await _celestialBodyRepository.GetSubtypesByMainTypeAsync(mainTypeId);
-            
-            List<CelestialBodySubtypeDto> subtypesDto = subtypesDict.Select(kvp => new CelestialBodySubtypeDto
-            {
-                Id = kvp.Key,
-                Label = kvp.Value
-            }).ToList();
-
+            var subtypesDto = await _celestialBodyRepository.GetSubtypesByMainTypeAsync(mainTypeId);
             return Ok(subtypesDto);
         }
 
