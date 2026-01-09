@@ -36,7 +36,7 @@ namespace Astralis_API.Models.EntityFramework
         public string? Description { get; set; }
 
         [Column("art_date")]
-        public DateTime PublicationDate { get; set; } = DateTime.Now;
+        public DateTime PublicationDate { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Articles))]
