@@ -2,12 +2,15 @@
 using Astralis_API.Configuration;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Services.Interfaces; // Pour IEmailService
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Stripe.Checkout; // --- AJOUT POUR STRIPE ---
+using Stripe.Checkout;
 using System.ComponentModel;
+using System.Net;
 using System.Security.Claims;
+using System.Text; // Pour StringBuilder
 
 namespace Astralis_API.Controllers
 {
@@ -21,21 +24,27 @@ namespace Astralis_API.Controllers
         private readonly ICartItemRepository _cartItemRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
 
-        // --- AJOUT : Configuration pour lire la clé Stripe ---
+        // Configuration et Services ajoutés
         private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
 
-        // --- MODIFICATION DU CONSTRUCTEUR ---
-        public CommandsController(ICommandRepository commandRepository,
+        public CommandsController(
+            ICommandRepository commandRepository,
             ICartItemRepository cartItemRepository,
             IOrderDetailRepository orderDetailRepository,
             IMapper mapper,
-            IConfiguration configuration) // On injecte la configuration ici
+            IConfiguration configuration,
+            IUserRepository userRepository,
+            IEmailService emailService)
             : base(commandRepository, mapper)
         {
             _commandRepository = commandRepository;
             _cartItemRepository = cartItemRepository;
             _orderDetailRepository = orderDetailRepository;
-            _configuration = configuration; // On stocke la configuration
+            _configuration = configuration;
+            _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -80,7 +89,7 @@ namespace Astralis_API.Controllers
         /// <response code="200">Command found.</response>
         /// <response code="403">Forbidden (not your command).</response>
         /// <response code="404">Command not found.</response>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")] // CORRECTION: ajout de :int pour éviter conflit de route
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,59 +118,127 @@ namespace Astralis_API.Controllers
             return Ok(_mapper.Map<CommandDetailDto>(entity));
         }
 
-        // --- AJOUT : Méthode de validation post-paiement Stripe ---
+        /// <summary>
+        /// Validates a payment session and creates a command then sends an e-mail to the customer.
+        /// </summary>
         [HttpPost("validate-payment")]
         public async Task<IActionResult> ValidatePayment([FromQuery] string sessionId)
         {
-            // 1. Récupération User
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
 
             try
             {
-                // 2. Vérification Stripe
+                // 1. Stripe
                 Stripe.StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
                 var service = new SessionService();
                 var session = await service.GetAsync(sessionId);
 
-                if (session.PaymentStatus != "paid")
-                {
-                    return BadRequest("Le paiement n'a pas été validé par la banque.");
-                }
+                if (session.PaymentStatus != "paid") return BadRequest("Paiement non validé.");
 
-                // 3. Récupération du panier
-                IEnumerable<CartItem> cartItems = await _cartItemRepository.GetByUserIdAsync(userId);
-                if (!cartItems.Any())
-                {
-                    // Si le panier est déjà vide, la commande a probablement déjà été traitée
-                    return Ok(new { message = "Commande déjà traitée." });
-                }
+                var cartItems = await _cartItemRepository.GetByUserIdAsync(userId);
+                if (!cartItems.Any()) return Ok(new { message = "Commande déjà traitée." });
 
-                // 4. Création de la Commande (Status 2 = Payée)
                 Command command = new Command
                 {
                     UserId = userId,
-                    CommandStatusId = 2, // 2 = Payé/Validé
+                    CommandStatusId = 2,
                     Date = DateTime.UtcNow,
-                    Total = (decimal)(session.AmountTotal ?? 0) / 100m, // On prend le montant réel payé chez Stripe
+                    Total = (decimal)(session.AmountTotal ?? 0) / 100m,
                     PdfName = $"Facture_{DateTime.Now:yyyyMMdd}_{userId}.pdf",
                     PdfPath = "/content/invoices/placeholder.pdf"
                 };
 
                 await _repository.AddAsync(command);
 
-                // 5. Création des lignes (OrderDetails)
-                List<OrderDetail> orderDetails = cartItems.Select(item => new OrderDetail
+                List<OrderDetail> orderDetails = new List<OrderDetail>();
+                StringBuilder rowsHtml = new StringBuilder();
+
+                foreach (var item in cartItems)
                 {
-                    CommandId = command.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity
-                }).ToList();
+                    orderDetails.Add(new OrderDetail
+                    {
+                        CommandId = command.Id,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity
+                    });
+
+                    string pName = item.ProductNavigation?.Label ?? "Produit Inconnu";
+                    decimal pPrice = item.ProductNavigation?.Price ?? 0;
+                    decimal lineTotal = pPrice * item.Quantity;
+                    string imgUrl = item.ProductNavigation?.ProductPictureUrl;
+
+                    rowsHtml.Append($@"
+                <tr style='border-bottom: 1px solid #4a4e69;'>
+                    <td style='padding: 12px; width: 60px;'>
+                        <img src='{imgUrl}' alt='Img' style='width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #4a4e69;' />
+                    </td>
+                    <td style='padding: 12px; color: #e0e0e0; vertical-align: middle;'>
+                        <span style='font-size: 14px; font-weight: bold;'>{pName}</span>
+                    </td>
+                    <td style='padding: 12px; text-align: center; color: #e0e0e0; vertical-align: middle;'>
+                        x{item.Quantity}
+                    </td>
+                    <td style='padding: 12px; text-align: right; font-weight: bold; color: white; vertical-align: middle;'>
+                        {lineTotal:F2} €
+                    </td>
+                </tr>");
+                }
 
                 await _orderDetailRepository.AddRangeAsync(orderDetails);
-
-                // 6. Vider le panier
                 await _cartItemRepository.ClearCartAsync(userId);
+
+                // 5. ENVOI DU MAIL
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    try
+                    {
+                        string subject = $"Confirmation de commande #{command.Id}";
+
+                        string message = $@"
+                <div style='background-color: #0f0c29; color: white; font-family: Segoe UI, sans-serif; padding: 40px;'>
+                    
+                    <div style='text-align: center; margin-bottom: 30px;'>
+                        <h1 style='color: #a29bfe; margin: 0; letter-spacing: 2px;'>ASTRALIS</h1>
+                        <p style='color: #b2bec3; font-size: 14px; text-transform: uppercase;'>Mission Confirmée</p>
+                    </div>
+
+                    <div style='background-color: #1a1a40; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);'>
+                        <p style='margin-top: 0; font-size: 16px; color: #dfe6e9;'>Bonjour <strong>{user.Username}</strong>,</p>
+                        <p style='color: #b2bec3; margin-bottom: 20px;'>Vos équipements sont validés. Voici le manifeste de chargement :</p>
+                        
+                        <table style='width: 100%; border-collapse: collapse; font-size: 14px;'>
+                            <thead>
+                                <tr style='color: #a29bfe; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;'>
+                                    <th style='padding: 10px; text-align: left;' colspan='2'>Équipement</th>
+                                    <th style='padding: 10px; text-align: center;'>Qté</th>
+                                    <th style='padding: 10px; text-align: right;'>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rowsHtml}
+                            </tbody>
+                        </table>
+
+                        <div style='text-align: right; margin-top: 25px; padding-top: 15px; border-top: 1px solid #4a4e69;'>
+                            <p style='font-size: 14px; color: #b2bec3; margin: 0;'>Total payé</p>
+                            <p style='font-size: 24px; margin: 5px 0 0 0; color: #00cec9; font-weight: bold;'>{command.Total:F2} €</p>
+                        </div>
+                    </div>
+
+                    <div style='text-align: center; margin-top: 40px; color: #636e72; font-size: 12px;'>
+                        <p>Merci de voyager avec Astralis.</p>
+                    </div>
+                </div>";
+
+                        await _emailService.SendEmailAsync(user.Email, subject, message);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erreur Mail: {ex.Message}");
+                    }
+                }
 
                 return Ok(new { commandId = command.Id });
             }
@@ -172,7 +249,7 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Validates a checkout and creates a new command (Manual Checkout).
+        /// Validates a checkout and creates a new command.
         /// </summary>
         /// <param name="checkoutDto">Checkout details (Addresses, Payment).</param>
         /// <returns>The created command.</returns>
@@ -237,7 +314,7 @@ namespace Astralis_API.Controllers
         /// <response code="204">The command was successfully updated.</response>
         /// <response code="403">Forbidden (not your command).</response>
         /// <response code="404">The command does not exist.</response>
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")] // CORRECTION: ajout de :int
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -254,7 +331,7 @@ namespace Astralis_API.Controllers
         /// <response code="204">The command was successfully deleted.</response>
         /// <response code="403">Forbidden (not your command).</response>
         /// <response code="404">The command does not exist.</response>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")] // CORRECTION: ajout de :int
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
