@@ -24,7 +24,6 @@ namespace Astralis_API.Controllers
         private readonly ICartItemRepository _cartItemRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
 
-        // Configuration et Services ajoutés
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
@@ -89,7 +88,7 @@ namespace Astralis_API.Controllers
         /// <response code="200">Command found.</response>
         /// <response code="403">Forbidden (not your command).</response>
         /// <response code="404">Command not found.</response>
-        [HttpGet("{id:int}")] // CORRECTION: ajout de :int pour éviter conflit de route
+        [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -129,7 +128,6 @@ namespace Astralis_API.Controllers
 
             try
             {
-                // 1. Stripe
                 Stripe.StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
                 var service = new SessionService();
                 var session = await service.GetAsync(sessionId);
@@ -188,7 +186,6 @@ namespace Astralis_API.Controllers
                 await _orderDetailRepository.AddRangeAsync(orderDetails);
                 await _cartItemRepository.ClearCartAsync(userId);
 
-                // 5. ENVOI DU MAIL
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
