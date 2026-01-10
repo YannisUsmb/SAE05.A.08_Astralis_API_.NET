@@ -62,13 +62,18 @@ namespace Astralis_API.Controllers
         /// <response code="400">The input data is invalid.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<ActionResult> Post(TypeOfArticleDto dto)
         {
-            return await base.Post(dto);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var entity = _mapper.Map<TypeOfArticle>(dto);
+            await _repository.AddAsync(entity);
+
+            return Ok(dto);
         }
 
         /// <summary>
@@ -81,7 +86,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">The TypeOfArticle does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id1}/{id2}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

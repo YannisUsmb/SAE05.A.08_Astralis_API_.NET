@@ -82,11 +82,9 @@ namespace Astralis_API.Controllers
             );
 
             var dtos = new List<ArticleListDto>();
-
             foreach (var article in articles)
             {
                 var dto = _mapper.Map<ArticleListDto>(article);
-
                 dto.CategoryNames = article.TypesOfArticle
                     .Select(t => t.ArticleTypeNavigation.Label)
                     .ToList();
@@ -104,10 +102,13 @@ namespace Astralis_API.Controllers
                 dtos.Add(dto);
             }
 
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
             var result = new PagedResultDto<ArticleListDto>
             {
                 Items = dtos,
                 TotalCount = totalCount,
+                TotalPages = totalPages,
                 Page = page,
                 PageSize = pageSize
             };
@@ -115,35 +116,41 @@ namespace Astralis_API.Controllers
             return Ok(result);
         }
 
+
+
         /// <summary>
         /// Creates a new article (Commercial Editor only).
         /// </summary>
         /// <param name="createDto">The article data.</param>
         /// <returns>The created article.</returns>
-        /// <response code="200">Article created successfully.</response>
         /// <response code="400">Invalid input.</response>
         /// <response code="401">User not authenticated.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
         [Authorize(Roles = "Rédacteur Commercial")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<ActionResult<ArticleDetailDto>> Post(ArticleCreateDto createDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var article = _mapper.Map<Article>(createDto);
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
-                return Unauthorized();
+            if (int.TryParse(userIdString, out int userId))
+            {
+                article.UserId = userId;
+            }
 
-            Article entity = _mapper.Map<Article>(createDto);
-            entity.UserId = userId;
+            article.PublicationDate = DateTime.UtcNow;
 
-            await _repository.AddAsync(entity);
-            return Ok(_mapper.Map<ArticleDetailDto>(entity));
+            await _repository.AddAsync(article);
+
+            var createdDto = _mapper.Map<ArticleDetailDto>(article);
+
+            return CreatedAtAction(nameof(GetById), new { id = article.Id }, createdDto);
         }
 
         /// <summary>

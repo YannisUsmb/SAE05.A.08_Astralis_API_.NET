@@ -59,6 +59,7 @@ namespace Astralis_API.Models.Mapper
             ///// ArticleType.
             // Entity to DTO (Read).
             CreateMap<ArticleType, ArticleTypeDto>();
+            CreateMap<ArticleTypeDto, ArticleType>();
 
             ///// Asteroid.
             // Entity to DTO (Read).
@@ -404,6 +405,7 @@ namespace Astralis_API.Models.Mapper
             ///// TypeOfArticle.
             // Entity to DTO (Read).
             CreateMap<TypeOfArticle, TypeOfArticleDto>();
+            CreateMap<TypeOfArticleDto, TypeOfArticle>();
 
             ///// User.
             // Entity to DTO (Read).

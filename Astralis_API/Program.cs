@@ -113,6 +113,7 @@ builder.Services.AddScoped<IPhonePrefixRepository, PhonePrefixManager>();
 builder.Services.AddScoped<IArticleInterestRepository, ArticleInterestManager>();
 builder.Services.AddScoped<IArticleRepository, ArticleManager>();
 builder.Services.AddScoped<IArticleTypeRepository, ArticleTypeManager>();
+builder.Services.AddScoped<IJoinRepository<TypeOfArticle, int, int>, TypeOfArticleManager>();
 builder.Services.AddScoped<ITypeOfArticleRepository, TypeOfArticleManager>();
 
 //      Celestial bodies
