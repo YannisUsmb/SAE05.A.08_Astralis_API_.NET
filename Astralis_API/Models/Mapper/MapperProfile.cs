@@ -26,7 +26,7 @@ namespace Astralis_API.Models.Mapper
             CreateMap<AliasStatus, AliasStatusDto>();
 
             ///// Article.
-            // Entity to DTO (Read).
+            // Entity to DTO (Read).                
             CreateMap<Article, ArticleListDto>()
                 // Computed Property: Preview.
                 .ForMember(dest => dest.Preview, opt => opt.MapFrom(src =>
@@ -38,18 +38,22 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.ArticleInterests.Count())) // Computed Property: LikesCount.
                 .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src => src.Comments.Count())); // Computed Property: CommentsCount.
             CreateMap<Article, ArticleDetailDto>()
-                // .Include(a => a.UserNavigation)
-                .ForMember(dest => dest.AuthorUsername, opt => opt.MapFrom(src => src.UserNavigation.Username))
-                .ForMember(dest => dest.AuthorAvatarUrl, opt => opt.MapFrom(src => src.UserNavigation.AvatarUrl))
                 // .Include(a => a.TypesOfArticle)
                 .ForMember(dest => dest.CategoryIds, opt => opt.MapFrom(src =>
-                    src.TypesOfArticle.Select(toa => toa.ArticleTypeId).ToList()))
-                // .ThenInclude(toa => toa.ArticleTypeNavigation)
+                    src.TypesOfArticle.Select(t => t.ArticleTypeId).ToList()))
+                // .Include(a => a.UserNavifation)
+                .ForMember(dest => dest.AuthorUsername, opt => opt.MapFrom(src =>
+                    src.UserNavigation.Username))
+                .ForMember(dest => dest.AuthorAvatarUrl, opt => opt.MapFrom(src =>
+                    src.UserNavigation.AvatarUrl))
+                // Computed Properties.
                 .ForMember(dest => dest.CategoryNames, opt => opt.MapFrom(src =>
-                    src.TypesOfArticle.Select(toa => toa.ArticleTypeNavigation.Label).ToList()));
+                    src.TypesOfArticle.Select(t => t.ArticleTypeNavigation.Label).ToList()));
             // DTO to Entity (Write).
             CreateMap<ArticleCreateDto, Article>();
-            CreateMap<ArticleUpdateDto, Article>();
+            CreateMap<ArticleUpdateDto, Article>()
+                .ForMember(dest => dest.TypesOfArticle, opt => opt.MapFrom(src =>
+                    src.CategoryIds.Select(id => new TypeOfArticle { ArticleTypeId = id })));
 
             ///// ArticleInterest.
             // Entity to DTO (Read).

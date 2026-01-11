@@ -76,5 +76,34 @@ namespace Astralis_API.Models.DataManager
 
             return (items, totalCount);
         }
+
+        public async override Task UpdateAsync(Article entityToUpdate, Article entity)
+        {
+            entityToUpdate.Title = entity.Title;
+            entityToUpdate.Description = entity.Description;
+            entityToUpdate.Content = entity.Content;
+            entityToUpdate.CoverImageUrl = entity.CoverImageUrl;
+            entityToUpdate.IsPremium = entity.IsPremium;
+
+            await _context.Entry(entityToUpdate)
+                .Collection(a => a.TypesOfArticle)
+                .LoadAsync();
+
+            entityToUpdate.TypesOfArticle.Clear();
+
+            if (entity.TypesOfArticle != null)
+            {
+                foreach (var newItem in entity.TypesOfArticle)
+                {
+                    entityToUpdate.TypesOfArticle.Add(new TypeOfArticle
+                    {
+                        ArticleId = entityToUpdate.Id,
+                        ArticleTypeId = newItem.ArticleTypeId
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

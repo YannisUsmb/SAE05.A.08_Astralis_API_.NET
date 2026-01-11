@@ -50,9 +50,15 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override Task<ActionResult<ArticleDetailDto>> GetById(int id)
+        public override async Task<ActionResult<ArticleDetailDto>> GetById(int id)
         {
-            return base.GetById(id);
+            var article = await _articleRepository.GetByIdAsync(id);
+
+            if (article == null) return NotFound();
+
+            var dto = _mapper.Map<ArticleDetailDto>(article);
+
+            return Ok(dto);
         }
 
         /// <summary>
@@ -174,16 +180,20 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<IActionResult> Put(int id, ArticleUpdateDto updateDto)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) return NotFound();
+            var entityFromDb = await _repository.GetByIdAsync(id);
+            if (entityFromDb == null) return NotFound();
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || entity.UserId != userId)
+            if (!int.TryParse(userIdString, out int userId) || entityFromDb.UserId != userId)
             {
                 return Forbid();
             }
 
-            return await base.Put(id, updateDto);
+            var entityFromDto = _mapper.Map<Article>(updateDto);
+
+            await _articleRepository.UpdateAsync(entityFromDb, entityFromDto);
+
+            return NoContent();
         }
 
         /// <summary>
@@ -195,7 +205,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">The article does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
