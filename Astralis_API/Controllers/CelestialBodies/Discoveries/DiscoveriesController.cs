@@ -119,10 +119,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostAsteroid(DiscoveryAsteroidSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Asteroid, AsteroidCreateDto>(
-                submission.Title,
-                submission.Details,
-                _asteroidRepository.AddAsync
-            );
+                submission.Title, submission.Details, _asteroidRepository.AddAsync, 3); // 3 = Astéroïde
         }
 
         /// <summary>
@@ -142,7 +139,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostPlanet(DiscoveryPlanetSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Planet, PlanetCreateDto>(
-                submission.Title, submission.Details, _planetRepository.AddAsync);
+                submission.Title, submission.Details, _planetRepository.AddAsync, 2); // 2 = Planète
         }
 
         /// <summary>
@@ -162,7 +159,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostStar(DiscoveryStarSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Star, StarCreateDto>(
-                submission.Title, submission.Details, _starRepository.AddAsync);
+                submission.Title, submission.Details, _starRepository.AddAsync, 1); // 1 = Étoile
         }
 
         /// <summary>
@@ -182,7 +179,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostComet(DiscoveryCometSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Comet, CometCreateDto>(
-                submission.Title, submission.Details, _cometRepository.AddAsync);
+                submission.Title, submission.Details, _cometRepository.AddAsync, 4); // 4 = Comète
         }
 
         /// <summary>
@@ -202,7 +199,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostGalaxy(DiscoveryGalaxyQuasarSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<GalaxyQuasar, GalaxyQuasarCreateDto>(
-                submission.Title, submission.Details, _galaxyRepository.AddAsync);
+                submission.Title, submission.Details, _galaxyRepository.AddAsync, 5); // 5 = Galaxie/Quasar
         }
         /// <summary>
         /// Submits a new Satellite discovery.
@@ -221,7 +218,7 @@ namespace Astralis_API.Controllers
         public async Task<ActionResult<DiscoveryDto>> PostSatellite(DiscoverySatelliteSubmissionDto submission)
         {
             return await ProcessDiscoverySubmission<Satellite, SatelliteCreateDto>(
-                submission.Title, submission.Details, _satelliteRepository.AddAsync);
+                submission.Title, submission.Details, _satelliteRepository.AddAsync, 6); // 6 = Satellite
         }
 
         /// <summary>
@@ -435,7 +432,12 @@ namespace Astralis_API.Controllers
 
         // --- HELPER ---
         private async Task<ActionResult<DiscoveryDto>> ProcessDiscoverySubmission<TEntity, TCreateDto>(
-            string title, TCreateDto detailsDto, Func<TEntity, Task> addMethod) where TEntity : class
+            string title, 
+            TCreateDto detailsDto, 
+            Func<TEntity, Task> addMethod,
+            int celestialBodyTypeId) 
+            where TEntity : class
+            where TCreateDto : CelestialBodyCreateDto
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -443,6 +445,8 @@ namespace Astralis_API.Controllers
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int userId))
                 return Unauthorized();
+            
+            detailsDto.CelestialBodyTypeId = celestialBodyTypeId;
 
             TEntity celestialEntity = _mapper.Map<TEntity>(detailsDto);
             await addMethod(celestialEntity);

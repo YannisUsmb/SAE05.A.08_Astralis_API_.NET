@@ -49,7 +49,7 @@ namespace Astralis_API.Controllers
         /// <response code="200">The {EntityName} was successfully retrieved.</response>
         /// <response code="404">The {EntityName} does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         [ActionName("GetById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

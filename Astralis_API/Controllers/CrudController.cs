@@ -59,7 +59,7 @@ namespace Astralis_API.Controllers
         /// <response code="400">The input data is invalid.</response>
         /// <response code="404">The {EntityName} does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         [ActionName("Put")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -87,7 +87,7 @@ namespace Astralis_API.Controllers
         /// <response code="204">The {EntityName} was successfully deleted.</response>
         /// <response code="404">The {EntityName} does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [ActionName("Delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
