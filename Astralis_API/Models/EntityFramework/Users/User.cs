@@ -85,6 +85,9 @@ namespace Astralis_API.Models.EntityFramework
         [Column("usr_token_expiration")]
         public DateTime? TokenExpiration { get; set; }
 
+        [Column("usr_stripecustomerid", TypeName = "VARCHAR(100)")]
+        public string? StripeCustomerId { get; set; }
+
         [ForeignKey(nameof(PhonePrefixId))]
         [InverseProperty(nameof(PhonePrefix.Users))]
         public virtual PhonePrefix? PhonePrefixNavigation { get; set; }

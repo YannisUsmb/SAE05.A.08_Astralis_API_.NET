@@ -9,5 +9,7 @@ namespace Astralis_API.Models.Repository
         Task<bool> ExistsByPhoneAsync(string phone, int? prefixId);
         Task<User?> GetByEmailOrUsernameAsync(string identifier);
         Task<User?> GetByPhoneAndPrefixAsync(string phone, int? phonePrefixId);
+        Task UpdateStripeIdAsync(int userId, string stripeCustomerId);
+        Task SetPremiumStatusAsync(int userId, bool isPremium);
     }
 }

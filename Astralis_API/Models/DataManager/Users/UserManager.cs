@@ -43,6 +43,25 @@ namespace Astralis_API.Models.DataManager
                 .FirstOrDefaultAsync(u => u.Phone == phone && u.PhonePrefixId == phonePrefixId);
         }
 
+        public async Task UpdateStripeIdAsync(int userId, string stripeCustomerId)
+        {
+            var user = await _entities.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.StripeCustomerId = stripeCustomerId;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task SetPremiumStatusAsync(int userId, bool isPremium)
+        {
+            var user = await _entities.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.IsPremium = isPremium;
+                await _context.SaveChangesAsync();
+            }
+        }
         protected override IQueryable<User> WithIncludes(IQueryable<User> query)
         {
             return query.Include(u => u.DeliveryAddressNavigation)
