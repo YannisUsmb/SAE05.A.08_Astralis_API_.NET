@@ -1,6 +1,7 @@
 ﻿using Astralis.Shared.DTOs;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace Astralis_API.Controllers
     public class ReportsController : CrudController<Report, ReportDto, ReportDto, ReportCreateDto, ReportUpdateDto, int>
     {
         private readonly IReportRepository _reportRepository;
+        private readonly IEmailService _emailService;
 
-        public ReportsController(IReportRepository repository, IMapper mapper)
+        public ReportsController(IReportRepository repository, IEmailService emailService, IMapper mapper)
             : base(repository, mapper)
         {
             _reportRepository = repository;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -48,12 +51,41 @@ namespace Astralis_API.Controllers
             }
 
             var report = _mapper.Map<Report>(createDto);
-
             report.UserId = userId;
             report.Date = DateTime.UtcNow;
             report.ReportStatusId = 1;
 
             await _repository.AddAsync(report);
+
+            try
+            {
+                string? userEmail = User.FindFirstValue(ClaimTypes.Email);
+                string? username = User.FindFirstValue(ClaimTypes.Name);
+
+                if (!string.IsNullOrEmpty(userEmail))
+                {
+                    string subject = "Confirmation de votre signalement - Astralis";
+                    string message = $@"
+                        <div style='background: #0f0c29; color: #e0e0e0; padding: 30px; font-family: sans-serif; border-radius: 10px;'>
+                            <h2 style='color: #a76dff; margin-bottom: 20px;'>Signalement reçu</h2>
+                            <p>Bonjour <strong>{username ?? "Explorateur"}</strong>,</p>
+                            <p>Nous vous confirmons la bonne réception de votre signalement concernant un commentaire.</p>
+                            <div style='background: rgba(255, 255, 255, 0.05); padding: 15px; border-left: 4px solid #a76dff; margin: 20px 0; font-style: italic; color: #ccc;'>
+                                ""{createDto.Description ?? "Aucune description fournie"}""
+                            </div>
+                            <p>Nos équipes de modération vont analyser la situation dans les plus brefs délais et prendront les mesures nécessaires conformément à nos règles communautaires.</p>
+                            <p>Merci de contribuer à la sécurité et à la qualité des échanges sur Astralis.</p>
+                            <hr style='border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 30px 0;'>
+                            <p style='font-size: 12px; color: #888;'>Ceci est un message automatique, merci de ne pas y répondre.</p>
+                        </div>";
+
+                    await _emailService.SendEmailAsync(userEmail, subject, message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'envoi de l'email de signalement : {ex.Message}");
+            }
 
             var resultDto = _mapper.Map<ReportDto>(report);
             return CreatedAtAction(nameof(GetById), new { id = report.Id }, resultDto);
