@@ -22,6 +22,7 @@ namespace Astralis_API.Controllers
             _configuration = configuration;
             _userRepository = userRepository;
 
+            // Initialisation de la clé Stripe
             var secretKey = _configuration["Stripe:SecretKey"];
             if (!string.IsNullOrEmpty(secretKey))
             {
@@ -32,8 +33,72 @@ namespace Astralis_API.Controllers
         [HttpPost("create-checkout-session")]
         public async Task<ActionResult> CreateCheckoutSession([FromBody] List<CartItemDto> cartItems)
         {
-            return BadRequest("Code panier existant à conserver");
+            try
+            {
+                var domain = _configuration["Stripe:Domain"];
+                if (string.IsNullOrEmpty(domain)) domain = "https://localhost:7036";
+
+                var lineItems = new List<SessionLineItemOptions>();
+
+                foreach (var item in cartItems)
+                {
+                    var productData = new SessionLineItemPriceDataProductDataOptions
+                    {
+                        Name = item.ProductLabel,
+                    };
+
+                    if (!string.IsNullOrEmpty(item.ProductPictureUrl))
+                    {
+                        productData.Images = new List<string> { item.ProductPictureUrl };
+                    }
+
+                    var priceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.UnitPrice * 100),
+                        Currency = "eur",
+                        ProductData = productData,
+                    };
+
+                    lineItems.Add(new SessionLineItemOptions
+                    {
+                        PriceData = priceData,
+                        Quantity = item.Quantity,
+                    });
+                }
+
+                var options = new SessionCreateOptions
+                {
+                    LineItems = lineItems,
+                    Mode = "payment",
+
+                    // --- C'est ici que j'ai adapté l'URL selon ta demande ---
+                    SuccessUrl = domain + "/payment-success?session_id={CHECKOUT_SESSION_ID}",
+
+                    // Si l'utilisateur annule, on le renvoie vers le panier
+                    CancelUrl = domain + "/cart",
+
+                    PaymentMethodTypes = new List<string> { "card" },
+                    Metadata = new Dictionary<string, string>
+            {
+                { "UserId", GetCurrentUserId().ToString() },
+                { "OrderType", "CartCheckout" }
+            }
+                };
+
+                var service = new SessionService();
+                Session session = await service.CreateAsync(options);
+
+                return Ok(new { url = session.Url });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Erreur Checkout : {e.Message}");
+                return StatusCode(500, new { error = e.Message });
+            }
         }
+
+        // ... Le reste de tes méthodes (Subscribe, Portal, etc.) reste inchangé ...
+        // Je les inclus ci-dessous pour que tu aies le fichier complet si besoin
 
         [HttpPost("subscribe")]
         public async Task<ActionResult> CreateSubscriptionSession([FromBody] JsonElement body)
@@ -78,12 +143,10 @@ namespace Astralis_API.Controllers
             }
             catch (StripeException se)
             {
-                Console.WriteLine($"ERREUR STRIPE : {se.StripeError.Message}");
                 return StatusCode(400, $"Stripe Error: {se.StripeError.Message}");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERREUR INTERNE : {e.Message}");
                 return StatusCode(500, e.Message);
             }
         }
@@ -114,7 +177,7 @@ namespace Astralis_API.Controllers
         [HttpPost("portal")]
         public async Task<ActionResult> CreatePortalSession()
         {
-            var domain = _configuration["Stripe:Domain"] ?? "https://localhost:7036";
+            var domain = _configuration["Stripe:Domain"] ?? "https://localhost:7064";
             int userId = GetCurrentUserId();
             var user = await _userRepository.GetByIdAsync(userId);
 
@@ -133,11 +196,9 @@ namespace Astralis_API.Controllers
             return Ok(new { url = session.Url });
         }
 
-
         private async Task<string> GetOrCreateStripeCustomerAsync()
         {
             int userId = GetCurrentUserId();
-
             var user = await _userRepository.GetByIdAsync(userId);
 
             if (user == null) throw new Exception("User not found");
@@ -158,6 +219,7 @@ namespace Astralis_API.Controllers
             await _userRepository.UpdateStripeIdAsync(userId, customer.Id);
             return customer.Id;
         }
+
         [HttpGet("sync-status")]
         public async Task<ActionResult> SyncSubscriptionStatus()
         {
@@ -187,11 +249,9 @@ namespace Astralis_API.Controllers
 
                 if (sub != null && (sub.Status == "active" || sub.Status == "trialing"))
                 {
-                    
                     if (sub.CancelAtPeriodEnd)
                     {
                         hasActiveSubscription = false;
-                        Console.WriteLine($"[STRICT] User {userId} a annulé (fin de période). Accès coupé immédiatement.");
                     }
                     else
                     {
@@ -202,7 +262,6 @@ namespace Astralis_API.Controllers
                 if (user.IsPremium != hasActiveSubscription)
                 {
                     await _userRepository.SetPremiumStatusAsync(userId, hasActiveSubscription);
-                    Console.WriteLine($"[SYNC] Statut mis à jour pour User {userId} : {hasActiveSubscription}");
                 }
 
                 return Ok(new { isPremium = hasActiveSubscription });
@@ -212,6 +271,7 @@ namespace Astralis_API.Controllers
                 return StatusCode(500, e.Message);
             }
         }
+
         private int GetCurrentUserId()
         {
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
