@@ -30,9 +30,8 @@ namespace Astralis_API.Models.EntityFramework
         public int? AdminId { get; set; }
 
         [Column("rep_description")]
-        [Required(ErrorMessage = "The description is required.")]
-        [StringLength(150, ErrorMessage = "The description cannot be longer than 150 characters.")]
-        public string Description { get; set; } = null!;
+        [StringLength(500, ErrorMessage = "The description cannot be longer than 500 characters.")]
+        public string? Description { get; set; }
 
         [Column("rep_date")]
         [Required(ErrorMessage = "The date is required.")]

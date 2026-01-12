@@ -42,22 +42,21 @@ namespace Astralis_API.Controllers
                 return BadRequest(ModelState);
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            if (!int.TryParse(userIdString, out int userId))
             {
                 return Unauthorized();
             }
 
-            Report entity = _mapper.Map<Report>(createDto);
+            var report = _mapper.Map<Report>(createDto);
 
-            entity.UserId = userId;
-            entity.Date = DateTime.UtcNow;
-            entity.ReportStatusId = 1;
-            entity.AdminId = null;
+            report.UserId = userId;
+            report.Date = DateTime.UtcNow;
+            report.ReportStatusId = 1;
 
-            await _repository.AddAsync(entity);
+            await _repository.AddAsync(report);
 
-            ReportDto? returnDto = _mapper.Map<ReportDto>(entity);
-            return Ok(returnDto);
+            var resultDto = _mapper.Map<ReportDto>(report);
+            return CreatedAtAction(nameof(GetById), new { id = report.Id }, resultDto);
         }
 
         /// <summary>
