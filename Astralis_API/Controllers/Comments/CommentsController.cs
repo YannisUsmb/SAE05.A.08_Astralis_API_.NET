@@ -113,14 +113,14 @@ namespace Astralis_API.Controllers
         /// <param name="id">The ID of the comment to update.</param>
         /// <param name="updateDto">The new text content.</param>
         /// <returns>No content.</returns>
-        /// <response code="204">The comment was successfully updated.</response>
+        /// <response code="200">The comment was successfully updated.</response>
         /// <response code="400">Invalid input data.</response>
         /// <response code="401">User is not authenticated.</response>
         /// <response code="403">User tried to modify a comment that belongs to someone else.</response>
         /// <response code="404">Comment not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -139,14 +139,18 @@ namespace Astralis_API.Controllers
 
             if (!int.TryParse(userIdString, out int userId))
                 return Unauthorized();
-            if (entity.UserId != userId && userRole != "Admin") 
+            if (entity.UserId != userId && userRole != "Admin")
                 return Forbid();
 
             entity.Text = updateDto.Text;
+            entity.IsEdited = true;
 
             await _repository.UpdateAsync(entity, entity);
 
-            return NoContent();
+            var fullEntity = await _repository.GetByIdAsync(id);
+            var dto = _mapper.Map<CommentDto>(fullEntity);
+
+            return Ok(dto);
         }
 
         /// <summary>
@@ -154,13 +158,13 @@ namespace Astralis_API.Controllers
         /// </summary>
         /// <param name="id">The unique identifier of the comment to delete.</param>
         /// <returns>No content.</returns>
-        /// <response code="204">The comment was successfully deleted.</response>
+        /// <response code="200">The comment was successfully deleted.</response>
         /// <response code="401">User not authenticated.</response>
         /// <response code="403">User is not authorized (not the author or admin).</response>
         /// <response code="404">The comment does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -186,7 +190,11 @@ namespace Astralis_API.Controllers
                 return Forbid();
             }
 
-            return await base.Delete(id);
+            var dto = _mapper.Map<CommentDto>(entity);
+
+            await _repository.DeleteAsync(entity);
+
+            return Ok(dto);
         }
 
         // Utility method to build a comment tree from a flat list

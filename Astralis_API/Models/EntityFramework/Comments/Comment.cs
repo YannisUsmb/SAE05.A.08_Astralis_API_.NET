@@ -30,6 +30,10 @@ namespace Astralis_API.Models.EntityFramework
         [Required(ErrorMessage = "The date is required.")]
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
+        [Column("com_isedited")]
+        [Required(ErrorMessage = "The edited status of the comment is required.")]
+        public bool IsEdited { get; set; } = false;
+
         [Column("com_isvisible")]
         [Required(ErrorMessage = "The visible status of the comment is required.")]
         public bool IsVisible { get; set; } = true;
