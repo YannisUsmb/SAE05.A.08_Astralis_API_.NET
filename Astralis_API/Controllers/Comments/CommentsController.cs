@@ -15,9 +15,11 @@ namespace Astralis_API.Controllers
     [DisplayName("Comment")]
     public class CommentsController : CrudController<Comment, CommentDto, CommentDto, CommentCreateDto, CommentUpdateDto, int>
     {
+        private readonly ICommentRepository _repository;
         public CommentsController(ICommentRepository repository, IMapper mapper)
             : base(repository, mapper)
         {
+            _repository = repository;
         }
 
         /// <summary>
@@ -54,6 +56,20 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
+        /// Retrieves the comment tree for a specific article.
+        /// </summary>
+        [HttpGet("Article/{articleId}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetByArticleId(int articleId)
+        {
+            var allComments = await _repository.GetByArticleIdAsync(articleId);
+            var allDtos = _mapper.Map<IEnumerable<CommentDto>>(allComments).ToList();
+            var rootComments = BuildCommentTree(allDtos);
+            return Ok(rootComments);
+        }
+
+        /// <summary>
         /// Creates a new Comment linked to the authenticated user.
         /// </summary>
         /// <param name="createDto">The comment content and article ID.</param>
@@ -69,25 +85,24 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<ActionResult<CommentDto>> Post(CommentCreateDto createDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return Unauthorized();
             }
 
             Comment entity = _mapper.Map<Comment>(createDto);
-
-            entity.UserId = userId; 
+            entity.UserId = userId;
             entity.Date = DateTime.UtcNow;
             entity.IsVisible = true;
 
             await _repository.AddAsync(entity);
 
-            CommentDto returnDto = _mapper.Map<CommentDto>(entity);
+            var fullEntity = await _repository.GetByIdAsync(entity.Id);
+
+            CommentDto returnDto = _mapper.Map<CommentDto>(fullEntity);
             return Ok(returnDto);
         }
 
@@ -116,19 +131,20 @@ namespace Astralis_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Comment? entityToUpdate = await _repository.GetByIdAsync(id);
-            if (entityToUpdate == null)
-                return NotFound();
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return NotFound();
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || entityToUpdate.UserId != userId)
-            {
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (!int.TryParse(userIdString, out int userId))
+                return Unauthorized();
+            if (entity.UserId != userId && userRole != "Admin") 
                 return Forbid();
-            }
 
-            _mapper.Map(updateDto, entityToUpdate);
+            entity.Text = updateDto.Text;
 
-            await _repository.UpdateAsync(entityToUpdate, entityToUpdate);
+            await _repository.UpdateAsync(entity, entity);
 
             return NoContent();
         }
@@ -171,6 +187,31 @@ namespace Astralis_API.Controllers
             }
 
             return await base.Delete(id);
+        }
+
+        // Utility method to build a comment tree from a flat list
+        private List<CommentDto> BuildCommentTree(List<CommentDto> allComments)
+        {
+            var lookup = allComments.ToDictionary(c => c.Id);
+            var roots = new List<CommentDto>();
+
+            foreach (var comment in allComments)
+            {
+                if (comment.RepliesToId.HasValue && lookup.TryGetValue(comment.RepliesToId.Value, out var parent))
+                {
+                    comment.ParentUsername = parent.Username;
+                    comment.ParentTextPreview = parent.Text.Length > 50
+                        ? parent.Text.Substring(0, 50) + "..."
+                        : parent.Text;
+
+                    parent.Replies.Add(comment);
+                }
+                else
+                {
+                    roots.Add(comment);
+                }
+            }
+            return roots.OrderByDescending(c => c.Date).ToList();
         }
     }
 }

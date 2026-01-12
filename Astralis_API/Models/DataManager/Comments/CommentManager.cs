@@ -16,6 +16,14 @@ namespace Astralis_API.Models.DataManager
                          .FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        public async Task<IEnumerable<Comment>> GetByArticleIdAsync(int articleId)
+        {
+            return await WithIncludes(_entities)
+                .Where(c => c.ArticleId == articleId && c.IsVisible)
+                .OrderBy(c => c.Date)
+                .ToListAsync();
+        }
+
         protected override IQueryable<Comment> WithIncludes(IQueryable<Comment> query)
         {
             return query.Include(c => c.ArticleNavigation)

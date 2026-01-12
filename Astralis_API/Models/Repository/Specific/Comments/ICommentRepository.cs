@@ -4,5 +4,6 @@ namespace Astralis_API.Models.Repository
 {
     public interface ICommentRepository : ICrudRepository<Comment, int>
     {
+        Task<IEnumerable<Comment>> GetByArticleIdAsync(int articleId);
     }
 }
