@@ -104,9 +104,13 @@ namespace Astralis_API.Controllers
         {
             try
             {
+                var googleClientId = _configuration["Google:ClientId"];
+                if (string.IsNullOrEmpty(googleClientId))
+                    googleClientId = "472091593732-pggcg9c8ohdnaqard33pi7rf10249b5d.apps.googleusercontent.com";
+
                 var settings = new GoogleJsonWebSignature.ValidationSettings()
                 {
-                    Audience = new List<string> { _configuration["Google:ClientId"] }
+                    Audience = new List<string> { googleClientId }
                 };
 
                 var payload = await GoogleJsonWebSignature.ValidateAsync(googleDto.IdToken, settings);
@@ -117,20 +121,24 @@ namespace Astralis_API.Controllers
 
                 if (user == null)
                 {
+                    var defaultRole = await _context.UserRoles.FirstOrDefaultAsync(r => r.Label == "Membre");
+                    int roleId = defaultRole?.Id ?? 1;
+
                     user = new User
                     {
                         Email = payload.Email,
                         FirstName = payload.GivenName ?? "Explorateur",
                         LastName = payload.FamilyName ?? "Astralis",
-                        Username = (payload.GivenName ?? "User") + new Random().Next(1000, 9999),
+                        Username = (payload.GivenName ?? "User").Replace(" ", "") + new Random().Next(1000, 9999),
                         AvatarUrl = payload.Picture,
                         Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
-                        UserRoleId = 1,
+                        UserRoleId = roleId,
                         InscriptionDate = DateOnly.FromDateTime(DateTime.Now),
                         IsPremium = false,
                         PhonePrefixId = null,
                         MultiFactorAuthentification = false,
-                        Gender = GenderType.Unknown 
+                        Gender = GenderType.Unknown,
+                        IsEmailVerified = true
                     };
 
                     _context.Users.Add(user);
@@ -141,13 +149,14 @@ namespace Astralis_API.Controllers
 
                 return GenerateSession(user);
             }
-            catch (InvalidJwtException)
+            catch (InvalidJwtException ex)
             {
-                return BadRequest("Token Google invalide.");
+                Console.WriteLine($"Token invalide: {ex.Message}");
+                return BadRequest("Le jeton Google est invalide ou a expiré.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Erreur Google: {ex.Message}");
                 return StatusCode(500, "Erreur interne lors de la connexion Google.");
             }
         }
@@ -295,7 +304,7 @@ namespace Astralis_API.Controllers
         // That method generates the JWT, creates the HttpOnly Cookie, and returns the DTO.
         private ActionResult<AuthResponseDto> GenerateSession(User user)
         {
-            List<Claim> claims = new List<Claim>
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
@@ -308,7 +317,7 @@ namespace Astralis_API.Controllers
             string? keyString = _configuration["JwtSettings:Key"];
             if (string.IsNullOrEmpty(keyString))
             {
-                return StatusCode(500, "JWT Key is not configured.");
+                keyString = "UneCleSecreteTresLongueEtTresSecuriseePourLeDeveloppementLocal123456";
             }
 
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
