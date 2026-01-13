@@ -286,7 +286,8 @@ namespace Astralis_API.Models.Mapper
             CreateMap<OrderDetail, OrderDetailDto>()
                 // .Include(od => od.ProductNavigation)
                 .ForMember(dest => dest.ProductLabel, opt => opt.MapFrom(src => src.ProductNavigation.Label))
-                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price));
+                .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductNavigation.Price))
+                .ForMember(dest => dest.ProductPictureUrl, opt => opt.MapFrom(src => src.ProductNavigation.ProductPictureUrl)); ;
             CreateMap<OrderDetailCreateDto, OrderDetail>();
 
             CreateMap<OrderDetailUpdateDto, OrderDetail>();
