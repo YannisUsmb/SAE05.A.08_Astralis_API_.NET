@@ -2,7 +2,7 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IEventTypeRepository : IReadableRepository<EventType, int>
+    public interface IEventTypeRepository : ICrudRepository<EventType, int>
     {
     }
 }
