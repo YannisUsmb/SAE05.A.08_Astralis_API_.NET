@@ -90,7 +90,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User not authorized (requires Commercial Editor role).</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -129,7 +129,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">Product not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -162,7 +162,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">The product does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Rédacteur commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
