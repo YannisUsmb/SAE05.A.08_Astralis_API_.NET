@@ -30,7 +30,7 @@ namespace Astralis_API.Models.DataManager
                             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Event>> SearchAsync(
+        public async Task<(IEnumerable<Event> Items, int TotalCount)> SearchAsync(
             string? searchText,
             IEnumerable<int>? eventTypeIds,
             DateTime? minStartDate,
@@ -53,14 +53,10 @@ namespace Astralis_API.Models.DataManager
                 query = query.Where(e => eventTypeIds.Contains(e.EventTypeId));
             }
 
-            if (minStartDate.HasValue)
-                query = query.Where(e => e.StartDate >= minStartDate.Value);
-            if (maxStartDate.HasValue)
-                query = query.Where(e => e.StartDate <= maxStartDate.Value);
-            if (minEndDate.HasValue)
-                query = query.Where(e => e.EndDate >= minEndDate.Value);
-            if (maxEndDate.HasValue)
-                query = query.Where(e => e.EndDate <= maxEndDate.Value);
+            if (minStartDate.HasValue) query = query.Where(e => e.StartDate >= minStartDate.Value);
+            if (maxStartDate.HasValue) query = query.Where(e => e.StartDate <= maxStartDate.Value);
+            if (minEndDate.HasValue) query = query.Where(e => e.EndDate >= minEndDate.Value);
+            if (maxEndDate.HasValue) query = query.Where(e => e.EndDate <= maxEndDate.Value);
 
             query = sortBy switch
             {
@@ -71,11 +67,14 @@ namespace Astralis_API.Models.DataManager
                 "date_asc" or _ => query.OrderBy(e => e.StartDate)
             };
 
-            query = query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
+            int totalCount = await query.CountAsync();
 
-            return await WithIncludes(query).ToListAsync();
+            var items = await WithIncludes(query)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

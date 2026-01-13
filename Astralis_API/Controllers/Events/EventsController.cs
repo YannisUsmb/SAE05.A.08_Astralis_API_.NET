@@ -67,21 +67,36 @@ namespace Astralis_API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<EventDto>>> Search([FromQuery] EventFilterDto search)
+        public async Task<ActionResult<PagedResultDto<EventDto>>> Search([FromQuery] EventFilterDto search)
         {
-            IEnumerable<Event> events = await _eventRepository.SearchAsync(
+            int page = search.PageNumber <= 0 ? 1 : search.PageNumber;
+            int pageSize = search.PageSize <= 0 ? 9 : search.PageSize;
+
+            var (events, totalCount) = await _eventRepository.SearchAsync(
                 search.SearchText,
                 search.EventTypeIds,
                 search.MinStartDate,
                 search.MaxStartDate,
                 search.MinEndDate,
                 search.MaxEndDate,
-                search.PageNumber,
-                search.PageSize,
+                page,
+                pageSize,
                 search.SortBy
             );
 
-            return Ok(_mapper.Map<IEnumerable<EventDto>>(events));
+            var eventDtos = _mapper.Map<IEnumerable<EventDto>>(events);
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            var result = new PagedResultDto<EventDto>
+            {
+                Items = eventDtos,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Ok(result);
         }
 
         /// <summary>
