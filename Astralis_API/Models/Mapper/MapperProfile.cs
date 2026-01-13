@@ -204,8 +204,8 @@ namespace Astralis_API.Models.Mapper
                     opt => opt.MapFrom(src => src.DiscoveryStatusNavigation.Label))
                 // .Include(d => d.AliasStatusNavigation)
                 .ForMember(dest => dest.AliasStatusLabel,
-                    opt =>
-                        opt.MapFrom(src => src.AliasStatusNavigation != null ? src.AliasStatusNavigation.Label : null));
+                    opt => opt.MapFrom(src => src.AliasStatusNavigation != null ? src.AliasStatusNavigation.Label : null))
+                .ForMember(dest => dest.CelestialBodyTypeName, opt => opt.MapFrom(src => src.CelestialBodyNavigation.CelestialBodyTypeNavigation.Label));
             // DTO to Entity (Write).
             CreateMap<DiscoveryCreateDto, Discovery>();
             CreateMap<DiscoveryUpdateDto, Discovery>();

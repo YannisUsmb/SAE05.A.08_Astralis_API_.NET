@@ -1,3 +1,4 @@
+using Astralis_API.Models.EntityFramework;
 using Astralis.Shared.DTOs;
 using Astralis_API.Models.Repository;
 using AutoMapper;
@@ -12,11 +13,13 @@ namespace Astralis_API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IDiscoveryRepository _discoveryRepository;
+        private readonly AstralisDbContext _context;
         private readonly IMapper _mapper;
 
-        public AdminController(IDiscoveryRepository discoveryRepository, IMapper mapper)
+        public AdminController(IDiscoveryRepository discoveryRepository, IMapper mapper, AstralisDbContext context)
         {
             _discoveryRepository = discoveryRepository;
+            _context = context;
             _mapper = mapper;
         }
 
@@ -24,8 +27,7 @@ namespace Astralis_API.Controllers
         [HttpGet("Discoveries/Pending")]
         public async Task<ActionResult<IEnumerable<DiscoveryDto>>> GetPendingDiscoveries()
         {
-            var pendingDiscoveries = await _discoveryRepository.SearchAsync(discoveryStatusId: 1); 
-
+            var pendingDiscoveries = await _discoveryRepository.SearchAsync(discoveryStatusId: 2); 
             return Ok(_mapper.Map<IEnumerable<DiscoveryDto>>(pendingDiscoveries));
         }
 
@@ -36,10 +38,29 @@ namespace Astralis_API.Controllers
             var discovery = await _discoveryRepository.GetByIdAsync(id);
             if (discovery == null) return NotFound();
             
-            discovery.DiscoveryStatusId = 3; 
-            
+            discovery.DiscoveryStatusId = 3;
             await _discoveryRepository.UpdateAsync(discovery, discovery);
             
+            var notification = new Notification
+            {
+                NotificationTypeId = 6, 
+                Label = "Découverte Validée", 
+                Description = $"Votre découverte '{discovery.Title}' a été validée et est maintenant publique."
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            var userNotif = new UserNotification
+            {
+                UserId = discovery.UserId,
+                NotificationId = notification.Id,
+                IsRead = false
+            };
+
+            _context.UserNotifications.Add(userNotif);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
@@ -50,11 +71,29 @@ namespace Astralis_API.Controllers
             var discovery = await _discoveryRepository.GetByIdAsync(id);
             if (discovery == null) return NotFound();
             
-            discovery.DiscoveryStatusId = 4;
-
-            // Ici tu pourrais envoyer un email avec rejectionDto.Reason
-
+            discovery.DiscoveryStatusId = 6;
             await _discoveryRepository.UpdateAsync(discovery, discovery);
+
+
+            var notification = new Notification
+            {
+                NotificationTypeId = 6, 
+                Label = "Découverte Refusée",
+                Description = $"Votre découverte '{discovery.Title}' a été refusée. Motif : {rejectionDto.Reason}"
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            var userNotif = new UserNotification
+            {
+                UserId = discovery.UserId,
+                NotificationId = notification.Id,
+                IsRead = false
+            };
+
+            _context.UserNotifications.Add(userNotif);
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }

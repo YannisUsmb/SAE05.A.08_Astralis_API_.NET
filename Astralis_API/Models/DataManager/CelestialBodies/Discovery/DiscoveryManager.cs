@@ -22,6 +22,7 @@ namespace Astralis_API.Models.DataManager
                 .Include(d => d.AliasStatusNavigation)
                 .Include(d => d.ApprovalAliasUserNavigation)
                 .Include(d => d.CelestialBodyNavigation)
+                .ThenInclude(cb => cb.CelestialBodyTypeNavigation)
                 .Include(d => d.ApprovalUserNavigation)
                 .Include(d => d.UserNavigation)
                 .Include(d => d.DiscoveryStatusNavigation);
