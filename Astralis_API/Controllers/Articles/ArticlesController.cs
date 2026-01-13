@@ -133,7 +133,7 @@ namespace Astralis_API.Controllers
         /// <response code="401">User not authenticated.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -171,7 +171,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User is not the author of this article.</response>
         /// <response code="404">Article not found.</response>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -205,7 +205,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">The article does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
