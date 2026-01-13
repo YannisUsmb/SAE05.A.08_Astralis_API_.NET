@@ -200,9 +200,12 @@ namespace Astralis_API.Models.Mapper
                 // .Include(d => d.UserNavigation)
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserNavigation.Username))
                 // .Include(d => d.DiscoveryStatusNavigation)
-                .ForMember(dest => dest.DiscoveryStatusLabel, opt => opt.MapFrom(src => src.DiscoveryStatusNavigation.Label))
+                .ForMember(dest => dest.DiscoveryStatusLabel,
+                    opt => opt.MapFrom(src => src.DiscoveryStatusNavigation.Label))
                 // .Include(d => d.AliasStatusNavigation)
-                .ForMember(dest => dest.AliasStatusLabel, opt => opt.MapFrom(src => src.AliasStatusNavigation != null ? src.AliasStatusNavigation.Label : null));
+                .ForMember(dest => dest.AliasStatusLabel,
+                    opt =>
+                        opt.MapFrom(src => src.AliasStatusNavigation != null ? src.AliasStatusNavigation.Label : null));
             // DTO to Entity (Write).
             CreateMap<DiscoveryCreateDto, Discovery>();
             CreateMap<DiscoveryUpdateDto, Discovery>();
@@ -218,8 +221,7 @@ namespace Astralis_API.Models.Mapper
                 // .Include(e => e.EventTypeNavigation)
                 .ForMember(dest => dest.EventTypeLabel, opt => opt.MapFrom(src => src.EventTypeNavigation.Label))
                 // Computed Property.
-                .ForMember(dest => dest.InterestCount, opt => opt.MapFrom(src =>
-                    src.EventInterests.Count()));
+                .ForMember(dest => dest.InterestCount, opt => opt.MapFrom(src => src.EventInterests.Count()));
             // DTO to Entity (Write).
             CreateMap<EventCreateDto, Event>();
             CreateMap<EventUpdateDto, Event>();
