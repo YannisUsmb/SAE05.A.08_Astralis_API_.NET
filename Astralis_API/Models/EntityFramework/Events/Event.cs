@@ -24,7 +24,6 @@ namespace Astralis_API.Models.EntityFramework
         public string Title { get; set; } = null!;
 
         [Column("eve_description")]
-        [Required(ErrorMessage = "The description is required.")]
         [StringLength(500, ErrorMessage = "The description cannot be longer than 500 characters.")]
         public string Description { get; set; } = null!;
 

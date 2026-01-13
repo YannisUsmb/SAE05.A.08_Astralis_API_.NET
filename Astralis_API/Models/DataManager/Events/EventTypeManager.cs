@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Models.DataManager
 {
-    public class EventTypeManager : ReadableManager<EventType, int>, IEventTypeRepository
+    public class EventTypeManager : CrudManager<EventType, int>, IEventTypeRepository
     {
         public EventTypeManager(AstralisDbContext context) : base(context)
         {

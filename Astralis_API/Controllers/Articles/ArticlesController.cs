@@ -122,8 +122,6 @@ namespace Astralis_API.Controllers
             return Ok(result);
         }
 
-
-
         /// <summary>
         /// Creates a new article (Commercial Editor only).
         /// </summary>
