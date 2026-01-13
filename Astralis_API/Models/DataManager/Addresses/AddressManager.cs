@@ -12,6 +12,7 @@ namespace Astralis_API.Models.DataManager
         public override async Task<Address?> GetByIdAsync(int id)
         {
             return await WithIncludes(_entities)
+                            .Include(a => a.CityNavigation)
                          .FirstOrDefaultAsync(a => a.Id == id);
         }
         protected override IQueryable<Address> WithIncludes(IQueryable<Address> query)

@@ -21,5 +21,18 @@ namespace Astralis_API.Models.DataManager
                 .Include(c => c.CountryNavigation)
                 .Include(c => c.Addresses);
         }
+        public async Task<IEnumerable<City>> SearchAsync(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return new List<City>();
+
+            term = term.Trim().ToLower();
+
+            return await _context.Cities
+                .Where(c => c.Name.ToLower().StartsWith(term) || c.PostCode.ToLower().StartsWith(term))
+                .OrderByDescending(c => c.PostCode.ToLower() == term)
+                .ThenByDescending(c => c.Name.ToLower() == term)
+                .ThenBy(c => c.Name)
+                .ToListAsync();
+        }
     }
 }
