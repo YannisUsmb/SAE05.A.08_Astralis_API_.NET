@@ -143,7 +143,7 @@ namespace Astralis_API.Controllers
         /// <response code="403">User not authorized (requires CommercialEditor role).</response>
         /// <response code="500">Internal server error.</response>
         [HttpPost]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -160,6 +160,12 @@ namespace Astralis_API.Controllers
 
             Event entity = _mapper.Map<Event>(createDto);
             entity.UserId = userId;
+
+            entity.StartDate = entity.StartDate.ToUniversalTime();
+            if (entity.EndDate.HasValue)
+            {
+                entity.EndDate = entity.EndDate.Value.ToUniversalTime();
+            }
 
             await _repository.AddAsync(entity);
             return Ok(_mapper.Map<EventDto>(entity));
@@ -179,7 +185,7 @@ namespace Astralis_API.Controllers
         /// <response code="404">Event not found.</response>
         /// <response code="500">Internal server error.</response>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -189,18 +195,25 @@ namespace Astralis_API.Controllers
         public override async Task<IActionResult> Put(int id, EventUpdateDto updateDto)
         {
             var eventEntity = await _eventRepository.GetByIdAsync(id);
-            if (eventEntity == null)
-            {
-                return NotFound();
-            }
+            if (eventEntity == null) return NotFound();
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || eventEntity.UserId != userId)
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            if (eventEntity.UserId != userId && userRole != "Admin")
             {
                 return Forbid();
             }
 
             var newEvent = _mapper.Map(updateDto, eventEntity);
+
+            newEvent.StartDate = newEvent.StartDate.ToUniversalTime();
+            if (newEvent.EndDate.HasValue)
+            {
+                newEvent.EndDate = newEvent.EndDate.Value.ToUniversalTime();
+            }
 
             await _eventRepository.UpdateAsync(eventEntity, newEvent);
 
@@ -216,20 +229,21 @@ namespace Astralis_API.Controllers
         /// <response code="404">The event does not exist.</response>
         /// <response code="500">An internal server error occurred.</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Rédacteur Commercial")]
+        [Authorize(Roles = "Rédacteur Commercial, Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public override async Task<IActionResult> Delete(int id)
         {
             Event? entity = await _repository.GetByIdAsync(id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
+            if (entity == null) return NotFound();
 
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || entity.UserId != userId)
+            string? userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            if (entity.UserId != userId && userRole != "Admin")
             {
                 return Forbid();
             }
