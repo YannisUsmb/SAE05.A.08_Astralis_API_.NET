@@ -51,9 +51,23 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override Task<ActionResult<EventDto>> GetById(int id)
+        public override async Task<ActionResult<EventDto>> GetById(int id)
         {
-            return base.GetById(id);
+            var entity = await _eventRepository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            var dto = _mapper.Map<EventDto>(entity);
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdString, out int userId))
+            {
+                dto.IsInterested = entity.EventInterests.Any(ei => ei.UserId == userId);
+            }
+
+            return Ok(dto);
         }
 
         /// <summary>
@@ -69,6 +83,13 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PagedResultDto<EventDto>>> Search([FromQuery] EventFilterDto search)
         {
+            int? currentUserId = null;
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out int uid))
+            {
+                currentUserId = uid;
+            }
+
             int page = search.PageNumber <= 0 ? 1 : search.PageNumber;
             int pageSize = search.PageSize <= 0 ? 9 : search.PageSize;
 
@@ -86,6 +107,18 @@ namespace Astralis_API.Controllers
 
             var eventDtos = _mapper.Map<IEnumerable<EventDto>>(events);
             int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            if (currentUserId.HasValue)
+            {
+                foreach (var dto in eventDtos)
+                {
+                    var sourceEvent = events.FirstOrDefault(e => e.Id == dto.Id);
+                    if (sourceEvent != null)
+                    {
+                        dto.IsInterested = sourceEvent.EventInterests.Any(ei => ei.UserId == currentUserId.Value);
+                    }
+                }
+            }
 
             var result = new PagedResultDto<EventDto>
             {
