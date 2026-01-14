@@ -1,13 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Astralis_API.Models.EntityFramework
 {
-    [Table("t_j_usernotification_uno")]
-    [PrimaryKey(nameof(UserId), nameof(NotificationId))]
+    [Table("t_e_usernotification_uno")]
     public class UserNotification
     {
+        [Key]
+        [Column("uno_id")]
+        public int Id { get; set; }
+
         [Column("usr_id")]
         public int UserId { get; set; }
 
@@ -19,7 +21,7 @@ namespace Astralis_API.Models.EntityFramework
         public bool IsRead { get; set; }
 
         [Column("uno_receivedat")]
-        [Required(ErrorMessage = "The receiving date is required.")]
+        [Required(ErrorMessage = "The received date is required.")]
         public DateTime ReceivedAt { get; set; } = DateTime.Now;
 
         [ForeignKey(nameof(UserId))]

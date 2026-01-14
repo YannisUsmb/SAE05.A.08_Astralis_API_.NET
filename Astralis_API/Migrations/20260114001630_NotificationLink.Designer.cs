@@ -3,6 +3,7 @@ using System;
 using Astralis_API.Models.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Astralis_API.Migrations
 {
     [DbContext(typeof(AstralisDbContext))]
-    partial class AstralisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260114001630_NotificationLink")]
+    partial class NotificationLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1629,37 +1632,28 @@ namespace Astralis_API.Migrations
 
             modelBuilder.Entity("Astralis_API.Models.EntityFramework.UserNotification", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("UserId")
                         .HasColumnType("integer")
-                        .HasColumnName("uno_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean")
-                        .HasColumnName("uno_isread");
+                        .HasColumnName("usr_id");
 
                     b.Property<int>("NotificationId")
                         .HasColumnType("integer")
                         .HasColumnName("not_id");
 
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean")
+                        .HasColumnName("uno_isread");
+
                     b.Property<DateTime>("ReceivedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("uno_receivedat");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("usr_id");
-
-                    b.HasKey("Id")
+                    b.HasKey("UserId", "NotificationId")
                         .HasName("usernotification_pkey");
 
                     b.HasIndex("NotificationId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("t_e_usernotification_uno", "public");
+                    b.ToTable("t_j_usernotification_uno", "public");
                 });
 
             modelBuilder.Entity("Astralis_API.Models.EntityFramework.UserNotificationType", b =>

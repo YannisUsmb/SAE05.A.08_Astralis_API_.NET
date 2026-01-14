@@ -2,8 +2,8 @@
 
 namespace Astralis_API.Models.Repository
 {
-    public interface IUserNotificationRepository : IJoinRepository<UserNotification, int, int>
+    public interface IUserNotificationRepository : ICrudRepository<UserNotification, int>
     {
-        Task<IEnumerable<UserNotification?>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<UserNotification>> GetByUserIdAsync(int userId);
     }
 }

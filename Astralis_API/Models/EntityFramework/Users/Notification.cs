@@ -23,6 +23,10 @@ namespace Astralis_API.Models.EntityFramework
         [StringLength(300, ErrorMessage = "The description cannot be longer than 300 characters.")]
         public string? Description { get; set; }
 
+        [Column("not_link")]
+        [StringLength(250)]
+        public string? Link { get; set; }
+
         [InverseProperty(nameof(UserNotification.NotificationNavigation))]
         public virtual ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
 

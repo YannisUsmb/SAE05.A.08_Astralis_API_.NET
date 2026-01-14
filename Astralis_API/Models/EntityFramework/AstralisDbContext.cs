@@ -159,7 +159,7 @@ public partial class AstralisDbContext : DbContext
 
         modelBuilder.Entity<UserNotification>(entity =>
         {
-            entity.HasKey(un => new { un.UserId, un.NotificationId }).HasName("usernotification_pkey");
+            entity.HasKey(un => un.Id).HasName("usernotification_pkey");
 
             entity.HasOne(un => un.UserNavigation)
                 .WithMany(u => u.UserNotifications)
