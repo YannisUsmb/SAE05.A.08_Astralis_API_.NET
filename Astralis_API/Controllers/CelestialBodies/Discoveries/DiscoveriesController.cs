@@ -460,7 +460,7 @@ namespace Astralis_API.Controllers
                 Title = title,
                 UserId = userId,
                 CelestialBodyId = celestialBodyId,
-                DiscoveryStatusId = 1,
+                DiscoveryStatusId = 2,
                 AliasStatusId = null,
                 DiscoveryApprovalUserId = null,
                 AliasApprovalUserId = null

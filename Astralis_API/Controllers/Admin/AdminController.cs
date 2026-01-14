@@ -71,7 +71,7 @@ namespace Astralis_API.Controllers
             var discovery = await _discoveryRepository.GetByIdAsync(id);
             if (discovery == null) return NotFound();
             
-            discovery.DiscoveryStatusId = 6;
+            discovery.DiscoveryStatusId = 4;
             await _discoveryRepository.UpdateAsync(discovery, discovery);
 
 

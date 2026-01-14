@@ -44,7 +44,13 @@ namespace Astralis_API.Models.DataManager
             if (!string.IsNullOrWhiteSpace(title))
                 query = query.Where(d => d.Title.ToLower().Contains(title.ToLower()) || d.CelestialBodyNavigation.Alias.ToLower().Contains(title.ToLower()));
             if (discoveryStatusId.HasValue)
+            {
                 query = query.Where(d => d.DiscoveryStatusId == discoveryStatusId.Value);
+            }
+            else
+            {
+                query = query.Where(d => d.DiscoveryStatusId == 3);
+            }
             if (aliasStatusId.HasValue)
                 query = query.Where(d => d.AliasStatusId == aliasStatusId.Value);
             if (discoveryApprovalUserId.HasValue)
