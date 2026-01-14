@@ -124,6 +124,11 @@ namespace Astralis_API.Models.DataManager
             return new List<CelestialBodySubtypeDto>();
         }
         
+        public async Task<IEnumerable<DetectionMethod>> GetDetectionMethodsAsync()
+        {
+            return await _context.DetectionMethods.ToListAsync();
+        }
+        
         public async Task<IEnumerable<CelestialBody>> SearchAsync(
             CelestialBodyFilterDto filter,
             int pageNumber = 1,

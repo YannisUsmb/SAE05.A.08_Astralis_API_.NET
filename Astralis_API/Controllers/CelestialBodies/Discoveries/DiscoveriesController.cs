@@ -79,6 +79,20 @@ namespace Astralis_API.Controllers
         {
             return base.GetById(id);
         }
+        
+        // GET: api/Discoveries/DetectionMethods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("DetectionMethods")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<IEnumerable<DetectionMethodDto>>> GetDetectionMethods()
+        {
+            var methods = await _celestialBodyRepository.GetDetectionMethodsAsync();
+            
+            return Ok(_mapper.Map<IEnumerable<DetectionMethodDto>>(methods));
+        }
 
         /// <summary>
         /// Searches for discoveries based on title, status, or approvals.
@@ -212,7 +226,7 @@ namespace Astralis_API.Controllers
         /// <response code="400">Invalid input data.</response>
         /// <response code="401">User not authenticated.</response>
         /// <response code="500">Internal server error.</response>
-        [HttpPost("Satellites")]
+        [HttpPost("Satellite")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -80,7 +80,8 @@ namespace Astralis_API.Models.Mapper
             CreateMap<AsteroidCreateDto, Asteroid>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore())
-                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src));
+                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.OrbitalClassId, opt => opt.MapFrom(src => src.OrbitalClassId));
             ///// Audio.
             // Entity to DTO (Read).
             CreateMap<Audio, AudioDto>();
@@ -254,7 +255,8 @@ namespace Astralis_API.Models.Mapper
             CreateMap<GalaxyQuasarCreateDto, GalaxyQuasar>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore())
-                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src));
+                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.GalaxyQuasarClassId, opt => opt.MapFrom(src => src.GalaxyQuasarClassId));
 
             ///// GalaxyQuasarClass.
             // Entity to DTO (Read).
@@ -316,7 +318,9 @@ namespace Astralis_API.Models.Mapper
             CreateMap<PlanetCreateDto, Planet>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore())
-                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src));
+                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.PlanetTypeId, opt => opt.MapFrom(src => src.PlanetTypeId))
+                .ForMember(dest => dest.DetectionMethodId, opt => opt.MapFrom(src => src.DetectionMethodId));
             CreateMap<PlanetUpdateDto, Planet>();
 
             ///// PlanetType.
@@ -380,7 +384,11 @@ namespace Astralis_API.Models.Mapper
             CreateMap<SatelliteCreateDto, Satellite>() // DTO to Child Entity.
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CelestialBodyId, opt => opt.Ignore())
-                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src));
+                .ForMember(dest => dest.CelestialBodyNavigation, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.PlanetId, opt => opt.MapFrom(src => src.PlanetId))
+                .ForMember(dest => dest.Radius, opt => opt.MapFrom(src => src.Radius))
+                .ForMember(dest => dest.Gravity, opt => opt.MapFrom(src => src.Gravity))
+                .ForMember(dest => dest.Density, opt => opt.MapFrom(src => src.Density));
             CreateMap<SatelliteUpdateDto, Satellite>();
 
             ///// SpectralClass.
