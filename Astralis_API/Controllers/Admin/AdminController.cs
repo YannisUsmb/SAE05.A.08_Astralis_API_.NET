@@ -55,7 +55,8 @@ namespace Astralis_API.Controllers
             {
                 UserId = discovery.UserId,
                 NotificationId = notification.Id,
-                IsRead = false
+                IsRead = false,
+                ReceivedAt = DateTime.UtcNow
             };
 
             _context.UserNotifications.Add(userNotif);
@@ -89,7 +90,8 @@ namespace Astralis_API.Controllers
             {
                 UserId = discovery.UserId,
                 NotificationId = notification.Id,
-                IsRead = false
+                IsRead = false,
+                ReceivedAt = DateTime.UtcNow
             };
 
             _context.UserNotifications.Add(userNotif);
