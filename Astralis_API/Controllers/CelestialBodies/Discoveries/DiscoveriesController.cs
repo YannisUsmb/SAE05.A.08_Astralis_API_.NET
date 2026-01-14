@@ -55,9 +55,11 @@ namespace Astralis_API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public override Task<ActionResult<IEnumerable<DiscoveryDto>>> GetAll()
+        public override async Task<ActionResult<IEnumerable<DiscoveryDto>>> GetAll()
         {
-            return base.GetAll();
+            var validatedDiscoveries = await _discoveryRepository.SearchAsync(discoveryStatusId: 3);
+    
+            return Ok(_mapper.Map<IEnumerable<DiscoveryDto>>(validatedDiscoveries));
         }
 
         /// <summary>
@@ -458,7 +460,7 @@ namespace Astralis_API.Controllers
                 Title = title,
                 UserId = userId,
                 CelestialBodyId = celestialBodyId,
-                DiscoveryStatusId = 1,
+                DiscoveryStatusId = 2,
                 AliasStatusId = null,
                 DiscoveryApprovalUserId = null,
                 AliasApprovalUserId = null

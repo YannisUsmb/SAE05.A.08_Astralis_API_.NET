@@ -22,6 +22,7 @@ namespace Astralis_API.Models.DataManager
                 .Include(d => d.AliasStatusNavigation)
                 .Include(d => d.ApprovalAliasUserNavigation)
                 .Include(d => d.CelestialBodyNavigation)
+                .ThenInclude(cb => cb.CelestialBodyTypeNavigation)
                 .Include(d => d.ApprovalUserNavigation)
                 .Include(d => d.UserNavigation)
                 .Include(d => d.DiscoveryStatusNavigation);
@@ -43,7 +44,13 @@ namespace Astralis_API.Models.DataManager
             if (!string.IsNullOrWhiteSpace(title))
                 query = query.Where(d => d.Title.ToLower().Contains(title.ToLower()) || d.CelestialBodyNavigation.Alias.ToLower().Contains(title.ToLower()));
             if (discoveryStatusId.HasValue)
+            {
                 query = query.Where(d => d.DiscoveryStatusId == discoveryStatusId.Value);
+            }
+            else
+            {
+                query = query.Where(d => d.DiscoveryStatusId == 3);
+            }
             if (aliasStatusId.HasValue)
                 query = query.Where(d => d.AliasStatusId == aliasStatusId.Value);
             if (discoveryApprovalUserId.HasValue)

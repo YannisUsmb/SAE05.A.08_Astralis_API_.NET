@@ -131,6 +131,8 @@ namespace Astralis_API.Models.DataManager
         {
             var query = _entities.AsQueryable();
             
+            query = query.Where(cb => cb.DiscoveryNavigation == null || cb.DiscoveryNavigation.DiscoveryStatusId == 3);
+            
             if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 string lower = filter.SearchText.ToLower();
