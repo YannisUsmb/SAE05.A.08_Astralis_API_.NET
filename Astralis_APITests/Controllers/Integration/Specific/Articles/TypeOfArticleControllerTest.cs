@@ -102,5 +102,18 @@ namespace Astralis_APITests.Controllers
         {
             return (dto.ArticleTypeId, dto.ArticleId);
         }
+        [TestMethod]
+        public async Task Post_ValidObject_ShouldCallAddAndReturnOk()
+        {
+            var createDto = GetValidCreateDto();
+
+            var result = await _controller.Post(createDto);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(createDto, okResult.Value);
+        }
     }
 }

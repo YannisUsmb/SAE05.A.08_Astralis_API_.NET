@@ -201,7 +201,13 @@ namespace Astralis_API.Controllers
         public override async Task<IActionResult> Put(int id, UserUpdateDto updateDto)
         {
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId) || id != userId)
+
+            if (!int.TryParse(userIdString, out int currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (id != currentUserId && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }

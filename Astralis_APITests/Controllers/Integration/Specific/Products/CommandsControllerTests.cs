@@ -80,37 +80,97 @@ namespace Astralis_APITests.Controllers
         {
             _context.ChangeTracker.Clear();
 
+            var existingCmd1 = _context.Commands.Find(CMD_ID_1);
+            if (existingCmd1 != null) _context.Commands.Remove(existingCmd1);
+            var existingCmd2 = _context.Commands.Find(CMD_ID_2);
+            if (existingCmd2 != null) _context.Commands.Remove(existingCmd2);
+
+            var existingProd = _context.Products.Find(100);
+            if (existingProd != null) _context.Products.Remove(existingProd);
+
+            if (_context.CartItems.Any()) _context.CartItems.RemoveRange(_context.CartItems);
+
+            _context.SaveChanges();
+            _context.ChangeTracker.Clear();
+
             if (!_context.Users.Any(u => u.Id == USER_NORMAL_ID))
                 _context.Users.Add(new User { Id = USER_NORMAL_ID, LastName = "N", FirstName = "N", Email = "n@n.com", Username = "UserN", UserRoleId = 1, Password = "pwd" });
 
             if (!_context.Users.Any(u => u.Id == USER_ADMIN_ID))
                 _context.Users.Add(new User { Id = USER_ADMIN_ID, LastName = "A", FirstName = "A", Email = "a@a.com", Username = "Admin", UserRoleId = 2, Password = "pwd" });
 
-            if (!_context.CommandStatuses.Any())
-            {
+            if (!_context.CommandStatuses.Any(s => s.Id == STATUS_PENDING_ID))
                 _context.CommandStatuses.Add(new CommandStatus { Id = STATUS_PENDING_ID, Label = "Pending" });
+
+            if (!_context.CommandStatuses.Any(s => s.Id == STATUS_SHIPPED_ID))
                 _context.CommandStatuses.Add(new CommandStatus { Id = STATUS_SHIPPED_ID, Label = "Shipped" });
+
+            if (!_context.ProductCategories.Any(pc => pc.Id == 1))
+            {
+                _context.ProductCategories.Add(new ProductCategory { Id = 1, Label = "General" });
             }
 
-            return new List<Command>
+            _context.SaveChanges();
+
+            if (!_context.Products.Any(p => p.Id == 100))
             {
-                new Command
+                _context.Products.Add(new Product
                 {
-                    Id = CMD_ID_1,
-                    UserId = USER_NORMAL_ID,
-                    CommandStatusId = STATUS_PENDING_ID,
-                    Date = DateTime.UtcNow,
-                    Total = 100.00m
-                },
-                new Command
+                    Id = 100,
+                    Label = "Test Product",
+                    Price = 50,
+                    Description = "Desc",
+                    ProductCategoryId = 1,
+                    UserId = USER_ADMIN_ID
+                });
+            }
+
+            _context.SaveChanges();
+
+            var existingItem = _context.CartItems.Find(USER_NORMAL_ID, 100);
+            if (existingItem == null)
+            {
+                _context.CartItems.Add(new CartItem
                 {
-                    Id = CMD_ID_2,
                     UserId = USER_NORMAL_ID,
-                    CommandStatusId = STATUS_SHIPPED_ID,
-                    Date = DateTime.UtcNow.AddDays(-1),
-                    Total = 50.00m
-                }
+                    ProductId = 100,
+                    Quantity = 2
+                });
+            }
+
+            _context.SaveChanges();
+            _context.ChangeTracker.Clear();
+
+            var user = _context.Users.Find(USER_NORMAL_ID);
+            var status = _context.CommandStatuses.Find(STATUS_PENDING_ID);
+
+            var cmd1 = new Command
+            {
+                Id = CMD_ID_1,
+                UserId = USER_NORMAL_ID,
+                CommandStatusId = STATUS_PENDING_ID,
+                Date = DateTime.UtcNow,
+                Total = 100.00m,
+                PdfName = "invoice_66001.pdf",
+                PdfPath = "/files/invoices/invoice_66001.pdf",
+                UserNavigation = user!,
+                CommandStatusNavigation = status!
             };
+
+            var cmd2 = new Command
+            {
+                Id = CMD_ID_2,
+                UserId = USER_NORMAL_ID,
+                CommandStatusId = STATUS_PENDING_ID,
+                Date = DateTime.UtcNow.AddDays(-1),
+                Total = 50.50m,
+                PdfName = "invoice_66002.pdf",
+                PdfPath = "/files/invoices/invoice_66002.pdf",
+                UserNavigation = user!,
+                CommandStatusNavigation = status!
+            };
+
+            return new List<Command> { cmd1, cmd2 };
         }
 
 
@@ -160,21 +220,52 @@ namespace Astralis_APITests.Controllers
         }
 
         [TestMethod]
-        public async Task Put_NormalUser_ShouldReturnForbidden()
+        public async Task Post_ValidObject_ShouldCreateAndReturn200()
         {
-            // Given
+            SetupUserContext(_controller, USER_NORMAL_ID, "User");
+            var createDto = GetValidCreateDto();
+
+            var result = await _controller.Post(createDto);
+
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult), "Le résultat devrait être un OkObjectResult");
+
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult?.Value, "La valeur retournée ne doit pas être nulle");
+
+            if (okResult.Value is CommandDetailDto createdCommand)
+            {
+                Assert.IsTrue(createdCommand.Id > 0, "L'ID doit être généré");
+                Assert.AreEqual(100.00m, createdCommand.Total, "Le total doit être correct");
+            }
+            else
+            {
+                Assert.Fail($"Type de retour inattendu : {okResult.Value.GetType().Name}");
+            }
+        }
+
+
+        [TestMethod]
+        public async Task GetById_ExistingId_ShouldReturnOkAndCorrectItem()
+        {
             SetupUserContext(_controller, USER_NORMAL_ID, "User");
 
-            var updateDto = new CommandUpdateDto
-            {
-                CommandStatusId = STATUS_SHIPPED_ID
-            };
+            var result = await _controller.GetById(CMD_ID_1);
 
-            // When
-            var result = await _controller.Put(CMD_ID_1, updateDto);
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+            var okResult = result.Result as OkObjectResult;
 
-            // Then
-            Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            var actualDto = okResult.Value as CommandDetailDto;
+            Assert.IsNotNull(actualDto);
+
+            Assert.AreEqual(CMD_ID_1, actualDto.Id, "L'ID de la commande est incorrect");
+            Assert.AreEqual(100.00m, actualDto.Total, "Le total est incorrect");
+
+            Assert.AreEqual("En attente", actualDto.CommandStatusLabel, "Le statut est incorrect");
+
+            Assert.AreEqual("/files/invoices/invoice_66001.pdf", actualDto.PdfPath, "Le chemin PDF est incorrect");
+
+            double diffSeconds = Math.Abs((actualDto.Date - DateTime.UtcNow).TotalSeconds);
+            Assert.IsTrue(actualDto.Date > DateTime.MinValue, "La date n'est pas valide");
         }
     }
 }

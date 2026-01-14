@@ -234,5 +234,27 @@ namespace Astralis_APITests.Controllers
             var list = (result.Result as OkObjectResult).Value as IEnumerable<CommentDto>;
             Assert.IsTrue(list.Any(c => c.Id == _commentOwnerId));
         }
+
+        [TestMethod]
+        public async Task Delete_ExistingId_ShouldDeleteAndReturn204()
+        {            
+            SetupUserContext(_controller, USER_OWNER_ID, "User");
+
+            var result = await _controller.Delete(_commentOwnerId);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public async Task Put_ValidObject_ShouldUpdateAndReturn204()
+        {
+            SetupUserContext(_controller, USER_OWNER_ID, "User");
+            var existingComment = _context.Comments.Find(_commentOwnerId);
+            var updateDto = GetValidUpdateDto(existingComment ?? new Comment());
+
+            var result = await _controller.Put(_commentOwnerId, updateDto);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
     }
 }

@@ -91,61 +91,61 @@ namespace Astralis_APITests.Controllers
 
         protected override List<User> GetSampleEntities()
         {
-            if (!_context.UserRoles.Any(r => r.Id == ROLE_USER_ID))
+            _context.ChangeTracker.Clear();
+
+            var existingAdmin = _context.Users.Find(USER_ADMIN_ID);
+            if (existingAdmin != null)
             {
-                _context.UserRoles.Add(new UserRole { Id = ROLE_USER_ID, Label = "User" });
-                _context.SaveChanges();
+                _context.Users.Remove(existingAdmin);
             }
+
+            var existingNormal = _context.Users.Find(USER_NORMAL_ID);
+            if (existingNormal != null)
+            {
+                _context.Users.Remove(existingNormal);
+            }
+
+            _context.SaveChanges();
+            _context.ChangeTracker.Clear();
+
+
+            if (!_context.UserRoles.Any(r => r.Id == ROLE_USER_ID))
+                _context.UserRoles.Add(new UserRole { Id = ROLE_USER_ID, Label = "User" });
 
             if (!_context.UserRoles.Any(r => r.Id == ROLE_ADMIN_ID))
-            {
                 _context.UserRoles.Add(new UserRole { Id = ROLE_ADMIN_ID, Label = "Admin" });
-                _context.SaveChanges();
-            }
 
             if (!_context.Countries.Any(c => c.Id == COUNTRY_ID))
-            {
                 _context.Countries.Add(new Country { Id = COUNTRY_ID, Name = "France" });
-                _context.SaveChanges();
-            }
 
-            if (!_context.Users.Any(u => u.Id == USER_ADMIN_ID))
+            _context.SaveChanges();
+            _context.ChangeTracker.Clear();
+
+            var admin = new User
             {
-                var admin = new User
-                {
-                    Id = USER_ADMIN_ID,
-                    LastName = "Admin",
-                    FirstName = "Super",
-                    Email = "admin@astralis.com",
-                    Username = "AdminMaster",
-                    UserRoleId = ROLE_ADMIN_ID,
-                    Password = "hashedpassword"
-                };
-                _context.Users.Add(admin);
-                _context.SaveChanges();
-            }
+                Id = USER_ADMIN_ID,
+                LastName = "Admin",
+                FirstName = "Super",
+                Email = "admin@astralis.com",
+                Username = "AdminMaster",
+                UserRoleId = ROLE_ADMIN_ID,
+                Password = "hashedpassword",
+                PhonePrefixId = COUNTRY_ID
+            };
 
-            if (!_context.Users.Any(u => u.Id == USER_NORMAL_ID))
+            var normal = new User
             {
-                var normal = new User
-                {
-                    Id = USER_NORMAL_ID,
-                    LastName = "Doe",
-                    FirstName = "John",
-                    Email = "john@doe.com",
-                    Username = "JohnDoe",
-                    UserRoleId = ROLE_USER_ID,
-                    Password = "hashedpassword"
-                };
-                _context.Users.Add(normal);
-                _context.SaveChanges();
-            }
+                Id = USER_NORMAL_ID,
+                LastName = "Doe",
+                FirstName = "John",
+                Email = "john@doe.com",
+                Username = "JohnDoe",
+                UserRoleId = ROLE_USER_ID,
+                Password = "hashedpassword",
+                PhonePrefixId = COUNTRY_ID
+            };
 
-
-            var adminUser = _context.Users.Find(USER_ADMIN_ID);
-            var normalUser = _context.Users.Find(USER_NORMAL_ID);
-
-            return new List<User> { adminUser!, normalUser! };
+            return new List<User> { admin, normal };
         }
 
 
@@ -230,14 +230,37 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Delete_ExistingId_ShouldDeleteAndReturn204()
         {
-            // Arrange
             SetupUserContext(_controller, USER_NORMAL_ID, "User");
 
-            // Act
             var result = await _controller.Delete(USER_NORMAL_ID);
 
-            // Assert
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
+        }
+        [TestMethod]
+        public  async Task Put_NonExistingId_ShouldReturn404()
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, USER_ADMIN_ID.ToString()),
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(ClaimTypes.Name, "AdminUser")
+            };
+
+            var identity = new ClaimsIdentity(claims, "TestAuth", ClaimTypes.Name, ClaimTypes.Role);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            int nonExistingId = 999999;
+
+            var updateDto = GetValidUpdateDto(new User());
+
+            var result = await _controller.Put(nonExistingId, updateDto);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
 }

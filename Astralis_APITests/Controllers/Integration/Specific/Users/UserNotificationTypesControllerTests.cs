@@ -53,29 +53,82 @@ namespace Astralis_APITests.Controllers
         {
             _context.ChangeTracker.Clear();
 
-            if (!_context.Users.Any(u => u.Id == USER_NORMAL_ID))
-                _context.Users.Add(new User { Id = USER_NORMAL_ID, LastName = "N", FirstName = "N", Email = "n@n.com", Username = "UserN", UserRoleId = 1, Password = "pwd" });
-
-            if (!_context.Users.Any(u => u.Id == USER_OTHER_ID))
-                _context.Users.Add(new User { Id = USER_OTHER_ID, LastName = "O", FirstName = "O", Email = "o@o.com", Username = "Other", UserRoleId = 1, Password = "pwd" });
-
-            if (!_context.NotificationTypes.Any(t => t.Id == TYPE_INFO_ID))
-                _context.NotificationTypes.Add(new NotificationType { Id = TYPE_INFO_ID, Label = "Info" });
-
-            if (!_context.NotificationTypes.Any(t => t.Id == TYPE_ALERT_ID))
-                _context.NotificationTypes.Add(new NotificationType { Id = TYPE_ALERT_ID, Label = "Alert" });
+            var existingJoin = _context.UserNotificationTypes.Find(USER_NORMAL_ID, TYPE_INFO_ID);
+            if (existingJoin != null)
+            {
+                _context.UserNotificationTypes.Remove(existingJoin);
+                _context.SaveChanges();
+            }
+            _context.ChangeTracker.Clear();
+            if (!_context.UserRoles.Any(r => r.Id == 1))
+                _context.UserRoles.Add(new UserRole { Id = 1, Label = "User" });
 
             _context.SaveChanges();
 
-            return new List<UserNotificationType>
+            var user = _context.Users.Find(USER_NORMAL_ID);
+            if (user == null)
             {
-                new UserNotificationType
+                user = new User
                 {
-                    UserId = USER_NORMAL_ID,
-                    NotificationTypeId = TYPE_INFO_ID,
-                    ByMail = true
-                }
+                    Id = USER_NORMAL_ID,
+                    LastName = "N",
+                    FirstName = "N",
+                    Email = "n@n.com",
+                    Username = "UserN",
+                    UserRoleId = 1,
+                    Password = "pwd"
+                };
+                _context.Users.Add(user);
+            }
+
+            if (!_context.Users.Any(u => u.Id == USER_OTHER_ID))
+            {
+                _context.Users.Add(new User
+                {
+                    Id = USER_OTHER_ID,
+                    LastName = "O",
+                    FirstName = "O",
+                    Email = "o@o.com",
+                    Username = "Other",
+                    UserRoleId = 1,
+                    Password = "pwd"
+                });
+            }
+
+            var typeInfo = _context.NotificationTypes.Find(TYPE_INFO_ID);
+            if (typeInfo == null)
+            {
+                typeInfo = new NotificationType
+                {
+                    Id = TYPE_INFO_ID,
+                    Label = "Info",
+                    Description = "Description obligatoire"
+                };
+                _context.NotificationTypes.Add(typeInfo);
+            }
+
+            if (!_context.NotificationTypes.Any(t => t.Id == TYPE_ALERT_ID))
+            {
+                _context.NotificationTypes.Add(new NotificationType
+                {
+                    Id = TYPE_ALERT_ID,
+                    Label = "Alert",
+                    Description = "Description obligatoire"
+                });
+            }
+
+            _context.SaveChanges();
+
+            var joinEntity = new UserNotificationType
+            {
+                UserId = USER_NORMAL_ID,
+                NotificationTypeId = TYPE_INFO_ID,
+                ByMail = true,
+                UserNavigation = user,
+                NotificationTypeNavigation = typeInfo
             };
+
+            return new List<UserNotificationType> { joinEntity };
         }
 
 
