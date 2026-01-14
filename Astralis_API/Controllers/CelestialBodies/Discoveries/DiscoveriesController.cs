@@ -23,6 +23,8 @@ namespace Astralis_API.Controllers
         private readonly IGalaxyQuasarRepository _galaxyRepository;
         private readonly ICelestialBodyRepository _celestialBodyRepository;
         private readonly ISatelliteRepository _satelliteRepository;
+        private readonly IUserRepository _userRepository;
+        
         public DiscoveriesController(
             IDiscoveryRepository repository,
             IAsteroidRepository asteroidRepository,
@@ -32,6 +34,7 @@ namespace Astralis_API.Controllers
             IGalaxyQuasarRepository galaxyRepository,
             ICelestialBodyRepository celestialBodyRepository,
             ISatelliteRepository satelliteRepository,
+            IUserRepository userRepository,
             IMapper mapper)
             : base(repository, mapper)
         {
@@ -43,6 +46,7 @@ namespace Astralis_API.Controllers
             _galaxyRepository = galaxyRepository;
             _celestialBodyRepository = celestialBodyRepository;
             _satelliteRepository = satelliteRepository;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -333,6 +337,7 @@ namespace Astralis_API.Controllers
 
         /// <summary>
         /// Proposes an alias for an accepted discovery.
+        /// Premium users: Free. Standard users: Mock payment check.
         /// </summary>
         /// <remarks>Only the owner can propose an alias for an Accepted discovery (Status 3).</remarks>
         /// <param name="id">The unique identifier of the discovery.</param>
@@ -349,37 +354,36 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ProposeAlias(int id, DiscoveryAliasDto aliasDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             Discovery? entity = await _discoveryRepository.GetByIdAsync(id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
+            if (entity == null) return NotFound();
 
+            // 1. Verify ownership
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
-            {
-                return Unauthorized();
-            }
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+            if (entity.UserId != userId) return Forbid();
 
-            if (entity.UserId != userId)
-            {
-                return Forbid();
-            }
-
+            // 2. Discovery status check (must be Accepted)
             if (entity.DiscoveryStatusId != 3)
+                return BadRequest("La proposition d'alias n'est autorisée que pour les découvertes acceptées.");
+
+            // 3. Vérification Premium
+            User? user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            if (!user.IsPremium)
             {
-                return BadRequest("Discovery must be accepted before proposing an alias.");
+                // There would be a payment processing step here in a real application.
+                return StatusCode(StatusCodes.Status402PaymentRequired, "La proposition d'alias est reservée aux utilisateurs Premium ou nécessite un paiement immédiat.");
             }
 
+            // 4. Update the CelestialBody alias and set alias status to 'Pending Approval'
             CelestialBody? celestialBody = await _celestialBodyRepository.GetByIdAsync(entity.CelestialBodyId);
             if (celestialBody != null)
             {
@@ -387,7 +391,42 @@ namespace Astralis_API.Controllers
                 await _celestialBodyRepository.UpdateAsync(celestialBody, celestialBody);
             }
 
-            entity.AliasStatusId = 1;
+            entity.AliasStatusId = 1; 
+            entity.AliasApprovalUserId = null;
+
+            await _repository.UpdateAsync(entity, entity);
+
+            return NoContent();
+        }
+        
+        /// <summary>
+        /// Removes an alias from a discovery (User Action).
+        /// </summary>
+        [HttpDelete("{id}/Alias")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RemoveAlias(int id)
+        {
+            Discovery? entity = await _discoveryRepository.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            // Only the owner can remove the alias 
+            if (entity.UserId != userId) return Forbid();
+
+            // Remove alias from CelestialBody
+            CelestialBody? celestialBody = await _celestialBodyRepository.GetByIdAsync(entity.CelestialBodyId);
+            if (celestialBody != null)
+            {
+                celestialBody.Alias = null;
+                await _celestialBodyRepository.UpdateAsync(celestialBody, celestialBody);
+            }
+
+            // Reset alias status
+            entity.AliasStatusId = null;
             entity.AliasApprovalUserId = null;
 
             await _repository.UpdateAsync(entity, entity);
@@ -395,6 +434,49 @@ namespace Astralis_API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Moderates an alias (Admin only).
+        /// Accepts (Status 2) or Refuses (Status 3).
+        /// Uses DiscoveryModerationDto to reuse existing DTO.
+        /// </summary>
+        [HttpPut("{id}/Alias/Moderate")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ModerateAlias(int id, DiscoveryModerationDto moderationDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            Discovery? entity = await _repository.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+
+            if (entity.AliasStatusId != 1)
+                return BadRequest("Cette découverte n'a pas d'alias en attente de modération.");
+
+            string? adminIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(adminIdString, out int adminId))
+            {
+                entity.AliasApprovalUserId = adminId;
+            }
+
+            entity.AliasStatusId = moderationDto.AliasStatusId;
+
+            // Si l'alias est refusé, le supprimer du corps céleste
+            if (moderationDto.AliasStatusId == 3)
+            {
+                CelestialBody? celestialBody = await _celestialBodyRepository.GetByIdAsync(entity.CelestialBodyId);
+                if (celestialBody != null)
+                {
+                    celestialBody.Alias = null; 
+                    await _celestialBodyRepository.UpdateAsync(celestialBody, celestialBody);
+                }
+            }
+
+            await _repository.UpdateAsync(entity, entity);
+
+            return NoContent();
+        }
+        
         /// <summary>
         /// Updates the status of a discovery (Admin only).
         /// </summary>
@@ -432,14 +514,9 @@ namespace Astralis_API.Controllers
             if (int.TryParse(adminIdString, out int adminId))
             {
                 entity.DiscoveryApprovalUserId = adminId;
-                if (moderationDto.AliasStatusId != entity.AliasStatusId)
-                {
-                    entity.AliasApprovalUserId = adminId;
-                }
             }
 
             entity.DiscoveryStatusId = moderationDto.DiscoveryStatusId;
-            entity.AliasStatusId = moderationDto.AliasStatusId;
 
             await _repository.UpdateAsync(entity, entity);
 
