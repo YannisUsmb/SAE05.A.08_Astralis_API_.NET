@@ -2,29 +2,41 @@
 using Astralis_API.Controllers;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
+using Astralis_API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Astralis_APITests.Controllers
 {
+    public class FakeEmailService : IEmailService
+    {
+        public Task SendEmailAsync(string to, string subject, string htmlMessage) => Task.CompletedTask;
+    }
+
     [TestClass]
     public class UserNotificationsControllerTests
-        : JoinControllerTests<UserNotificationsController, UserNotification, UserNotificationDto, UserNotificationCreateDto, int, int>
+        : CrudControllerTests<UserNotificationsController, UserNotification, UserNotificationDto, UserNotificationDto, UserNotificationCreateDto, UserNotificationUpdateDto, int>
     {
         private const int USER_ID = 5002;
         private const int OTHER_USER_ID = 5003;
         private const int NOTIF_ID_LINKED = 88001;
         private const int NOTIF_ID_UNLINKED = 88002;
+        private const int USER_NOTIF_ID = 100;
 
         protected override UserNotificationsController CreateController(AstralisDbContext context, IMapper mapper)
         {
-            var repository = new UserNotificationManager(context);
-            var controller = new UserNotificationsController(repository, mapper);
+            var userNotifRepo = new UserNotificationManager(context);
+            var notifRepo = new NotificationManager(context);
+            var typeRepo = new UserNotificationTypeManager(context);
+            var userRepo = new UserManager(context);
+            var emailService = new FakeEmailService();
 
-            // Simuler l'utilisateur connecté (USER_ID)
+            var controller = new UserNotificationsController(
+                userNotifRepo, notifRepo, typeRepo, userRepo, emailService, mapper
+            );
+
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, USER_ID.ToString()) };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             controller.ControllerContext = new ControllerContext
@@ -39,7 +51,6 @@ namespace Astralis_APITests.Controllers
         {
             _context.ChangeTracker.Clear();
 
-            // Seed dependencies
             if (!_context.Users.Any(u => u.Id == USER_ID))
                 _context.Users.Add(new User { Id = USER_ID, LastName = "A", FirstName = "B", Email = "a@b.com", Username = "UserA", UserRoleId = 1, AvatarUrl = "url", Password = "pwd" });
 
@@ -57,11 +68,11 @@ namespace Astralis_APITests.Controllers
 
             _context.SaveChanges();
 
-            // Seed Join Entity
             return new List<UserNotification>
             {
                 new UserNotification
                 {
+                    Id = USER_NOTIF_ID,
                     UserId = USER_ID,
                     NotificationId = NOTIF_ID_LINKED,
                     IsRead = false,
@@ -69,13 +80,26 @@ namespace Astralis_APITests.Controllers
                 }
             };
         }
+        protected override int GetIdFromEntity(UserNotification entity) => entity.Id;
 
-        // --- Abstract implementations ---
+        protected override int GetNonExistingId() => 99999;
 
-        protected override int GetKey1(UserNotification entity) => entity.UserId;
-        protected override int GetKey2(UserNotification entity) => entity.NotificationId;
-        protected override int GetNonExistingKey1() => 99999;
-        protected override int GetNonExistingKey2() => 99999;
+        protected override int GetIdFromDto(UserNotificationDto dto) => dto.Id;
+
+        protected override UserNotificationUpdateDto GetValidUpdateDto(UserNotification entity)
+        {
+            return new UserNotificationUpdateDto
+            {
+                UserId = entity.UserId,
+                NotificationId = entity.NotificationId,
+                IsRead = !entity.IsRead 
+            };
+        }
+
+        protected override void SetIdInUpdateDto(UserNotificationUpdateDto dto, int id)
+        {
+        }
+
 
         protected override UserNotificationCreateDto GetValidCreateDto()
         {
@@ -88,15 +112,8 @@ namespace Astralis_APITests.Controllers
             };
         }
 
-        protected override (int, int) GetKeysFromCreateDto(UserNotificationCreateDto dto)
-        {
-            return (dto.UserId, dto.NotificationId);
-        }
-
-        // --- Custom Tests ---
-
         [TestMethod]
-        public async Task Put_MarkAsRead_ShouldSuccess()
+        public async Task Put_MarkAsRead_ReturnsOk()
         {
             // Given
             var updateDto = new UserNotificationUpdateDto
@@ -107,11 +124,12 @@ namespace Astralis_APITests.Controllers
             };
 
             // When
-            var result = await _controller.Put(USER_ID, NOTIF_ID_LINKED, updateDto);
+            var result = await _controller.Put(USER_NOTIF_ID, updateDto);
 
             // Then
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            var entity = await _context.UserNotifications.FindAsync(USER_ID, NOTIF_ID_LINKED);
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+
+            var entity = await _context.UserNotifications.FindAsync(USER_NOTIF_ID);
             Assert.IsTrue(entity!.IsRead);
         }
 
@@ -126,29 +144,34 @@ namespace Astralis_APITests.Controllers
                 IsRead = true
             };
 
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, OTHER_USER_ID.ToString()) };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+            };
+
             // When
-            var result = await _controller.Put(OTHER_USER_ID, NOTIF_ID_LINKED, updateDto);
+            var result = await _controller.Put(USER_NOTIF_ID, updateDto);
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
         }
 
         [TestMethod]
-        public async Task Put_IdsMismatch_ShouldReturnBadRequest()
+        public new async Task Put_ValidObject_ShouldUpdateAndReturn204()
         {
-            // Given
-            var updateDto = new UserNotificationUpdateDto
-            {
-                UserId = USER_ID,
-                NotificationId = NOTIF_ID_UNLINKED, // Body mismatch
-                IsRead = true
-            };
+            // Arrange
+            var entity = _seededEntities.First();
+            var id = GetIdFromEntity(entity);
+            var updateDto = GetValidUpdateDto(entity);
 
-            // When
-            var result = await _controller.Put(USER_ID, NOTIF_ID_LINKED, updateDto);
+            // Act
+            var actionResult = await _controller.Put(id, updateDto);
 
-            // Then
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            // Assert
+            Assert.IsNotNull(actionResult);
+            Assert.IsInstanceOfType(actionResult, typeof(OkObjectResult));
         }
     }
 }
