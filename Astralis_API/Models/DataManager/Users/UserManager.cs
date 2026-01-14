@@ -62,6 +62,47 @@ namespace Astralis_API.Models.DataManager
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task AnonymizeUserAsync(int userId)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null) return;
+
+            if (user.CreditCards != null && user.CreditCards.Any())
+            {
+                _context.Set<CreditCard>().RemoveRange(user.CreditCards);
+            }
+
+            if (user.CartItems != null && user.CartItems.Any())
+            {
+                _context.Set<CartItem>().RemoveRange(user.CartItems);
+            }
+
+            user.DeliveryId = null;
+            user.InvoicingId = null;
+            user.DeliveryAddressNavigation = null;
+            user.InvoicingAddressNavigation = null;
+
+            string uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
+
+            user.FirstName = "Utilisateur";
+            user.LastName = "Supprimé";
+            user.Username = $"deleted_user_{uniqueId}";
+            user.Email = $"deleted_{uniqueId}@astralis.local";
+            user.Phone = null;
+            user.AvatarUrl = null;
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString());
+
+            user.IsPremium = false;
+            user.StripeCustomerId = null;
+            user.MultiFactorAuthentification = false;
+
+            user.IsEmailVerified = false;
+            user.VerificationToken = null;
+
+            await _context.SaveChangesAsync();
+        }
         protected override IQueryable<User> WithIncludes(IQueryable<User> query)
         {
             return query.Include(u => u.DeliveryAddressNavigation)

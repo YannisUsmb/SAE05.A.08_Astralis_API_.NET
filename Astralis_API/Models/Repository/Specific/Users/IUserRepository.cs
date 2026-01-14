@@ -11,5 +11,6 @@ namespace Astralis_API.Models.Repository
         Task<User?> GetByPhoneAndPrefixAsync(string phone, int? phonePrefixId);
         Task UpdateStripeIdAsync(int userId, string stripeCustomerId);
         Task SetPremiumStatusAsync(int userId, bool isPremium);
+        Task AnonymizeUserAsync(int userId);
     }
 }

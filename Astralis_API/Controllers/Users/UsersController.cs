@@ -10,6 +10,10 @@ using System.Security.Claims;
 
 namespace Astralis_API.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing user accounts.
+    /// Handles registration, profile retrieval, updates, password changes, and account anonymization/deletion.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -22,7 +26,22 @@ namespace Astralis_API.Controllers
         private readonly IEmailService _emailService;
         private readonly IUploadService _uploadService;
 
-        public UsersController(IUserRepository repository, ICountryRepository countryRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IEmailService emailService, IUploadService uploadService)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsersController"/> class.
+        /// </summary>
+        /// <param name="repository">The user repository.</param>
+        /// <param name="countryRepository">The country repository for phone prefix validation.</param>
+        /// <param name="mapper">The auto-mapper instance.</param>
+        /// <param name="webHostEnvironment">The hosting environment.</param>
+        /// <param name="emailService">The service for sending emails.</param>
+        /// <param name="uploadService">The service for handling file uploads.</param>
+        public UsersController(
+            IUserRepository repository,
+            ICountryRepository countryRepository,
+            IMapper mapper,
+            IWebHostEnvironment webHostEnvironment,
+            IEmailService emailService,
+            IUploadService uploadService)
             : base(repository, mapper)
         {
             _userRepository = repository;
@@ -52,7 +71,7 @@ namespace Astralis_API.Controllers
         }
 
         /// <summary>
-        /// Retrieves a specific user profile (Admin only).
+        /// Retrieves a specific user profile.
         /// </summary>
         /// <remarks>Users can only view their own profile, unless they have the Admin role.</remarks>
         /// <param name="id">The user ID.</param>
@@ -199,7 +218,7 @@ namespace Astralis_API.Controllers
                 await _uploadService.DeleteFileAsync(oldAvatarUrl, "avatars");
             }
 
-            return result; 
+            return result;
         }
 
         /// <summary>
@@ -290,6 +309,81 @@ namespace Astralis_API.Controllers
             user.Password = newPasswordHash;
 
             await _repository.UpdateAsync(user, user);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Anonymizes the user's personal data.
+        /// </summary>
+        /// <remarks>
+        /// Replaces all personally identifiable information (PII) with generic data.
+        /// The account remains technically active but is unlinked from the original person.
+        /// This is an irreversible action.
+        /// </remarks>
+        /// <param name="id">The user ID to anonymize.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">Data successfully anonymized.</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not authorized to anonymize this account.</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpPost("{id}/Anonymize")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AnonymizeData(int id)
+        {
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId) || id != userId)
+            {
+                return Forbid();
+            }
+
+            var user = await _repository.GetByIdAsync(id);
+            if (user == null) return NotFound();
+
+            await _userRepository.AnonymizeUserAsync(id);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Deletes the user account by anonymizing their data.
+        /// </summary>
+        /// <remarks>
+        /// Performs a "soft delete" by calling the anonymization process.
+        /// Actual deletion of the record is prevented to maintain data integrity (FK constraints).
+        /// </remarks>
+        /// <param name="id">The user ID to delete.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">Account successfully deleted (anonymized).</response>
+        /// <response code="401">User is not authenticated.</response>
+        /// <response code="403">User is not authorized to delete this account.</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            // Users can delete their own account, Admins can delete any account
+            if (id != userId && !User.IsInRole("Admin")) return Forbid();
+
+            var user = await _repository.GetByIdAsync(id);
+            if (user == null) return NotFound();
+
+            // Use anonymization logic instead of hard delete
+            await _userRepository.AnonymizeUserAsync(id);
 
             return NoContent();
         }
