@@ -2,6 +2,7 @@ using Astralis_API.Configuration;
 using Astralis_API.Models.DataManager;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Models.Repository.Specific;
 using Astralis_API.Services.Implementations;
 using Astralis_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -174,8 +175,10 @@ builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryManager>()
 //      Users
 builder.Services.AddScoped<ICreditCardRepository, CreditCardManager>();
 builder.Services.AddScoped<INotificationRepository, NotificationManager>();
+builder.Services.AddScoped<INotificationTypeRepository, NotificationTypeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<IUserNotificationRepository, UserNotificationManager>();
+builder.Services.AddScoped<IUserNotificationTypeRepository, UserNotificationTypeManager>();
 builder.Services.AddScoped<IUserRoleRepository,UserRoleManager>();
 
 // Services

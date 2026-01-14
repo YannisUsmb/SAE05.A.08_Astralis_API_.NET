@@ -1,6 +1,7 @@
 ﻿using Astralis.Shared.DTOs;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
+using Astralis_API.Models.Repository.Specific;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace Astralis_API.Controllers
     public class UserNotificationTypesController : JoinController<UserNotificationType, UserNotificationTypeDto, UserNotificationTypeCreateDto, int, int>
     {
         private readonly IUserNotificationTypeRepository _userNotificationTypeRepository;
+        private readonly INotificationTypeRepository _notificationTypeRepository;
 
-        public UserNotificationTypesController(IUserNotificationTypeRepository repository, IMapper mapper)
+        public UserNotificationTypesController(IUserNotificationTypeRepository repository, INotificationTypeRepository notificationTypeRepository, IMapper mapper)
             : base(repository, mapper)
         {
             _userNotificationTypeRepository = repository;
+            _notificationTypeRepository = notificationTypeRepository;
         }
 
         /// <summary>
@@ -35,14 +38,29 @@ namespace Astralis_API.Controllers
         public override async Task<ActionResult<IEnumerable<UserNotificationTypeDto>>> GetAll()
         {
             string? userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            var allTypes = await _notificationTypeRepository.GetAllAsync();
+
+            var userPrefs = await _userNotificationTypeRepository.GetByUserIdAsync(userId);
+
+            var result = new List<UserNotificationTypeDto>();
+
+            foreach (var type in allTypes)
             {
-                return Unauthorized();
+                var existingPref = userPrefs.FirstOrDefault(up => up.NotificationTypeId == type.Id);
+
+                result.Add(new UserNotificationTypeDto
+                {
+                    UserId = userId,
+                    NotificationTypeId = type.Id,
+                    NotificationTypeName = type.Label,
+                    NotificationTypeDescription = type.Description,
+                    ByMail = existingPref != null ? existingPref.ByMail : false
+                });
             }
 
-            IEnumerable<UserNotificationType?> myPrefs = await _userNotificationTypeRepository.GetByUserIdAsync(userId);
-
-            return Ok(_mapper.Map<IEnumerable<UserNotificationTypeDto>>(myPrefs));
+            return Ok(result);
         }
 
         /// <summary>
@@ -87,33 +105,37 @@ namespace Astralis_API.Controllers
         /// <response code="403">Forbidden access.</response>
         /// <response code="404">Preference not found.</response>
         [HttpPut("{userId}/{notificationTypeId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Put(int userId, int notificationTypeId, UserNotificationTypeUpdateDto updateDto)
+        public async Task<ActionResult<UserNotificationTypeDto>> Put(int userId, int notificationTypeId, UserNotificationTypeUpdateDto updateDto)
         {
-            if (notificationTypeId != updateDto.NotificationTypeId)
-            {
-                return BadRequest("NotificationType ID mismatch.");
-            }
+            if (notificationTypeId != updateDto.NotificationTypeId) return BadRequest("ID mismatch.");
 
             string? currentUserIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(currentUserIdString, out int currentUserId) || userId != currentUserId)
-            {
-                return Forbid();
-            }
+            if (!int.TryParse(currentUserIdString, out int currentUserId) || userId != currentUserId) return Forbid();
 
             UserNotificationType? entity = await _repository.GetByIdAsync(userId, notificationTypeId);
+
             if (entity == null)
             {
-                return NotFound();
+                entity = new UserNotificationType
+                {
+                    UserId = userId,
+                    NotificationTypeId = notificationTypeId,
+                    ByMail = updateDto.ByMail
+                };
+                await _repository.AddAsync(entity);
+
+                entity = await _repository.GetByIdAsync(userId, notificationTypeId);
+            }
+            else
+            {
+                _mapper.Map(updateDto, entity);
+                await _repository.UpdateAsync(entity, entity);
             }
 
-            _mapper.Map(updateDto, entity);
-            await _repository.UpdateAsync(entity, entity);
-
-            return NoContent();
+            return Ok(_mapper.Map<UserNotificationTypeDto>(entity));
         }
     }
 }
