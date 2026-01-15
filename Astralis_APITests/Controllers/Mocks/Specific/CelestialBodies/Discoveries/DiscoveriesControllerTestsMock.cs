@@ -20,7 +20,7 @@ namespace Astralis_APITests.Controllers.Mocks
         private Mock<IGalaxyQuasarRepository> _mockGalaxyRepository;
         private Mock<ICelestialBodyRepository> _mockCelestialBodyRepository;
         private Mock<ISatelliteRepository> _mockSatelliteRepository;
-
+        private Mock<IUserRepository> _mockUserRepository;
         [TestInitialize]
         public override void BaseInitialize()
         {
@@ -38,7 +38,7 @@ namespace Astralis_APITests.Controllers.Mocks
             _mockGalaxyRepository = new Mock<IGalaxyQuasarRepository>();
             _mockCelestialBodyRepository = new Mock<ICelestialBodyRepository>();
             _mockSatelliteRepository = new Mock<ISatelliteRepository>();
-
+            _mockUserRepository = new Mock<IUserRepository>();
             _mockCrudRepository = _mockDiscoveryRepository.As<ICrudRepository<Discovery, int>>();
             _mockRepository = _mockDiscoveryRepository.As<IReadableRepository<Discovery, int>>();
 
@@ -51,6 +51,7 @@ namespace Astralis_APITests.Controllers.Mocks
                 _mockGalaxyRepository.Object,
                 _mockCelestialBodyRepository.Object,
                 _mockSatelliteRepository.Object,
+                _mockUserRepository.Object,
                 mapper
             );
         }

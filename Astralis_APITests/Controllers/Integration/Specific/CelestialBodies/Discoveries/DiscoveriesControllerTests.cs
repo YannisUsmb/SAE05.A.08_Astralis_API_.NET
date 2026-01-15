@@ -58,7 +58,7 @@ namespace Astralis_APITests.Controllers
             var galaxyManager = new GalaxyQuasarManager(context);
             var celestialBodyManager = new CelestialBodyManager(context);
             var satelliteManager = new SatelliteManager(context); // Nouveau Manager
-
+            var userManager = new UserManager(context);
             var controller = new DiscoveriesController(
                 discoveryManager,
                 asteroidManager,
@@ -67,7 +67,8 @@ namespace Astralis_APITests.Controllers
                 cometManager,
                 galaxyManager,
                 celestialBodyManager,
-                satelliteManager, // Ajout au constructeur
+                satelliteManager,
+                userManager,
                 mapper
             );
 
@@ -436,15 +437,30 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task ProposeAlias_AsOwner_ShouldUpdateStatusToPending()
         {
+            // Given
             SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+
+            var user = _context.Users.FirstOrDefault(u => u.Id == USER_OWNER_ID);
+            if (user != null)
+            {
+                user.IsPremium = true;
+                _context.SaveChanges();
+            }
+            _context.ChangeTracker.Clear();
+
             var aliasDto = new DiscoveryAliasDto { Alias = "The Lonely Rock" };
 
+            // When
             var actionResult = await _controller.ProposeAlias(_discoveryAcceptedId, aliasDto);
 
+            // Then
             Assert.IsInstanceOfType(actionResult, typeof(NoContentResult));
 
             _context.ChangeTracker.Clear();
-            var discovery = await _context.Discoveries.Include(d => d.CelestialBodyNavigation).FirstOrDefaultAsync(d => d.Id == _discoveryAcceptedId);
+            var discovery = await _context.Discoveries
+                .Include(d => d.CelestialBodyNavigation)
+                .FirstOrDefaultAsync(d => d.Id == _discoveryAcceptedId);
+
             Assert.AreEqual("The Lonely Rock", discovery.CelestialBodyNavigation.Alias);
         }
 
