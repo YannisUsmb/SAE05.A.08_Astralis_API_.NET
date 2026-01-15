@@ -12,9 +12,9 @@ using System.Security.Claims;
 namespace Astralis_APITests.Controllers.Mocks
 {
     [TestClass]
-    public class PlanetTypesControllerTestsMock : ReadableControllerMockTests<PlanetTypesController, PlanetType, PlanetTypeDto, PlanetTypeDto, int>
+    public class CelestialBodyTypesControllerTestsMock : ReadableControllerMockTests<CelestialBodyTypesController, CelestialBodyType, CelestialBodyTypeDto, CelestialBodyTypeDto, int>
     {
-        private Mock<IPlanetTypeRepository> _mockPlanetTypeRepository;
+        private Mock<ICelestialBodyTypeRepository> _mockCelestialBodyTypeRepository;
 
         [TestInitialize]
         public override void BaseInitialize()
@@ -22,8 +22,7 @@ namespace Astralis_APITests.Controllers.Mocks
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MapperProfile());
-
-                cfg.CreateMap<PlanetType, PlanetTypeDto>();
+                cfg.CreateMap<CelestialBodyType, CelestialBodyTypeDto>();
             });
             _mapper = config.CreateMapper();
 
@@ -32,41 +31,40 @@ namespace Astralis_APITests.Controllers.Mocks
             SetupHttpContext(1, "User");
         }
 
-        protected override PlanetTypesController CreateController(Mock<IReadableRepository<PlanetType, int>> mockRepo, AutoMapper.IMapper mapper)
+        protected override CelestialBodyTypesController CreateController(Mock<IReadableRepository<CelestialBodyType, int>> mockRepo, AutoMapper.IMapper mapper)
         {
-            _mockPlanetTypeRepository = new Mock<IPlanetTypeRepository>();
+            _mockCelestialBodyTypeRepository = new Mock<ICelestialBodyTypeRepository>();
 
-            _mockRepository = _mockPlanetTypeRepository.As<IReadableRepository<PlanetType, int>>();
+            _mockRepository = _mockCelestialBodyTypeRepository.As<IReadableRepository<CelestialBodyType, int>>();
 
-            return new PlanetTypesController(_mockPlanetTypeRepository.Object, mapper);
+            return new CelestialBodyTypesController(_mockCelestialBodyTypeRepository.Object, mapper);
         }
 
-        protected override List<PlanetType> GetSampleEntities() => new List<PlanetType>
+        protected override List<CelestialBodyType> GetSampleEntities() => new List<CelestialBodyType>
         {
-            new PlanetType
+            new CelestialBodyType
             {
                 Id = 1,
-                Label = "Terrestrial",
-                Description = "A planet that is composed primarily of silicate rocks or metals."
+                Label = "Star",
+                Description = "A luminous spheroid of plasma held together by its own gravity."
             },
-            new PlanetType
+            new CelestialBodyType
             {
                 Id = 2,
-                Label = "Gas Giant",
-                Description = "A large planet composed mostly of gases, such as hydrogen and helium."
+                Label = "Planet",
+                Description = "A celestial body orbiting a star or stellar remnant."
             }
         };
 
-        protected override PlanetType GetSampleEntity() => new PlanetType
+        protected override CelestialBodyType GetSampleEntity() => new CelestialBodyType
         {
             Id = 1,
-            Label = "Terrestrial",
-            Description = "A planet that is composed primarily of silicate rocks or metals."
+            Label = "Star",
+            Description = "A luminous spheroid of plasma held together by its own gravity."
         };
 
         protected override int GetExistingId() => 1;
         protected override int GetNonExistingId() => 999;
-
         private void SetupHttpContext(int userId, string role = "User")
         {
             var claims = new List<Claim>

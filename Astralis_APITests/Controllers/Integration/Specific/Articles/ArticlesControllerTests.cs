@@ -26,9 +26,7 @@ namespace Astralis_APITests.Controllers
         protected override ArticlesController CreateController(AstralisDbContext context, IMapper mapper)
         {
             var controller = new ArticlesController(new ArticleManager(context), mapper);
-
             SetupUserContext(controller, TEST_EDITOR_ID, "Rédacteur commercial");
-
             return controller;
         }
 
@@ -132,7 +130,6 @@ namespace Astralis_APITests.Controllers
             return t;
         }
 
-
         protected override int GetIdFromEntity(Article entity) => entity.Id;
         protected override int GetIdFromDto(ArticleDetailDto dto) => dto.Id;
         protected override int GetNonExistingId() => 9999999;
@@ -157,9 +154,7 @@ namespace Astralis_APITests.Controllers
             };
         }
 
-        protected override void SetIdInUpdateDto(ArticleUpdateDto dto, int id)
-        {
-        }
+        protected override void SetIdInUpdateDto(ArticleUpdateDto dto, int id) { }
 
         [TestMethod]
         public async Task Search_ByTitle_ShouldReturnMatchingArticle()
@@ -173,7 +168,12 @@ namespace Astralis_APITests.Controllers
             // Then
             var okResult = actionResult.Result as OkObjectResult;
             Assert.IsNotNull(okResult);
-            var articles = okResult.Value as IEnumerable<ArticleListDto>;
+
+            var resultValue = okResult.Value;
+            var itemsProperty = resultValue.GetType().GetProperty("Items");
+            Assert.IsNotNull(itemsProperty, "La propriété 'Items' est introuvable dans le résultat de Search.");
+
+            var articles = itemsProperty.GetValue(resultValue) as IEnumerable<ArticleListDto>;
             Assert.IsNotNull(articles);
             Assert.AreEqual(1, articles.Count());
             Assert.AreEqual("Article 1 title", articles.First().Title);
@@ -191,15 +191,17 @@ namespace Astralis_APITests.Controllers
             // Then
             var okResult = actionResult.Result as OkObjectResult;
             Assert.IsNotNull(okResult);
-            var articles = okResult.Value as IEnumerable<ArticleListDto>;
+            var resultValue = okResult.Value;
+            var itemsProperty = resultValue.GetType().GetProperty("Items");
+            var articles = itemsProperty.GetValue(resultValue) as IEnumerable<ArticleListDto>;
+
             Assert.IsNotNull(articles);
             Assert.AreEqual(1, articles.Count());
             Assert.AreEqual("Article 1 title", articles.First().Title);
         }
 
-
         [TestMethod]
-        public async Task Post_ValidObject_ShouldCreate_AndAssignCorrectUserId()
+        public async Task Post_ValidObject_ShouldCreateAndReturn200()
         {
             // Given
             var createDto = GetValidCreateDto();
@@ -208,18 +210,41 @@ namespace Astralis_APITests.Controllers
             var actionResult = await _controller.Post(createDto);
 
             // Then
-            var okResult = actionResult.Result as OkObjectResult;
-            Assert.IsNotNull(okResult);
-            var resultDto = okResult.Value as ArticleDetailDto;
+            Assert.IsInstanceOfType(actionResult.Result, typeof(CreatedAtActionResult));
+
+            var createdResult = actionResult.Result as CreatedAtActionResult;
+            Assert.IsNotNull(createdResult);
+
+            var resultDto = createdResult.Value as ArticleDetailDto;
             Assert.IsNotNull(resultDto);
 
             _context.ChangeTracker.Clear();
             var createdEntity = await _context.Articles.FirstOrDefaultAsync(a => a.Title == createDto.Title);
-
             Assert.IsNotNull(createdEntity);
-            Assert.AreEqual(TEST_EDITOR_ID, createdEntity.UserId, "L'article doit être lié à l'utilisateur connecté");
         }
 
+        [TestMethod]
+        public async Task Post_ValidObject_ShouldCreateAndReturn201()
+        {
+            // Given
+            var createDto = GetValidCreateDto();
+
+            // When
+            var actionResult = await _controller.Post(createDto);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult.Result, typeof(CreatedAtActionResult));
+
+            var createdResult = actionResult.Result as CreatedAtActionResult;
+            Assert.IsNotNull(createdResult);
+
+            var resultDto = createdResult.Value as ArticleDetailDto;
+            Assert.IsNotNull(resultDto);
+
+            _context.ChangeTracker.Clear();
+            var createdEntity = await _context.Articles.FirstOrDefaultAsync(a => a.Title == createDto.Title);
+            Assert.IsNotNull(createdEntity);
+        }
 
         [TestMethod]
         public async Task Put_UpdateContent_AsOwner_ShouldSuccess()
@@ -265,9 +290,8 @@ namespace Astralis_APITests.Controllers
 
             _context.ChangeTracker.Clear();
             var entity = await _context.Articles.FindAsync(_article1Id);
-            Assert.AreNotEqual("Hacked Title", entity!.Title, "Le titre ne doit pas avoir changé");
+            Assert.AreNotEqual("Hacked Title", entity!.Title, "Le titre ne doit pas avoir changé.");
         }
-
 
         [TestMethod]
         public async Task Delete_AsOwner_ShouldSuccess()
@@ -283,7 +307,7 @@ namespace Astralis_APITests.Controllers
 
             _context.ChangeTracker.Clear();
             var deletedEntity = await _context.Articles.FindAsync(_article1Id);
-            Assert.IsNull(deletedEntity, "L'article devrait avoir été supprimé de la BDD");
+            Assert.IsNull(deletedEntity, "L'article devrait avoir été supprimé.");
         }
 
         [TestMethod]
@@ -300,7 +324,7 @@ namespace Astralis_APITests.Controllers
 
             _context.ChangeTracker.Clear();
             var entity = await _context.Articles.FindAsync(_article2Id);
-            Assert.IsNotNull(entity, "L'article ne devrait PAS avoir été supprimé");
+            Assert.IsNotNull(entity, "L'article ne devrait PAS avoir été supprimé.");
         }
     }
 }

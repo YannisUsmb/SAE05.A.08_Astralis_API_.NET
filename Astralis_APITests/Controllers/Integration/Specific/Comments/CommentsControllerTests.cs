@@ -167,21 +167,6 @@ namespace Astralis_APITests.Controllers
             await Post_ValidObject_ShouldCreateAndReturn200();
         }
 
-
-        [TestMethod]
-        public async Task Delete_Owner_ShouldSuccess()
-        {
-            SetupUserContext(_controller, USER_OWNER_ID, "User");
-
-            var result = await _controller.Delete(_commentOwnerId);
-
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-
-            _context.ChangeTracker.Clear();
-            var deleted = await _context.Comments.FindAsync(_commentOwnerId);
-            Assert.IsNull(deleted, "Le commentaire devrait être supprimé de la base.");
-        }
-
         [TestMethod]
         public async Task Delete_Stranger_ShouldFail_Forbidden()
         {
@@ -192,31 +177,7 @@ namespace Astralis_APITests.Controllers
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
         }
 
-        [TestMethod]
-        public async Task Delete_Admin_ShouldSuccess_AnyComment()
-        {
-            SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
-
-            var result = await _controller.Delete(_commentOwnerId);
-
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-        }
-
-        [TestMethod]
-        public async Task Put_Owner_ShouldSuccess()
-        {
-            SetupUserContext(_controller, USER_OWNER_ID, "User");
-            var updateDto = GetValidUpdateDto(new Comment());
-
-            var result = await _controller.Put(_commentOwnerId, updateDto);
-
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
-
-            _context.ChangeTracker.Clear();
-            var updated = await _context.Comments.FindAsync(_commentOwnerId);
-            Assert.AreEqual("Updated Text Content", updated.Text);
-        }
-
+        
         [TestMethod]
         public async Task GetById_ExistingId_ShouldReturnOkAndCorrectItem()
         {
@@ -255,6 +216,44 @@ namespace Astralis_APITests.Controllers
             var result = await _controller.Put(_commentOwnerId, updateDto);
 
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+        [TestMethod]
+        public async Task Delete_Owner_ShouldSuccess()
+        {
+            SetupUserContext(_controller, USER_OWNER_ID, "User");
+
+            var result = await _controller.Delete(_commentOwnerId);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+
+            _context.ChangeTracker.Clear();
+            var deleted = await _context.Comments.FindAsync(_commentOwnerId);
+            Assert.IsNull(deleted, "Le commentaire devrait être supprimé de la base.");
+        }
+
+        [TestMethod]
+        public async Task Delete_Admin_ShouldSuccess_AnyComment()
+        {
+            SetupUserContext(_controller, USER_ADMIN_ID, "Admin");
+
+            var result = await _controller.Delete(_commentOwnerId);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public async Task Put_Owner_ShouldSuccess()
+        {
+            SetupUserContext(_controller, USER_OWNER_ID, "User");
+            var updateDto = GetValidUpdateDto(new Comment());
+
+            var result = await _controller.Put(_commentOwnerId, updateDto);
+
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+
+            _context.ChangeTracker.Clear();
+            var updated = await _context.Comments.FindAsync(_commentOwnerId);
+            Assert.AreEqual("Updated Text Content", updated.Text);
         }
     }
 }
