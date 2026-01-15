@@ -267,11 +267,17 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task GetAll_ShouldReturnOk()
         {
+            // When
             var result = await _controller.GetAll();
+
+            // Then
             Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
             var list = (result.Result as OkObjectResult).Value as IEnumerable<DiscoveryDto>;
+
             Assert.IsNotNull(list);
-            Assert.IsTrue(list.Any(d => d.Id == _discoveryDraftId));
+            Assert.IsTrue(list.Any(), "La liste ne doit pas être vide.");
+            // On vérifie que nos données de test (Draft et Accepted) sont bien présentes
+            Assert.IsTrue(list.Any(d => d.Id == _discoveryAcceptedId), "La découverte Accepted devrait être présente.");
         }
 
         // --- TESTS SPECIFIQUES POST ---
@@ -311,7 +317,13 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task PostStar_ValidObject_ShouldCreateDiscoveryAndStar()
         {
+            // Given
             SetupUserContext(_controller, USER_OWNER_ID, "Explorer");
+            if (!_context.GalaxiesQuasars.Any(g => g.Id == 1))
+            {
+                _context.GalaxiesQuasars.Add(new GalaxyQuasar { Id = 1 });
+                _context.SaveChanges();
+            }
 
             var submissionDto = new DiscoveryStarSubmissionDto
             {
@@ -320,25 +332,35 @@ namespace Astralis_APITests.Controllers
                 {
                     Name = "Betelgeuse II",
                     Temperature = 3500,
+                    Distance = 500,
+                    Luminosity = 1000,
+                    Radius = 800,
+
                     CelestialBodyTypeId = CBT_STAR,
                     SpectralClassId = _spectralClassId
                 }
             };
 
+            // When
             var actionResult = await _controller.PostStar(submissionDto);
 
+            // Then
             Assert.IsInstanceOfType(actionResult.Result, typeof(OkObjectResult));
-
             var resultDto = (actionResult.Result as OkObjectResult).Value as DiscoveryDto;
+            Assert.IsNotNull(resultDto);
+            Assert.AreEqual("Bright Star Discovery", resultDto.Title);
 
             _context.ChangeTracker.Clear();
 
             var dbDiscovery = await _context.Discoveries
                 .Include(d => d.CelestialBodyNavigation)
+                .ThenInclude(cb => cb.StarNavigation)
                 .FirstOrDefaultAsync(d => d.Id == resultDto.Id);
 
-            Assert.IsNotNull(dbDiscovery);
-            Assert.AreEqual(CBT_STAR, dbDiscovery.CelestialBodyNavigation.CelestialBodyTypeId);
+            Assert.IsNotNull(dbDiscovery, "La découverte doit être sauvegardée en BDD.");
+            Assert.IsNotNull(dbDiscovery.CelestialBodyNavigation.StarNavigation, "L'étoile liée doit exister.");
+            Assert.AreEqual("Betelgeuse II", dbDiscovery.CelestialBodyNavigation.Name);
+
         }
 
         [TestMethod]

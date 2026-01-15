@@ -265,7 +265,7 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => (string?)null));
-
+            CreateMap<GalaxyQuasarClass, GalaxyQuasarClassDto>();
             ///// Notification.
             // Entity to DTO (Read).
             CreateMap<Notification, NotificationDto>()
@@ -330,6 +330,7 @@ namespace Astralis_API.Models.Mapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Label, opt => opt.MapFrom(src => src.Label))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => (string?)null));
+            CreateMap<PlanetType, PlanetTypeDto>();
 
             ///// Product.
             // Entity to DTO (Read).

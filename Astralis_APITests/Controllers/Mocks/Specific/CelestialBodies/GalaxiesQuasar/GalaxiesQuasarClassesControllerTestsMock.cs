@@ -12,9 +12,9 @@ using System.Security.Claims;
 namespace Astralis_APITests.Controllers.Mocks
 {
     [TestClass]
-    public class PlanetTypesControllerTestsMock : ReadableControllerMockTests<PlanetTypesController, PlanetType, PlanetTypeDto, PlanetTypeDto, int>
+    public class GalaxyQuasarClassesControllerTestsMock : ReadableControllerMockTests<GalaxyQuasarClassesController, GalaxyQuasarClass, GalaxyQuasarClassDto, GalaxyQuasarClassDto, int>
     {
-        private Mock<IPlanetTypeRepository> _mockPlanetTypeRepository;
+        private Mock<IGalaxyQuasarClassRepository> _mockGalaxyQuasarClassRepository;
 
         [TestInitialize]
         public override void BaseInitialize()
@@ -22,46 +22,45 @@ namespace Astralis_APITests.Controllers.Mocks
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MapperProfile());
-
-                cfg.CreateMap<PlanetType, PlanetTypeDto>();
+                cfg.CreateMap<GalaxyQuasarClass, GalaxyQuasarClassDto>();
             });
             _mapper = config.CreateMapper();
 
             _controller = CreateController(null, _mapper);
-
             SetupHttpContext(1, "User");
         }
 
-        protected override PlanetTypesController CreateController(Mock<IReadableRepository<PlanetType, int>> mockRepo, AutoMapper.IMapper mapper)
+        protected override GalaxyQuasarClassesController CreateController(Mock<IReadableRepository<GalaxyQuasarClass, int>> mockRepo, AutoMapper.IMapper mapper)
         {
-            _mockPlanetTypeRepository = new Mock<IPlanetTypeRepository>();
+            _mockGalaxyQuasarClassRepository = new Mock<IGalaxyQuasarClassRepository>();
 
-            _mockRepository = _mockPlanetTypeRepository.As<IReadableRepository<PlanetType, int>>();
+            _mockRepository = _mockGalaxyQuasarClassRepository.As<IReadableRepository<GalaxyQuasarClass, int>>();
 
-            return new PlanetTypesController(_mockPlanetTypeRepository.Object, mapper);
+            return new GalaxyQuasarClassesController(_mockGalaxyQuasarClassRepository.Object, mapper);
         }
 
-        protected override List<PlanetType> GetSampleEntities() => new List<PlanetType>
+
+        protected override List<GalaxyQuasarClass> GetSampleEntities() => new List<GalaxyQuasarClass>
         {
-            new PlanetType
+            new GalaxyQuasarClass
             {
                 Id = 1,
-                Label = "Terrestrial",
-                Description = "A planet that is composed primarily of silicate rocks or metals."
+                Label = "Spiral",
+                Description = "A galaxy with a rotating disc of stars and a central bulge."
             },
-            new PlanetType
+            new GalaxyQuasarClass
             {
                 Id = 2,
-                Label = "Gas Giant",
-                Description = "A large planet composed mostly of gases, such as hydrogen and helium."
+                Label = "Quasar",
+                Description = "An active galactic nucleus of very high luminosity."
             }
         };
 
-        protected override PlanetType GetSampleEntity() => new PlanetType
+        protected override GalaxyQuasarClass GetSampleEntity() => new GalaxyQuasarClass
         {
             Id = 1,
-            Label = "Terrestrial",
-            Description = "A planet that is composed primarily of silicate rocks or metals."
+            Label = "Spiral",
+            Description = "A galaxy with a rotating disc of stars and a central bulge."
         };
 
         protected override int GetExistingId() => 1;

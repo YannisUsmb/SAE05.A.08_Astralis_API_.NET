@@ -197,19 +197,36 @@ namespace Astralis_APITests.Controllers
         [TestMethod]
         public async Task Search_ByTitle_ShouldReturnCorrectEvents()
         {
+            // Given
             var filter = new EventFilterDto
             {
                 SearchText = "Rocket"
             };
 
+            // When
             var result = await _controller.Search(filter);
 
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-            var list = (result.Result as OkObjectResult).Value as IEnumerable<EventDto>;
+            // Then
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
 
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Any(e => e.Id == _eventId2));
-            Assert.IsFalse(list.Any(e => e.Id == _eventId1));
+            var resultValue = okResult.Value;
+            var itemsProperty = resultValue.GetType().GetProperty("Items");
+
+            IEnumerable<EventDto> list;
+
+            if (itemsProperty != null)
+            {
+                list = itemsProperty.GetValue(resultValue) as IEnumerable<EventDto>;
+            }
+            else
+            {
+                list = resultValue as IEnumerable<EventDto>;
+            }
+
+            Assert.IsNotNull(list, "The returned list is null.");
+            Assert.IsTrue(list.Any(e => e.Id == _eventId2), "Should contain the Rocket event.");
+            Assert.IsFalse(list.Any(e => e.Id == _eventId1), "Should NOT contain the Eclipse event.");
         }
 
         [TestMethod]

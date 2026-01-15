@@ -2,58 +2,71 @@
 using Astralis_API.Controllers;
 using Astralis_API.Models.EntityFramework;
 using Astralis_API.Models.Repository;
-using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Security.Claims;
 
 namespace Astralis_APITests.Controllers.Mocks
 {
     [TestClass]
-    public class EventInterestsControllerMockTests
-        : JoinControllerMockTests<EventInterestsController, EventInterest, EventInterestDto, EventInterestDto, int, int>
+    public class EventInterestsControllerTestsMock : JoinControllerMockTests<EventInterestsController, EventInterest, EventInterestDto, EventInterestDto, int, int>
     {
-        protected override EventInterestsController CreateController(Mock<IJoinRepository<EventInterest, int, int>> mockRepo, IMapper mapper)
+        private Mock<IEventInterestRepository> _mockEventInterestRepository;
+
+        [TestInitialize]
+        public override void BaseInitialize()
         {
-            var specificMock = mockRepo.As<IEventInterestRepository>();
-            return new EventInterestsController(specificMock.Object, mapper);
+            base.BaseInitialize();
+            SetupHttpContext(1, "User");
         }
 
-        protected override List<EventInterest> GetSampleEntities()
+        protected override EventInterestsController CreateController(Mock<IJoinRepository<EventInterest, int, int>> mockRepo, AutoMapper.IMapper mapper)
         {
-            return new List<EventInterest>
+            _mockEventInterestRepository = new Mock<IEventInterestRepository>();
+
+            _mockRepository = _mockEventInterestRepository.As<IJoinRepository<EventInterest, int, int>>();
+
+            return new EventInterestsController(_mockEventInterestRepository.Object, mapper);
+        }
+
+        protected override List<EventInterest> GetSampleEntities() => new List<EventInterest>
+        {
+            new EventInterest { EventId = 1, UserId = 1 },
+            new EventInterest { EventId = 2, UserId = 1 }
+        };
+
+        protected override EventInterest GetSampleEntity() => new EventInterest
+        {
+            EventId = 1,
+            UserId = 1
+        };
+
+        protected override int GetExistingKey1() => 1;
+        protected override int GetExistingKey2() => 1;
+
+        protected override int GetNonExistingKey1() => 999;
+        protected override int GetNonExistingKey2() => 999;
+
+        protected override EventInterestDto GetValidCreateDto() => new EventInterestDto
+        {
+            EventId = 3,
+            UserId = 1
+        };
+
+        private void SetupHttpContext(int userId, string role = "User")
+        {
+            var claims = new List<Claim>
             {
-                new EventInterest { EventId = 1, UserId = 10 },
-                new EventInterest { EventId = 2, UserId = 20 }
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role)
             };
-        }
-
-        protected override EventInterest GetSampleEntity()
-        {
-            return new EventInterest { EventId = 1, UserId = 10 };
-        }
-
-        protected override int GetExistingKey1()
-        {
-            return 1;
-        }
-
-        protected override int GetExistingKey2()
-        {
-            return 10;
-        }
-
-        protected override int GetNonExistingKey1()
-        {
-            return 999;
-        }
-
-        protected override int GetNonExistingKey2()
-        {
-            return 999;
-        }
-
-        protected override EventInterestDto GetValidCreateDto()
-        {
-            return new EventInterestDto { EventId = 3, UserId = 30 };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            if (_controller != null)
+                _controller.ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+                };
         }
     }
 }

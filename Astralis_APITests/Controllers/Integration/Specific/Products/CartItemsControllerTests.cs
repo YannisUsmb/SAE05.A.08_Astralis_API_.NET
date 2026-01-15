@@ -183,5 +183,25 @@ namespace Astralis_APITests.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
         }
+
+        [TestMethod]
+        public new async Task Post_ValidObject_ShouldCallAddAndReturnOk()
+        {
+            // Given
+            var createDto = GetValidCreateDto();
+
+            // When
+            var actionResult = await _controller.Post(createDto);
+
+            // Then
+            Assert.IsInstanceOfType(actionResult, typeof(OkObjectResult));
+
+            // Vérification en base de données
+            _context.ChangeTracker.Clear();
+            var savedItem = await _context.CartItems.FindAsync(BUYER_ID, createDto.ProductId);
+
+            Assert.IsNotNull(savedItem, "L'item aurait dû être ajouté en base.");
+            Assert.AreEqual(createDto.Quantity, savedItem.Quantity);
+        }
     }
 }

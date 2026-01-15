@@ -12,9 +12,9 @@ using System.Security.Claims;
 namespace Astralis_APITests.Controllers.Mocks
 {
     [TestClass]
-    public class PlanetTypesControllerTestsMock : ReadableControllerMockTests<PlanetTypesController, PlanetType, PlanetTypeDto, PlanetTypeDto, int>
+    public class DiscoveryStatusesControllerTestsMock : ReadableControllerMockTests<DiscoveryStatusesController, DiscoveryStatus, DiscoveryStatusDto, DiscoveryStatusDto, int>
     {
-        private Mock<IPlanetTypeRepository> _mockPlanetTypeRepository;
+        private Mock<IDiscoveryStatusRepository> _mockDiscoveryStatusRepository;
 
         [TestInitialize]
         public override void BaseInitialize()
@@ -22,8 +22,7 @@ namespace Astralis_APITests.Controllers.Mocks
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MapperProfile());
-
-                cfg.CreateMap<PlanetType, PlanetTypeDto>();
+                cfg.CreateMap<DiscoveryStatus, DiscoveryStatusDto>();
             });
             _mapper = config.CreateMapper();
 
@@ -32,36 +31,27 @@ namespace Astralis_APITests.Controllers.Mocks
             SetupHttpContext(1, "User");
         }
 
-        protected override PlanetTypesController CreateController(Mock<IReadableRepository<PlanetType, int>> mockRepo, AutoMapper.IMapper mapper)
+        protected override DiscoveryStatusesController CreateController(Mock<IReadableRepository<DiscoveryStatus, int>> mockRepo, AutoMapper.IMapper mapper)
         {
-            _mockPlanetTypeRepository = new Mock<IPlanetTypeRepository>();
+            _mockDiscoveryStatusRepository = new Mock<IDiscoveryStatusRepository>();
 
-            _mockRepository = _mockPlanetTypeRepository.As<IReadableRepository<PlanetType, int>>();
+            _mockRepository = _mockDiscoveryStatusRepository.As<IReadableRepository<DiscoveryStatus, int>>();
 
-            return new PlanetTypesController(_mockPlanetTypeRepository.Object, mapper);
+            return new DiscoveryStatusesController(_mockDiscoveryStatusRepository.Object, mapper);
         }
 
-        protected override List<PlanetType> GetSampleEntities() => new List<PlanetType>
+
+        protected override List<DiscoveryStatus> GetSampleEntities() => new List<DiscoveryStatus>
         {
-            new PlanetType
-            {
-                Id = 1,
-                Label = "Terrestrial",
-                Description = "A planet that is composed primarily of silicate rocks or metals."
-            },
-            new PlanetType
-            {
-                Id = 2,
-                Label = "Gas Giant",
-                Description = "A large planet composed mostly of gases, such as hydrogen and helium."
-            }
+            new DiscoveryStatus { Id = 1, Label = "Draft" },
+            new DiscoveryStatus { Id = 2, Label = "Validated" },
+            new DiscoveryStatus { Id = 3, Label = "Refused" }
         };
 
-        protected override PlanetType GetSampleEntity() => new PlanetType
+        protected override DiscoveryStatus GetSampleEntity() => new DiscoveryStatus
         {
             Id = 1,
-            Label = "Terrestrial",
-            Description = "A planet that is composed primarily of silicate rocks or metals."
+            Label = "Draft"
         };
 
         protected override int GetExistingId() => 1;
