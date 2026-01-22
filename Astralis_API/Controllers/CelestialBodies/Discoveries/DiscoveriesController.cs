@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace Astralis_API.Controllers
 {
@@ -24,6 +25,7 @@ namespace Astralis_API.Controllers
         private readonly ICelestialBodyRepository _celestialBodyRepository;
         private readonly ISatelliteRepository _satelliteRepository;
         private readonly IUserRepository _userRepository;
+        private readonly AstralisDbContext _context;
         
         public DiscoveriesController(
             IDiscoveryRepository repository,
@@ -35,6 +37,7 @@ namespace Astralis_API.Controllers
             ICelestialBodyRepository celestialBodyRepository,
             ISatelliteRepository satelliteRepository,
             IUserRepository userRepository,
+            AstralisDbContext context,
             IMapper mapper)
             : base(repository, mapper)
         {
@@ -47,6 +50,7 @@ namespace Astralis_API.Controllers
             _celestialBodyRepository = celestialBodyRepository;
             _satelliteRepository = satelliteRepository;
             _userRepository = userRepository;
+            _context = context;
         }
 
         /// <summary>
@@ -558,6 +562,47 @@ namespace Astralis_API.Controllers
             };
 
             await _repository.AddAsync(discovery);
+            try 
+            {
+                var adminRole = await _context.UserRoles
+                    .FirstOrDefaultAsync(r => r.Label == "Admin"); 
+
+                if (adminRole != null)
+                {
+                    var notification = new Notification
+                    {
+                        NotificationTypeId = 5, 
+                        Label = "Nouvelle soumission",
+                        Description = $"Une nouvelle découverte '{title}' est en attente de validation.",
+                        Link = "/admin/dashboard"
+                    };
+
+                    _context.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                    
+                    var admins = await _context.Users
+                        .Where(u => u.UserRoleId == adminRole.Id) 
+                        .ToListAsync();
+
+                    if (admins.Any())
+                    {
+                        var userNotifications = admins.Select(admin => new UserNotification
+                        {
+                            UserId = admin.Id,
+                            NotificationId = notification.Id,
+                            IsRead = false,
+                            ReceivedAt = DateTime.UtcNow
+                        });
+
+                        await _context.UserNotifications.AddRangeAsync(userNotifications);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'envoi de la notification admin : {ex.Message}");
+            }
             return Ok(_mapper.Map<DiscoveryDto>(discovery));
         }
     }
