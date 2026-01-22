@@ -503,17 +503,11 @@ namespace Astralis_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ModerateDiscovery(int id, DiscoveryModerationDto moderationDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             Discovery? entity = await _repository.GetByIdAsync(id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
-
+            if (entity == null) return NotFound();
+            
             string? adminIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(adminIdString, out int adminId))
             {
@@ -521,9 +515,52 @@ namespace Astralis_API.Controllers
             }
 
             entity.DiscoveryStatusId = moderationDto.DiscoveryStatusId;
-
+            
             await _repository.UpdateAsync(entity, entity);
+            
+            try
+            {
+                if (moderationDto.DiscoveryStatusId == 3 || moderationDto.DiscoveryStatusId == 4)
+                {
+                    bool isApproved = moderationDto.DiscoveryStatusId == 3;
+                    
+                    int notificationTypeId = 6; 
 
+                    string label = isApproved ? "Découverte Validée" : "Découverte Refusée";
+                    
+                    string description = isApproved
+                        ? $"Félicitations ! Votre découverte '{entity.Title}' a été validée par nos équipes."
+                        : $"Votre découverte '{entity.Title}' n'a pas été retenue.";
+                    
+                    string link = $"/corps-celestes?id={entity.CelestialBodyId}";
+                    
+                    var notification = new Notification
+                    {
+                        NotificationTypeId = notificationTypeId,
+                        Label = label,
+                        Description = description,
+                        Link = link
+                    };
+
+                    _context.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                    
+                    var userNotification = new UserNotification
+                    {
+                        UserId = entity.UserId,
+                        NotificationId = notification.Id,
+                        IsRead = false,
+                        ReceivedAt = DateTime.UtcNow
+                    };
+
+                    _context.UserNotifications.Add(userNotification);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur notification utilisateur : {ex.Message}");
+            }
             return NoContent();
         }
 
