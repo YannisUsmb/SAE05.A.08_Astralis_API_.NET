@@ -1,6 +1,5 @@
 ﻿using Astralis.Shared.DTOs;
 using Astralis_API.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 

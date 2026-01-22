@@ -33,7 +33,7 @@ namespace Astralis_API.Services.Implementations
 
                 content.Add(streamContent, "file", imageFile.FileName);
 
-                var response = await _httpClient.PostAsync("predict-image", content);
+                var response = await _httpClient.PostAsync("api/v1/predict-image", content);
 
                 if (response.IsSuccessStatusCode)
                 {
