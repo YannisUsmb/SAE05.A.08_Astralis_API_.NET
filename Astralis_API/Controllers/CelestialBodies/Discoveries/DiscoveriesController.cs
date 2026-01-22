@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
+using Stripe.Checkout;
 
 namespace Astralis_API.Controllers
 {
@@ -26,6 +28,7 @@ namespace Astralis_API.Controllers
         private readonly ISatelliteRepository _satelliteRepository;
         private readonly IUserRepository _userRepository;
         private readonly AstralisDbContext _context;
+        private readonly IConfiguration _configuration;
         
         public DiscoveriesController(
             IDiscoveryRepository repository,
@@ -38,7 +41,8 @@ namespace Astralis_API.Controllers
             ISatelliteRepository satelliteRepository,
             IUserRepository userRepository,
             AstralisDbContext context,
-            IMapper mapper)
+            IMapper mapper,
+            IConfiguration configuration)
             : base(repository, mapper)
         {
             _discoveryRepository = repository;
@@ -51,6 +55,7 @@ namespace Astralis_API.Controllers
             _satelliteRepository = satelliteRepository;
             _userRepository = userRepository;
             _context = context;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -401,6 +406,113 @@ namespace Astralis_API.Controllers
             await _repository.UpdateAsync(entity, entity);
 
             return NoContent();
+        }
+        
+        /// <summary>
+        /// Creates a Stripe Checkout Session for buying an alias (5.99€).
+        /// </summary>
+        [HttpPost("{id}/Alias/Checkout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> CreateAliasCheckoutSession(int id, [FromBody] DiscoveryAliasDto dto)
+        {
+            Discovery? discovery = await _discoveryRepository.GetByIdAsync(id);
+            if (discovery == null) return NotFound("Découverte introuvable.");
+            
+            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+            var domain = _configuration["ClientUrl"] ?? "https://localhost:7036"; 
+
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string> { "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = 599,
+                            Currency = "eur",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = $"Alias pour {discovery.Title}",
+                                Description = $"Alias proposé : {dto.Alias}"
+                            },
+                        },
+                        Quantity = 1,
+                    },
+                },
+                Mode = "payment",
+                SuccessUrl = $"{domain}/corps-celestes?id={discovery.CelestialBodyId}&paymentSuccess=true&session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = $"{domain}/corps-celestes?id={discovery.CelestialBodyId}",
+                
+                Metadata = new Dictionary<string, string>
+                {
+                    { "type", "alias_payment" },
+                    { "discovery_id", id.ToString() },
+                    { "proposed_alias", dto.Alias },
+                    { "user_id", discovery.UserId.ToString() }
+                }
+            };
+
+            try 
+            {
+                var service = new SessionService();
+                Session session = await service.CreateAsync(options);
+                return Ok(new { url = session.Url });
+            }
+            catch (StripeException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+        }
+        
+        /// <summary>
+        /// Validates the payment for an alias proposal.
+        /// </summary>
+        [HttpPost("Alias/ValidatePayment")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> ValidateAliasPayment([FromQuery] string sessionId)
+        {
+            try
+            {
+                StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+                var service = new SessionService();
+                var session = await service.GetAsync(sessionId);
+
+                if (session.PaymentStatus != "paid") 
+                    return BadRequest("Paiement non validé.");
+                
+                if (!session.Metadata.TryGetValue("discovery_id", out string? discoveryIdStr) ||
+                    !session.Metadata.TryGetValue("proposed_alias", out string? alias))
+                {
+                    return BadRequest("Métadonnées manquantes.");
+                }
+
+                int discoveryId = int.Parse(discoveryIdStr);
+        
+                Discovery? entity = await _discoveryRepository.GetByIdAsync(discoveryId);
+                if (entity == null) return NotFound();
+                
+                CelestialBody? celestialBody = await _celestialBodyRepository.GetByIdAsync(entity.CelestialBodyId);
+                if (celestialBody != null)
+                {
+                    celestialBody.Alias = alias;
+                    await _celestialBodyRepository.UpdateAsync(celestialBody, celestialBody);
+                }
+
+                entity.AliasStatusId = 1;
+                entity.AliasApprovalUserId = null;
+
+                await _repository.UpdateAsync(entity, entity);
+
+                return Ok(new { message = "Alias appliqué avec succès." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erreur validation : {ex.Message}");
+            }
         }
         
         /// <summary>
