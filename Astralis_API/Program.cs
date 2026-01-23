@@ -190,17 +190,24 @@ builder.Services.AddHttpClient<IAiService, AiService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //      Cors
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',');
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowBlazor",
-        policy => policy
-            .WithOrigins("https://localhost:7036",
-            "https://webappastralisblazordev-bchwh3cca3anebgm.francecentral-01.azurewebsites.net")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials());
+    options.AddPolicy("AllowBlazor", policy =>
+    {
+        if (allowedOrigins != null && allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+        }
+    });
 });
-
 
 // -- Pipeline -- //
 
